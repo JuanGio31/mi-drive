@@ -1,0 +1,29 @@
+# Dependencias
+node_modules
+
+# Build
+dist/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Cobertura
+coverage/
+
+# otros
+.prettierrc
