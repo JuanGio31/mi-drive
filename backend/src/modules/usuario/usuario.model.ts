@@ -34,7 +34,7 @@ const UsuarioSchema = new Schema<IUsuario>(
         },
         rol: {
             type: String,
-            enum: [Rol.Administrador, Rol.Usuario],
+            enum: Object.values(Rol),
             default: Rol.Usuario,
             required: true,
         },

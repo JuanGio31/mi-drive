@@ -3,7 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import { notFoundHandler } from './shared/middlewares/not-found.middleware';
 import { errorHandler } from './shared/middlewares/error.middleware';
-import { usuarioRouter } from './modules/usuario';
+import authRoutes from './modules/auth/auth.routes';
+import usuarioRouter from './modules/usuario/usuario.routes';
 
 export const createApp = (): Application => {
     const app = express();
@@ -19,6 +20,7 @@ export const createApp = (): Application => {
     });
 
     // definicion de rutas
+    app.use('/api/auth', authRoutes);
     app.use('/api/usuarios', usuarioRouter);
 
     // Manejo de rutas no encontradas

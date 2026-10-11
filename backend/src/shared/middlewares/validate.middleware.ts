@@ -11,7 +11,6 @@ const formatZodError = (error: ZodError) => {
 export const validateBody = (schema: ZodSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
-            console.error('[Error] Datos inválidos', req.body);
             req.body = schema.parse(req.body);
             next();
         } catch (error) {

@@ -30,7 +30,7 @@ export class UsuarioService {
         return this.usuarioRepository.crear({
             ...dto,
             passwordHash,
-            rol: dto.rol ?? Rol.Usuario,
+            rol: (dto.rol as Rol) ?? Rol.Usuario,
             activo: true,
         });
     }
