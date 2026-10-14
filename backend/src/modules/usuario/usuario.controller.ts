@@ -37,7 +37,7 @@ export class UsuarioController {
     ): Promise<void> => {
         try {
             const usuario = await this.usuarioService.buscarPorId(
-                req.params.id,
+                req.params.id as string,
             );
             res.json(usuario);
         } catch (error) {
@@ -52,7 +52,7 @@ export class UsuarioController {
     ): Promise<void> => {
         try {
             const usuario = await this.usuarioService.actualizar(
-                req.params.id,
+                req.params.id as string,
                 req.body,
             );
             res.json(usuario);
@@ -67,8 +67,8 @@ export class UsuarioController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const usuario = await this.usuarioService.desactivar(req.params.id);
-            res.status(204).json(usuario);
+            const usuario = await this.usuarioService.desactivar(req.params.id as string);
+            res.json(usuario);
         } catch (error) {
             next(error);
         }
@@ -80,8 +80,8 @@ export class UsuarioController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const usuario = await this.usuarioService.reactivar(req.params.id);
-            res.status(204).json(usuario);
+            const usuario = await this.usuarioService.reactivar(req.params.id as string);
+            res.json(usuario);
         } catch (error) {
             next(error);
         }

@@ -2,7 +2,8 @@ import bcrypt from 'bcrypt';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { env } from '../../shared/config/env';
 import { HttpError } from '../../shared/errors/http-error';
-import { IUsuario, IUsuarioRepository } from '../usuario';
+import { IUsuario } from '../usuario/usuario.model';
+import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { LoginDTO, RegistroDTO } from './auth.dto';
 import { Rol } from '../../shared/types/enums';
 

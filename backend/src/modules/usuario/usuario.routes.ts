@@ -18,9 +18,10 @@ import { Rol } from '../../shared/types/enums';
 const router = Router();
 const { usuarioController } = container;
 
+router.use(authenticate);
+
 router.post(
     '/',
-    authenticate,
     authorize(Rol.Administrador),
     validateBody(CrearUsuarioSchema),
     usuarioController.crear,
@@ -28,7 +29,6 @@ router.post(
 
 router.get(
     '/',
-    authenticate,
     authorize(Rol.Administrador),
     validateQuery(ListarUsuarioQuerySchema),
     usuarioController.listar,
@@ -36,29 +36,30 @@ router.get(
 
 router.get(
     '/:id',
-    authenticate,
     validateParams(UsuarioIdParamSchema),
     usuarioController.buscarPorId,
 );
 
-router.put(
+// PATCH /:id → actualización parcial (el schema es parcial: todos los campos opcionales).
+router.patch(
     '/:id',
-    authenticate,
     validateParams(UsuarioIdParamSchema),
     validateBody(ActualizarUsuarioSchema),
     usuarioController.actualizar,
 );
 
-router.patch(
-    '/:id/desactivar',
-    authenticate,
+// DELETE /:id → soft delete: desactiva el usuario (no lo borra físicamente).
+router.delete(
+    '/:id',
+    authorize(Rol.Administrador),
     validateParams(UsuarioIdParamSchema),
     usuarioController.desactivar,
 );
 
-router.patch(
+// POST /:id/reactivar → restaura un usuario desactivado (acción, como en carpeta POST /:id/restaurar).
+router.post(
     '/:id/reactivar',
-    authenticate,
+    authorize(Rol.Administrador),
     validateParams(UsuarioIdParamSchema),
     usuarioController.reactivar,
 );

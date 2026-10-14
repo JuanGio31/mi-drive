@@ -64,7 +64,13 @@ export class UsuarioService {
             }
         }
 
-        const actualizado = await this.usuarioRepository.actualizar(id, dto);
+        const datosLimpios = Object.fromEntries(
+            Object.entries(dto).filter(([, v]) => v !== undefined),
+        );
+        const actualizado = await this.usuarioRepository.actualizar(
+            id,
+            datosLimpios,
+        );
 
         if (!actualizado) {
             throw HttpError.notFound('El usuario no encontrado');
