@@ -5,7 +5,8 @@ import { HttpError } from '../../shared/errors/http-error';
 import { IUsuario } from '../usuario/usuario.model';
 import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { LoginDTO, RegistroDTO } from './auth.dto';
-import { Rol } from '../../shared/types/enums';
+import { AccionActividad, Rol, TipoRecurso } from '../../shared/types/enums';
+import { ActividadService } from '../actividad/actividad.service';
 
 export interface LoginResult {
     token: string;
@@ -18,7 +19,10 @@ export interface LoginResult {
 }
 
 export class AuthService {
-    constructor(private readonly usuarioService: IUsuarioRepository) {}
+    constructor(
+        private readonly usuarioService: IUsuarioRepository,
+        private readonly actividadService: ActividadService,
+    ) {}
 
     /**
      * Metodo para iniciar sesion en el sistema.
@@ -53,6 +57,8 @@ export class AuthService {
         }
 
         const tokenGenerado = this.generarToken(usuario);
+
+        await this.registrarActividad(usuario, AccionActividad.Login);
 
         return {
             token: tokenGenerado,
@@ -96,6 +102,9 @@ export class AuthService {
 
         const tokenGenerado = this.generarToken(usuario);
 
+        await this.registrarActividad(usuario, AccionActividad.Registro);
+        await this.registrarActividad(usuario, AccionActividad.Login);
+
         return {
             token: tokenGenerado,
             usuario: {
@@ -117,5 +126,18 @@ export class AuthService {
         return jwt.sign(payload, env.JWT_SECRET, {
             expiresIn: env.JWT_EXPIRES_IN,
         } as SignOptions);
+    }
+
+    private async registrarActividad(
+        usuario: IUsuario,
+        accion: AccionActividad,
+    ): Promise<void> {
+        await this.actividadService.registrar({
+            usuarioId: usuario._id.toString(),
+            accion,
+            recursoTipo: TipoRecurso.Usuario,
+            recursoId: usuario._id.toString(),
+            recursoNombre: usuario.nombre,
+        });
     }
 }

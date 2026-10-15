@@ -91,10 +91,4 @@ router.delete(
     archivoController.quitarCompartido,
 );
 
-router.delete(
-    '/:id/permanente',
-    validateParams(ArchivoIdParamSchema),
-    archivoController.eliminarPermanente,
-);
-
 export default router;

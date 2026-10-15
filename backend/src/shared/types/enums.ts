@@ -7,8 +7,7 @@ export enum TipoRecurso {
     Archivo = 'archivo',
     Carpeta = 'carpeta',
     Usuario = 'usuario',
-    Permiso = 'permiso',
-    Ninguno = 'ninguno',
+    Sistema = 'sistema',
 }
 
 export enum NivelPermiso {
@@ -28,27 +27,18 @@ export enum MimeType {
 }
 
 export enum AccionActividad {
-    CrearCarpeta = 'crear_carpeta',
-    RenombrarCarpeta = 'renombrar_carpeta',
-    MoverCarpeta = 'mover_carpeta',
-    EliminarCarpeta = 'eliminar_carpeta',
-    RestaurarCarpeta = 'restaurar_carpeta',
-    EliminarDefinitivoCarpeta = 'eliminar_definitivo_carpeta',
-    SubirArchivo = 'subir_archivo',
-    DescargarArchivo = 'descargar_archivo',
-    RenombrarArchivo = 'renombrar_archivo',
-    MoverArchivo = 'mover_archivo',
-    EditarArchivo = 'editar_archivo',
-    EliminarArchivo = 'eliminar_archivo',
-    RestaurarArchivo = 'restaurar_archivo',
-    EliminarDefinitivoArchivo = 'eliminar_definitivo_archivo',
+    Crear = 'crear',
+    Renombrar = 'renombrar',
+    Mover = 'mover',
+    ActualizarContenido = 'actualizar_Contenido',
     Compartir = 'compartir',
-    RevocarPermiso = 'revocar_permiso',
-    Destacar = 'destacar',
-    QuitarDestacado = 'quitar_destacado',
-    IniciarSesion = 'iniciar_sesion',
-    CerrarSesion = 'cerrar_sesion',
-
-    CopiarCarpeta = 'copiar_carpeta',
-    CopiarArchivo = 'copiar_archivo',
+    QuitarCompartido = 'quitar_compartido',
+    EnviarPapelera = 'enviar_papelera',
+    Restaurar = 'restaurar',
+    EliminarPermanente = 'eliminar_permanente',
+    Login = 'login',
+    Desactivar = 'desactivar',
+    Reactivar = 'reactivar',
+    Registro = 'registro',
+    Actualizar = 'actualizar',
 }

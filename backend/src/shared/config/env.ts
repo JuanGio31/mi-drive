@@ -11,7 +11,7 @@ const EnvSchema = z.object({
         .string()
         .min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
     JWT_EXPIRES_IN: z.string().default('7d'),
-    BYCRYPT_ROUNDS: z.string().default('10').transform(Number),
+    BCRYPT_ROUNDS: z.string().default('10').transform(Number),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

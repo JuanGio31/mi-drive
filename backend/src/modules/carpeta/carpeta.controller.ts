@@ -1,10 +1,16 @@
 import { Request, Response, NextFunction } from 'express';
 import { CarpetaService } from './carpeta.service';
 import { HttpError } from '../../shared/errors/http-error';
+import { CarpetaCompartidosService } from './carpeta-compartido.service';
+import { CarpetaPapeleraService } from './carpeta-papelera.service';
 
 /** Controlador HTTP de carpetas: extrae datos de la petición y delega al servicio. */
 export class CarpetaController {
-    constructor(private readonly carpetaService: CarpetaService) {}
+    constructor(
+        private readonly carpetaService: CarpetaService,
+        private readonly compartidoService: CarpetaCompartidosService,
+        private readonly papeleraService: CarpetaPapeleraService,
+    ) {}
 
     /** Obtiene el ID del usuario autenticado desde la petición. */
     private getUsuarioId(req: Request): string {
@@ -106,7 +112,7 @@ export class CarpetaController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            await this.carpetaService.enviarAPapelera(
+            await this.papeleraService.enviar(
                 req.params.id as string,
                 this.getUsuarioId(req),
             );
@@ -123,7 +129,7 @@ export class CarpetaController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const carpeta = await this.carpetaService.restaurar(
+            const carpeta = await this.papeleraService.restaurar(
                 req.params.id as string,
                 this.getUsuarioId(req),
             );
@@ -140,7 +146,7 @@ export class CarpetaController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const carpeta = await this.carpetaService.compartir(
+            const carpeta = await this.compartidoService.compartir(
                 req.params.id as string,
                 req.body,
                 this.getUsuarioId(req),
@@ -158,7 +164,7 @@ export class CarpetaController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const carpeta = await this.carpetaService.quitarCompartido(
+            const carpeta = await this.compartidoService.quitar(
                 req.params.id as string,
                 req.params.usuarioId as string,
                 this.getUsuarioId(req),

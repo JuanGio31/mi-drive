@@ -7,6 +7,7 @@ import authRoutes from './modules/auth/auth.routes';
 import usuarioRoutes from './modules/usuario/usuario.routes';
 import carpetaRoutes from './modules/carpeta/carpeta.routes';
 import archivoRoutes from './modules/archivo/archivo.routes';
+import actividadRoutes from './modules/actividad/actividad.routes';
 
 export const createApp = (): Application => {
     const app = express();
@@ -26,6 +27,7 @@ export const createApp = (): Application => {
     app.use('/api/usuarios', usuarioRoutes);
     app.use('/api/carpetas', carpetaRoutes);
     app.use('/api/archivos', archivoRoutes);
+    app.use('/api/actividad', actividadRoutes);
 
     // Manejo de rutas no encontradas
     app.use(notFoundHandler);

@@ -1,75 +1,73 @@
 import { Types } from 'mongoose';
-import { HttpError } from '../../shared/errors/http-error';
-import { ICarpeta } from '../carpeta/carpeta.model';
-import { ICarpetaRepository } from '../carpeta/carpeta.repository';
-import {
-    ActualizarContenidoDTO,
-    CompartirArchivoDTO,
-    CrearArchivoDTO,
-    ListarArchivosQueryDTO,
-    MoverArchivoDTO,
-    RenombrarArchivoDTO,
-} from './archivo.dto';
-import { IArchivo, ICompartidoArchivo } from './archivo.model';
 import { IArchivoRepository } from './archivo.repository';
-import { ExtensionArchivo, NivelPermiso } from '../../shared/types/enums';
+import { ArchivoPermisosService } from './archivo-permisos.service';
+import { ActividadService } from '../actividad/actividad.service';
+import {
+    CrearArchivoDTO,
+    ActualizarContenidoDTO,
+    RenombrarArchivoDTO,
+    MoverArchivoDTO,
+    ListarArchivosQueryDTO,
+} from './archivo.dto';
+import { HttpError } from '../../shared/errors/http-error';
+import { IArchivo } from './archivo.model';
+import {
+    AccionActividad,
+    ExtensionArchivo,
+    TipoRecurso,
+} from '../../shared/types/enums';
 
 export class ArchivoService {
     constructor(
         private readonly archivoRepository: IArchivoRepository,
-        private readonly carpetaRepository: ICarpetaRepository,
+        private readonly permisosService: ArchivoPermisosService,
+        private readonly actividadService: ActividadService,
     ) {}
 
     async crear(dto: CrearArchivoDTO, usuarioId: string): Promise<IArchivo> {
         const carpetaPadre = dto.carpetaPadre ?? null;
+
+        // El propietario del archivo será el propietario de la carpeta padre
+        // (si está dentro de una carpeta), o el propio usuario (si está en la raíz).
         let propietarioId = usuarioId;
 
         if (carpetaPadre) {
-            const padre =
-                await this.carpetaRepository.buscarPorId(carpetaPadre);
-
-            if (!padre) throw HttpError.notFound('Carpeta padre no encontrada');
-            if (padre.enPapelera) {
-                throw HttpError.badRequest(
-                    'No se puede crear dentro de una carpeta en papelera',
+            const carpetaInfo =
+                await this.permisosService.validarCarpetaDestino(
+                    carpetaPadre,
+                    usuarioId,
                 );
-            }
-
-            const permiso = this.obtenerPermisoSobreCarpeta(padre, usuarioId);
-            if (!permiso || permiso === 'lectura' || permiso === 'comentar') {
-                throw HttpError.forbidden(
-                    `No tiene permisos de edición sobre la carpeta ${padre.nombre}`,
-                );
-            }
-            // El propietario del archivo es el propietario de la carpeta padre
-            propietarioId = padre.propietario.toString();
+            propietarioId = carpetaInfo!.propietarioId;
         }
 
-        const existe = await this.archivoRepository.existeArchivoConNombre(
-            propietarioId,
-            carpetaPadre,
-            dto.nombre,
-        );
+        await this.validarNombreUnico(propietarioId, carpetaPadre, dto.nombre);
 
-        if (existe) {
-            throw HttpError.conflict(
-                'Ya existe un archivo con ese nombre en esta ubicación',
-            );
-        }
+        const tamanio = Buffer.byteLength(dto.contenido, 'utf8');
 
-        const tamanio = Buffer.byteLength(dto.contenido, 'utf-8');
-
-        return this.archivoRepository.crear({
+        const archivo = await this.archivoRepository.crear({
             nombre: dto.nombre,
             tipo: dto.tipo as ExtensionArchivo,
             contenido: dto.contenido,
-            tamanio: tamanio,
+            tamanio,
             propietario: new Types.ObjectId(propietarioId),
             carpetaPadre: carpetaPadre
                 ? new Types.ObjectId(carpetaPadre)
                 : null,
+            compartidoCon: [],
             enPapelera: false,
         });
+
+        await this.registrarActividad(
+            usuarioId,
+            AccionActividad.Crear,
+            archivo,
+            {
+                tipo: archivo.tipo,
+                tamanio,
+            },
+        );
+
+        return archivo;
     }
 
     async listar(
@@ -77,12 +75,14 @@ export class ArchivoService {
         filtros: ListarArchivosQueryDTO,
     ): Promise<IArchivo[]> {
         const carpetasCompartidas = filtros.incluirCompartidas
-            ? await this.carpetaRepository.listarCompartidasCon(usuarioId)
+            ? await this.obtenerCarpetasCompartidasIds(usuarioId)
             : [];
 
-        const ids = carpetasCompartidas.map((c) => c._id.toString());
-
-        return this.archivoRepository.listar(usuarioId, filtros, ids);
+        return this.archivoRepository.listar(
+            usuarioId,
+            filtros,
+            carpetasCompartidas,
+        );
     }
 
     async listarCompartidos(usuarioId: string): Promise<IArchivo[]> {
@@ -90,18 +90,7 @@ export class ArchivoService {
     }
 
     async buscarPorId(id: string, usuarioId: string): Promise<IArchivo> {
-        const archivo = await this.archivoRepository.buscarPorId(id);
-        if (!archivo) throw HttpError.notFound('Archivo no encontrado');
-
-        const permiso = await this.obtenerPermisoSobreArchivo(
-            archivo,
-            usuarioId,
-        );
-
-        if (!permiso) {
-            throw HttpError.forbidden('No tiene acceso a este archivo');
-        }
-        return archivo;
+        return this.permisosService.obtenerConAcceso(id, usuarioId);
     }
 
     async actualizarContenido(
@@ -109,18 +98,29 @@ export class ArchivoService {
         dto: ActualizarContenidoDTO,
         usuarioId: string,
     ): Promise<IArchivo> {
-        const archivo = await this.obtenerConPermisoEdicion(id, usuarioId);
+        const archivo = await this.permisosService.obtenerConPermisoEdicion(
+            id,
+            usuarioId,
+        );
 
-        const tamanio = Buffer.byteLength(dto.contenido, 'utf-8');
+        const tamanio = Buffer.byteLength(dto.contenido, 'utf8');
+        const tamañoAnterior = archivo.tamanio;
 
         const actualizado = await this.archivoRepository.actualizar(id, {
             contenido: dto.contenido,
-            tamanio: tamanio,
+            tamanio,
         });
+        if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
 
-        if (!actualizado) {
-            throw HttpError.notFound('Archivo no encontrado');
-        }
+        await this.registrarActividad(
+            usuarioId,
+            AccionActividad.ActualizarContenido,
+            actualizado,
+            {
+                tamañoAnterior,
+                tamañoNuevo: tamanio,
+            },
+        );
 
         return actualizado;
     }
@@ -130,25 +130,32 @@ export class ArchivoService {
         dto: RenombrarArchivoDTO,
         usuarioId: string,
     ): Promise<IArchivo> {
-        const archivo = await this.obtenerConPermisoEdicion(id, usuarioId);
+        const archivo = await this.permisosService.obtenerConPermisoEdicion(
+            id,
+            usuarioId,
+        );
 
-        const existe = await this.archivoRepository.existeArchivoConNombre(
+        await this.validarNombreUnico(
             archivo.propietario.toString(),
             archivo.carpetaPadre?.toString() ?? null,
             dto.nombre,
             id,
         );
 
-        if (existe) {
-            throw HttpError.conflict(
-                'Ya existe un archivo con ese nombre en esta ubicación',
-            );
-        }
-
         const actualizado = await this.archivoRepository.actualizar(id, {
             nombre: dto.nombre,
         });
         if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
+
+        await this.registrarActividad(
+            usuarioId,
+            AccionActividad.Renombrar,
+            actualizado,
+            {
+                nombreAnterior: archivo.nombre,
+            },
+        );
+
         return actualizado;
     }
 
@@ -157,46 +164,25 @@ export class ArchivoService {
         dto: MoverArchivoDTO,
         usuarioId: string,
     ): Promise<IArchivo> {
-        const archivo = await this.obtenerConPermisoEdicion(id, usuarioId);
-
+        const archivo = await this.permisosService.obtenerConPermisoEdicion(
+            id,
+            usuarioId,
+        );
         const nuevoPadreId = dto.carpetaPadre;
 
         if (nuevoPadreId) {
-            const nuevoPadre =
-                await this.carpetaRepository.buscarPorId(nuevoPadreId);
-            if (!nuevoPadre) {
-                throw HttpError.notFound('Carpeta destino no encontrada');
-            }
-            if (nuevoPadre.enPapelera) {
-                throw HttpError.badRequest(
-                    'No se puede mover a una carpeta en papelera',
-                );
-            }
-
-            const permiso = this.obtenerPermisoSobreCarpeta(
-                nuevoPadre,
+            await this.permisosService.validarCarpetaDestino(
+                nuevoPadreId,
                 usuarioId,
             );
-
-            if (!permiso || permiso === 'lectura' || permiso === 'comentar') {
-                throw HttpError.forbidden(
-                    'No tiene permisos de edición sobre la carpeta destino',
-                );
-            }
         }
 
-        const existe = await this.archivoRepository.existeArchivoConNombre(
+        await this.validarNombreUnico(
             archivo.propietario.toString(),
             nuevoPadreId,
             archivo.nombre,
             id,
         );
-
-        if (existe) {
-            throw HttpError.conflict(
-                'Ya existe un archivo con ese nombre en esta ubicación',
-            );
-        }
 
         const actualizado = await this.archivoRepository.actualizar(id, {
             carpetaPadre: nuevoPadreId
@@ -204,211 +190,60 @@ export class ArchivoService {
                 : null,
         });
         if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
-        return actualizado;
-    }
 
-    async enviarAPapelera(id: string, usuarioId: string): Promise<IArchivo> {
-        const archivo = await this.obtenerConPermisoEdicion(id, usuarioId);
-        const actualizado = await this.archivoRepository.enviarAPapelera(id);
-        if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
-        return actualizado;
-    }
-
-    async restaurar(id: string, usuarioId: string): Promise<IArchivo> {
-        const archivo = await this.archivoRepository.buscarPorId(id);
-        if (!archivo) throw HttpError.notFound('Archivo no encontrado');
-
-        if (!archivo.enPapelera) {
-            throw HttpError.badRequest(
-                'El archivo no se encuentra en papelera',
-            );
-        }
-
-        const permiso = await this.obtenerPermisoSobreArchivo(
-            archivo,
+        await this.registrarActividad(
             usuarioId,
+            AccionActividad.Mover,
+            actualizado,
+            {
+                carpetaOrigen: archivo.carpetaPadre?.toString() ?? null,
+                carpetaDestino: nuevoPadreId,
+            },
         );
 
-        if (!permiso || permiso === 'lectura' || permiso === 'comentar') {
-            throw HttpError.forbidden(
-                'No tiene permisos de edición sobre el archivo',
-            );
-        }
-
-        if (archivo.carpetaPadre) {
-            const padre = await this.carpetaRepository.buscarPorId(
-                archivo.carpetaPadre.toString(),
-            );
-            if (!padre || padre.enPapelera) {
-                throw HttpError.badRequest(
-                    'No se puede restaurar: la carpeta padre no está disponible',
-                );
-            }
-        }
-
-        const restaurado = await this.archivoRepository.restaurar(id);
-        if (!restaurado) throw HttpError.notFound('Archivo no encontrado');
-        return restaurado;
-    }
-
-    async compartir(
-        id: string,
-        dto: CompartirArchivoDTO,
-        usuarioId: string,
-    ): Promise<IArchivo> {
-        const archivo = await this.obtenerComoPropietario(id, usuarioId);
-        if (dto.usuarioId === usuarioId) {
-            throw HttpError.badRequest(
-                'No puede compartir el archivo con uno mismo',
-            );
-        }
-
-        const yaCompartido = archivo.compartidoCon.some(
-            (c) => c.usuario.toString() === dto.usuarioId,
-        );
-
-        if (yaCompartido) {
-            // Actualizar permiso existente
-            const actualizado = await this.archivoRepository.actualizarPermiso(
-                id,
-                dto.usuarioId,
-                dto.permiso as NivelPermiso,
-            );
-            if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
-            return actualizado;
-        }
-
-        const nuevo: ICompartidoArchivo = {
-            usuario: new Types.ObjectId(dto.usuarioId),
-            permiso: dto.permiso as NivelPermiso,
-            fechaCompartido: new Date(),
-        };
-
-        const actualizado = await this.archivoRepository.agregarCompartido(
-            id,
-            nuevo,
-        );
-        if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
         return actualizado;
     }
 
-    async quitarCompartido(
-        id: string,
-        usuarioDestinoId: string,
-        usuarioId: string,
-    ): Promise<IArchivo> {
-        await this.obtenerComoPropietario(id, usuarioId);
+    // Metodos privados
 
-        const actualizado = await this.archivoRepository.quitarCompartido(
-            id,
-            usuarioDestinoId,
+    private async validarNombreUnico(
+        propietarioId: string,
+        carpetaPadre: string | null,
+        nombre: string,
+        excluirId?: string,
+    ): Promise<void> {
+        const existe = await this.archivoRepository.existeArchivoConNombre(
+            propietarioId,
+            carpetaPadre,
+            nombre,
+            excluirId,
         );
-
-        if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
-        return actualizado;
-    }
-
-    async eliminarPermanente(id: string, usuarioId: string): Promise<void> {
-        const archivo = await this.archivoRepository.buscarPorId(id);
-        if (!archivo) throw HttpError.notFound('Archivo no encontrado');
-
-        if (!archivo.enPapelera) {
-            throw HttpError.badRequest(
-                'Solo se pueden eliminar permanentemente archivos en papelera',
+        if (existe) {
+            throw HttpError.conflict(
+                'Ya existe un archivo con ese nombre en esta ubicación',
             );
         }
-
-        const permiso = await this.obtenerPermisoSobreArchivo(
-            archivo,
-            usuarioId,
-        );
-
-        if (!permiso || permiso === 'lectura' || permiso === 'comentar') {
-            throw HttpError.forbidden(
-                'No tiene permisos de edición sobre el archivo',
-            );
-        }
-
-        await this.archivoRepository.eliminarPermanente(id);
     }
 
-    //** funciones auxiliares */
-
-    /**
-     * Devuelve el permiso sobre la carpeta
-     * - El propietario tiene permiso de edicion por defecto
-     * - Si no tiene acceso, devuelve null
-     */
-    private obtenerPermisoSobreCarpeta(
-        carpeta: ICarpeta,
+    private async obtenerCarpetasCompartidasIds(
         usuarioId: string,
-    ): NivelPermiso | null {
-        if (carpeta.propietario.toString() === usuarioId)
-            return NivelPermiso.Escritura;
-
-        const compartido = carpeta.compartidoCon.find(
-            (c) => c.usuario.toString() === usuarioId,
-        );
-
-        return compartido ? (compartido.permiso as NivelPermiso) : null;
+    ): Promise<string[]> {
+        return this.permisosService.obtenerIdsCarpetasCompartidas(usuarioId);
     }
 
-    /**
-     * Devuelve el permiso del usuario sobre el archivo
-     */
-    private async obtenerPermisoSobreArchivo(
+    private async registrarActividad(
+        usuarioId: string,
+        accion: AccionActividad,
         archivo: IArchivo,
-        usuarioId: string,
-    ): Promise<NivelPermiso | null> {
-        if (archivo.propietario.toString() === usuarioId)
-            return NivelPermiso.Escritura;
-
-        const compartido = archivo.compartidoCon.find(
-            (c) => c.usuario.toString() === usuarioId,
-        );
-
-        if (compartido) return compartido.permiso as NivelPermiso;
-
-        if (archivo.carpetaPadre) {
-            const padre = await this.carpetaRepository.buscarPorId(
-                archivo.carpetaPadre.toString(),
-            );
-            if (padre) {
-                return this.obtenerPermisoSobreCarpeta(padre, usuarioId);
-            }
-        }
-        return null;
-    }
-
-    private async obtenerComoPropietario(
-        id: string,
-        usuarioId: string,
-    ): Promise<IArchivo> {
-        const archivo = await this.archivoRepository.buscarPorId(id);
-        if (!archivo) throw HttpError.notFound('Archivo no encontrado');
-        if (archivo.propietario.toString() !== usuarioId)
-            throw HttpError.forbidden(
-                'Solo el propietario puede realizar esta acción',
-            );
-        return archivo;
-    }
-
-    private async obtenerConPermisoEdicion(
-        id: string,
-        usuarioId: string,
-    ): Promise<IArchivo> {
-        const archivo = await this.archivoRepository.buscarPorId(id);
-        if (!archivo) throw HttpError.notFound('Archivo no encontrado');
-
-        const permiso = await this.obtenerPermisoSobreArchivo(
-            archivo,
+        metadata: Record<string, unknown> = {},
+    ): Promise<void> {
+        await this.actividadService.registrar({
             usuarioId,
-        );
-        if (!permiso || permiso === 'lectura' || permiso === 'comentar') {
-            throw HttpError.forbidden(
-                'No tiene permisos de edición sobre el archivo',
-            );
-        }
-        return archivo;
+            accion,
+            recursoTipo: TipoRecurso.Archivo,
+            recursoId: archivo._id.toString(),
+            recursoNombre: archivo.nombre,
+            metadata,
+        });
     }
 }

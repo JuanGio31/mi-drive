@@ -1,9 +1,15 @@
 import { Request, Response, NextFunction } from 'express';
 import { ArchivoService } from './archivo.service';
+import { ArchivoPapeleraService } from './archivo-papelera.service';
 import { HttpError } from '../../shared/errors/http-error';
+import { ArchivoCompartidosService } from './archivo-compartido.service';
 
 export class ArchivoController {
-    constructor(private readonly archivoService: ArchivoService) {}
+    constructor(
+        private readonly archivoService: ArchivoService,
+        private readonly compartidosService: ArchivoCompartidosService,
+        private readonly papeleraService: ArchivoPapeleraService,
+    ) {}
 
     private getUsuarioId(req: Request): string {
         if (!req.user) throw HttpError.unauthorized();
@@ -83,7 +89,6 @@ export class ArchivoController {
                 req.params.id as string,
                 this.getUsuarioId(req),
             );
-
             res.setHeader('Content-Type', 'text/plain; charset=utf-8');
             res.setHeader(
                 'Content-Disposition',
@@ -152,7 +157,7 @@ export class ArchivoController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            await this.archivoService.enviarAPapelera(
+            await this.papeleraService.enviar(
                 req.params.id as string,
                 this.getUsuarioId(req),
             );
@@ -168,7 +173,7 @@ export class ArchivoController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const archivo = await this.archivoService.restaurar(
+            const archivo = await this.papeleraService.restaurar(
                 req.params.id as string,
                 this.getUsuarioId(req),
             );
@@ -184,7 +189,7 @@ export class ArchivoController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const archivo = await this.archivoService.compartir(
+            const archivo = await this.compartidosService.compartir(
                 req.params.id as string,
                 req.body,
                 this.getUsuarioId(req),
@@ -201,28 +206,12 @@ export class ArchivoController {
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const archivo = await this.archivoService.quitarCompartido(
+            const archivo = await this.compartidosService.quitar(
                 req.params.id as string,
                 req.params.usuarioId as string,
                 this.getUsuarioId(req),
             );
             res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
-    };
-
-    eliminarPermanente = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            await this.archivoService.eliminarPermanente(
-                req.params.id as string,
-                this.getUsuarioId(req),
-            );
-            res.status(204).send();
         } catch (error) {
             next(error);
         }
