@@ -4,8 +4,9 @@ import cors from 'cors';
 import { notFoundHandler } from './shared/middlewares/not-found.middleware';
 import { errorHandler } from './shared/middlewares/error.middleware';
 import authRoutes from './modules/auth/auth.routes';
-import usuarioRouter from './modules/usuario/usuario.routes';
-import carpetaRouter from './modules/carpeta/carpeta.routes';
+import usuarioRoutes from './modules/usuario/usuario.routes';
+import carpetaRoutes from './modules/carpeta/carpeta.routes';
+import archivoRoutes from './modules/archivo/archivo.routes';
 
 export const createApp = (): Application => {
     const app = express();
@@ -22,8 +23,9 @@ export const createApp = (): Application => {
 
     // definicion de rutas
     app.use('/api/auth', authRoutes);
-    app.use('/api/usuarios', usuarioRouter);
-    app.use('/api/carpetas', carpetaRouter);
+    app.use('/api/usuarios', usuarioRoutes);
+    app.use('/api/carpetas', carpetaRoutes);
+    app.use('/api/archivos', archivoRoutes);
 
     // Manejo de rutas no encontradas
     app.use(notFoundHandler);

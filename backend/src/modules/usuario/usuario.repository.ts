@@ -58,7 +58,7 @@ export class MongoUsuarioRepository implements IUsuarioRepository {
         data: Partial<IUsuario>,
     ): Promise<IUsuario | null> {
         return UsuarioModel.findByIdAndUpdate(id, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
         }).exec();
     }

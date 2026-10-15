@@ -88,7 +88,7 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
         data: Partial<ICarpeta>,
     ): Promise<ICarpeta | null> {
         return CarpetaModel.findByIdAndUpdate(id, data, {
-            new: true,
+            returnDocument: 'after',
             runValidators: true,
         }).exec();
     }
