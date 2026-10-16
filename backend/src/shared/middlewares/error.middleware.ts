@@ -31,6 +31,12 @@ export const errorHandler = (
         return;
     }
 
+    // Error de CORS
+    if (err.message?.startsWith('Origen no permitido por CORS')) {
+        res.status(403).json({ error: err.message });
+        return;
+    }
+
     // Errores de Zod
     if (err instanceof ZodError) {
         res.status(400).json({
