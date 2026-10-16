@@ -1,0 +1,178 @@
+<div class="login-page">
+  <!-- Contenedor del registro -->
+  <main class="login-container">
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="logo-container">
+        <mat-icon class="drive-logo">folder</mat-icon>
+      </div>
+
+      <h1>Crear cuenta</h1>
+
+      <p class="login-description">Regístrate para continuar a Drive</p>
+
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()">
+        <!-- Nombre -->
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Nombre</mat-label>
+          <input
+            matInput
+            formControlName="nombre"
+            type="text"
+            autocomplete="name"
+            placeholder="ej. Carlos Gómez"
+          />
+          @if (
+            signUpForm.get('nombre')?.hasError('required') &&
+            signUpForm.get('nombre')?.touched
+          ) {
+            <mat-error>El nombre es obligatorio</mat-error>
+          } @else if (signUpForm.get('nombre')?.hasError('minlength')) {
+            <mat-error>El nombre debe tener al menos 2 caracteres</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Correo -->
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Correo</mat-label>
+          <input
+            matInput
+            formControlName="correo"
+            type="email"
+            autocomplete="email"
+            placeholder="ej. carlos@dms.local"
+          />
+          @if (
+            signUpForm.get('correo')?.hasError('required') &&
+            signUpForm.get('correo')?.touched
+          ) {
+            <mat-error>El correo es obligatorio</mat-error>
+          } @else if (signUpForm.get('correo')?.hasError('email')) {
+            <mat-error>El correo es inválido</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Password -->
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Contraseña</mat-label>
+
+          <input
+            matInput
+            formControlName="password"
+            [type]="hidePassword() ? 'password' : 'text'"
+            autocomplete="new-password"
+            placeholder="Mínimo 6 caracteres"
+          />
+
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+          >
+            <mat-icon>
+              {{ hidePassword() ? 'visibility' : 'visibility_off' }}
+            </mat-icon>
+          </button>
+
+          @if (
+            signUpForm.get('password')?.hasError('required') &&
+            signUpForm.get('password')?.touched
+          ) {
+            <mat-error>La contraseña es obligatoria</mat-error>
+          } @else if (signUpForm.get('password')?.hasError('minlength')) {
+            <mat-error>La contraseña debe tener al menos 6 caracteres</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Fuerza + requisitos en vivo -->
+        @if (valoresClave().password) {
+          <div class="fuerza">
+            <div class="fuerza-barra" aria-hidden="true">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <span
+                  class="segmento"
+                  [class.activo]="fuerza() >= i"
+                  [style.background]="fuerza() >= i ? colorFuerza() : null"
+                ></span>
+              }
+            </div>
+            <span class="fuerza-etiqueta" [style.color]="colorFuerza()">
+              {{ etiquetaFuerza() }}
+            </span>
+          </div>
+
+          <ul class="requisitos">
+            @for (r of requisitos(); track r.texto) {
+              <li [class.ok]="r.ok">
+                <mat-icon>{{ r.ok ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                <span>{{ r.texto }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        <!-- Confirmar password -->
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Confirmar contraseña</mat-label>
+
+          <input
+            matInput
+            formControlName="confirmPassword"
+            [type]="hideConfirm() ? 'password' : 'text'"
+            autocomplete="new-password"
+            placeholder="Repite tu contraseña"
+          />
+
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="toggleConfirmVisibility()"
+            [attr.aria-label]="hideConfirm() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+          >
+            <mat-icon>
+              {{ hideConfirm() ? 'visibility' : 'visibility_off' }}
+            </mat-icon>
+          </button>
+
+          @if (
+            signUpForm.hasError('noCoinciden') &&
+            signUpForm.get('confirmPassword')?.touched
+          ) {
+            <mat-error>Las contraseñas no coinciden</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Actions -->
+        <div class="actions">
+          <a mat-button color="primary" class="create-account" routerLink="/auth/sign-in">
+            Iniciar sesión
+          </a>
+
+          <button
+            mat-flat-button
+            color="primary"
+            class="next-button"
+            type="submit"
+            [disabled]="isLoading()"
+          >
+            @if (isLoading()) {
+              <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+            } @else {
+              <span>Registrarse</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>

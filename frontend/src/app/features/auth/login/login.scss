@@ -1,0 +1,269 @@
+/* =========================
+   Página
+   ========================= */
+
+.login-page {
+  min-height: 100vh;
+  background: #fff;
+  font-family: Roboto, Arial, sans-serif;
+  color: #202124;
+}
+
+/* =========================
+   Contenedor principal
+   ========================= */
+
+.login-container {
+  min-height: calc(100vh - 57px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  padding-top: 115px;
+  box-sizing: border-box;
+}
+
+/* =========================
+   Card
+   ========================= */
+
+.login-card {
+  width: 323px;
+  min-height: 360px;
+
+  border: 1px solid #dadce0;
+  border-radius: 1px;
+
+  padding: 32px 28px 30px;
+
+  box-sizing: border-box;
+}
+
+/* =========================
+   Logo
+   ========================= */
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.drive-logo {
+  width: 43px;
+  height: 43px;
+
+  font-size: 43px;
+
+  color: #1a73e8;
+}
+
+/* =========================
+   Título
+   ========================= */
+
+.login-card h1 {
+  margin: 0;
+
+  text-align: center;
+
+  font-size: 24px;
+  line-height: 32px;
+  font-weight: 400;
+
+  color: #202124;
+}
+
+.login-description {
+  margin: 4px 0 28px;
+
+  text-align: center;
+
+  font-size: 14px;
+  line-height: 20px;
+
+  color: #202124;
+}
+
+/* =========================
+   Input
+   ========================= */
+
+.full-width {
+  width: 100%;
+}
+
+.full-width input {
+  font-size: 16px;
+}
+
+::ng-deep .mat-mdc-form-field {
+  margin-bottom: 2px;
+}
+
+::ng-deep .mat-mdc-text-field-wrapper {
+  background: #fff !important;
+}
+
+::ng-deep .mat-mdc-form-field-focus-overlay {
+  background: transparent !important;
+}
+
+/* =========================
+   Links
+   ========================= */
+
+.forgot-link,
+.guest-link {
+  color: #1a73e8;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.forgot-link:hover,
+.guest-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================
+   Guest mode
+   ========================= */
+
+.guest-message {
+  margin-top: 36px;
+
+  font-size: 14px;
+  line-height: 20px;
+
+  color: #5f6368;
+}
+
+.guest-link {
+  display: block;
+  margin-top: 5px;
+}
+
+/* =========================
+   Botones
+   ========================= */
+
+.actions {
+  margin-top: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.create-account {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.next-button {
+  min-width: 80px;
+  height: 40px;
+
+  border-radius: 4px;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+
+@media (max-width: 600px) {
+  .top-banner {
+    padding: 0 16px;
+  }
+
+  .banner-subtitle {
+    display: none;
+  }
+
+  .login-container {
+    padding: 40px 16px 20px;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 380px;
+
+    border: none;
+    padding: 24px 0;
+  }
+
+  .login-footer {
+    width: 100%;
+    max-width: 380px;
+  }
+}
+
+/* =========================
+   Error banner & Helpers
+   ========================= */
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-bottom: 16px;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+}
+
+.demo-helpers {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .demo-title {
+    font-size: 11px;
+    color: #64748b;
+  }
+
+  .demo-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .demo-chip {
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: #334155;
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+  }
+}
+
+.btn-spinner {
+  display: inline-block;
+  margin: 0 auto;
+}

@@ -1,0 +1,94 @@
+<div class="login-page">
+  <!-- Contenedor del login -->
+  <main class="login-container">
+    <div class="login-card">
+      <!-- Logo -->
+      <div class="logo-container">
+        <mat-icon class="drive-logo">folder</mat-icon>
+      </div>
+
+      <h1>Drive</h1>
+
+      <p class="login-description">Inicia sesión para continuar a Drive</p>
+
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <!-- Email o Usuario -->
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Nombre de usuario o correo</mat-label>
+          <input
+            matInput
+            formControlName="identifier"
+            type="text"
+            autocomplete="username"
+            placeholder="ej. juan@drive.com"
+          />
+          @if (
+            loginForm.get('identifier')?.hasError('required') &&
+            loginForm.get('identifier')?.touched
+          ) {
+            <mat-error>El usuario o correo es obligatorio</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Password -->
+        <mat-form-field appearance="outline" class="full-width" floatLabel="always">
+          <mat-label>Contraseña</mat-label>
+
+          <input
+            matInput
+            formControlName="password"
+            [type]="hidePassword() ? 'password' : 'text'"
+            autocomplete="current-password"
+            placeholder="Introduce tu contraseña"
+          />
+
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="togglePasswordVisibility()"
+            [attr.aria-label]="hidePassword() ? 'Mostrar contraseña' : 'Ocultar contraseña'"
+          >
+            <mat-icon>
+              {{ hidePassword() ? 'visibility' : 'visibility_off' }}
+            </mat-icon>
+          </button>
+
+          @if (
+            loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched
+          ) {
+            <mat-error>La contraseña es obligatoria</mat-error>
+          }
+        </mat-form-field>
+
+        <!-- Actions -->
+        <div class="actions">
+          <a mat-button color="primary" class="create-account" routerLink="/auth/sign-up">
+            Crear cuenta
+          </a>
+
+          <button
+            mat-flat-button
+            color="primary"
+            class="next-button"
+            type="submit"
+            [disabled]="isLoading()"
+          >
+            @if (isLoading()) {
+              <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+            } @else {
+              <span>Iniciar sesión</span>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>

@@ -7,8 +7,8 @@ import { authenticate } from '../../shared/middlewares/auth.middleware';
 const router = Router();
 const { authController } = container;
 
-router.post('/signIn', validateBody(LoginSchema), authController.signIn);
-router.post('/signUp', validateBody(RegistroSchema), authController.signUp);
+router.post('/sign-in', validateBody(LoginSchema), authController.signIn);
+router.post('/sign-up', validateBody(RegistroSchema), authController.signUp);
 router.get('/me', authenticate, authController.me);
 
 export default router;
