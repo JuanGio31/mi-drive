@@ -7,6 +7,8 @@ import { IActividad } from './actividad.model';
 
 export interface RegistrarActividadParams {
     usuarioId: string;
+    usuarioNombre?: string;
+    usuarioCorreo?: string;
     accion: AccionActividad;
     recursoTipo: TipoRecurso;
     recursoId?: string | null;
@@ -26,20 +28,27 @@ export class ActividadService {
      */
     async registrar(params: RegistrarActividadParams): Promise<void> {
         try {
-            const usuario = await this.usuarioRepository.buscarPorId(
-                params.usuarioId,
-            );
-            if (!usuario) {
-                console.warn(
-                    'No se pudo registrar actividad: usuario no encontrado',
+            let nombre = params.usuarioNombre;
+            let correo = params.usuarioCorreo;
+
+            if (!nombre || !correo) {
+                const usuario = await this.usuarioRepository.buscarPorId(
+                    params.usuarioId,
                 );
-                return;
+                if (!usuario) {
+                    console.warn(
+                        'No se pudo registrar actividad: usuario no encontrado',
+                    );
+                    return;
+                }
+                nombre = usuario.nombre;
+                correo = usuario.correo;
             }
 
             await this.actividadRepository.crear({
                 usuario: new Types.ObjectId(params.usuarioId),
-                usuarioNombre: usuario.nombre,
-                usuarioCorreo: usuario.correo,
+                usuarioNombre: nombre,
+                usuarioCorreo: correo,
                 accion: params.accion,
                 recursoTipo: params.recursoTipo,
                 recursoId: params.recursoId

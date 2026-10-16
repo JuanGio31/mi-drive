@@ -90,7 +90,7 @@ export class AuthService {
 
         const passwordHash = await bcrypt.hash(
             dto.password,
-            env.BYCRYPT_ROUNDS,
+            env.BCRYPT_ROUNDS,
         );
 
         const usuario = await this.usuarioService.crear({
@@ -119,6 +119,7 @@ export class AuthService {
     private generarToken(usuario: IUsuario): string {
         const payload = {
             id: usuario._id.toString(),
+            nombre: usuario.nombre,
             correo: usuario.correo,
             rol: usuario.rol,
         };
@@ -134,6 +135,8 @@ export class AuthService {
     ): Promise<void> {
         await this.actividadService.registrar({
             usuarioId: usuario._id.toString(),
+            usuarioNombre: usuario.nombre,
+            usuarioCorreo: usuario.correo,
             accion,
             recursoTipo: TipoRecurso.Usuario,
             recursoId: usuario._id.toString(),

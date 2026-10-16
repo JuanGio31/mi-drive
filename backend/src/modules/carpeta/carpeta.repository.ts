@@ -42,6 +42,7 @@ export interface ICarpetaRepository {
         carpetaId: string,
         usuarioId: string,
     ): Promise<ICarpeta | null>;
+    buscarVariasPorIds(ids: string[]): Promise<ICarpeta[]>;
 }
 
 /** Implementación en MongoDB del repositorio de carpetas. */
@@ -122,22 +123,28 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
      * Se usa para prevenir ciclos al mover.
      */
     async obtenerDescendientesIds(carpetaId: string): Promise<string[]> {
-        const resultado: string[] = [];
-        const cola: Types.ObjectId[] = [new Types.ObjectId(carpetaId)];
+        const resultado = await CarpetaModel.aggregate([
+            { $match: { _id: new Types.ObjectId(carpetaId) } },
+            {
+                $graphLookup: {
+                    from: 'carpetas',
+                    startWith: '$_id',
+                    connectFromField: '_id',
+                    connectToField: 'carpetaPadre',
+                    as: 'descendientes',
+                    maxDepth: 20, // limite de seguridad para prevenir ciclos
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    descendientesIds: '$descendientes._id',
+                },
+            },
+        ]).exec();
 
-        while (cola.length > 0) {
-            const padreId = cola.shift()!;
-            const hijos = await CarpetaModel.find({ carpetaPadre: padreId })
-                .select('_id')
-                .exec();
-
-            for (const hijo of hijos) {
-                resultado.push(hijo._id.toString());
-                cola.push(hijo._id);
-            }
-        }
-
-        return resultado;
+        const ids: Types.ObjectId[] = resultado[0]?.descendientesIds ?? [];
+        return ids.map((id) => id.toString());
     }
 
     /** Agrega un usuario a la lista de compartidos de la carpeta. */
@@ -218,6 +225,13 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
                 { propietario: new Types.ObjectId(usuarioId) },
                 { 'compartidoCon.usuario': new Types.ObjectId(usuarioId) },
             ],
+        }).exec();
+    }
+
+    /** Busca varias carpetas por sus IDs. */
+    async buscarVariasPorIds(ids: string[]): Promise<ICarpeta[]> {
+        return CarpetaModel.find({
+            _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
         }).exec();
     }
 }

@@ -12,7 +12,7 @@ export const PermisoArchivoSchema = z.enum(
 );
 
 export const CrearArchivoSchema = z.object({
-    nombre: z.string().min(1, 'El nombre es obligatorio').max(300),
+    nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(300),
     tipo: TipoArchivoSchema,
     contenido: z
         .string()
@@ -29,7 +29,7 @@ export const ActualizarContenidoSchema = z.object({
 });
 
 export const RenombrarArchivoSchema = z.object({
-    nombre: z.string().min(1).max(300),
+    nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(300),
 });
 
 export const MoverArchivoSchema = z.object({
@@ -54,7 +54,7 @@ export const ListarArchivosQuerySchema = z.object({
         .optional()
         .transform((v) => (v === 'null' ? null : v)),
     tipo: TipoArchivoSchema.optional(),
-    busqueda: z.string().min(1).max(100).optional(),
+    busqueda: z.string().trim().min(1).max(100).optional(),
     incluirCompartidas: z
         .string()
         .transform((v) => v === 'true')

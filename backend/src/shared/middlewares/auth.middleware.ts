@@ -6,6 +6,7 @@ import { Rol } from '../types/enums';
 
 interface JwtPayload {
     id: string;
+    nombre: string;
     correo: string;
     rol: Rol;
 }
@@ -30,6 +31,7 @@ export const authenticate = (
 
         req.user = {
             id: payload.id,
+            nombre: payload.nombre,
             correo: payload.correo,
             rol: payload.rol,
         };

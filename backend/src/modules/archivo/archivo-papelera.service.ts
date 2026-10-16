@@ -1,16 +1,16 @@
 import { IArchivoRepository } from './archivo.repository';
 import { ArchivoPermisosService } from './archivo-permisos.service';
+import { ArchivoValidator } from './archivo.validator';
 import { ActividadService } from '../actividad/actividad.service';
 import { IArchivo } from './archivo.model';
 import { HttpError } from '../../shared/errors/http-error';
-import { ICarpetaRepository } from '../carpeta/carpeta.repository';
 import { AccionActividad, TipoRecurso } from '../../shared/types/enums';
 
 export class ArchivoPapeleraService {
     constructor(
         private readonly archivoRepository: IArchivoRepository,
-        private readonly carpetaRepository: ICarpetaRepository,
         private readonly permisosService: ArchivoPermisosService,
+        private readonly validator: ArchivoValidator,
         private readonly actividadService: ActividadService,
     ) {}
 
@@ -44,7 +44,9 @@ export class ArchivoPapeleraService {
             throw HttpError.badRequest('El archivo no está en la papelera');
         }
 
-        await this.validarPadreDisponible(archivo);
+        await this.validator.validarPadreDisponible(
+            archivo.carpetaPadre?.toString() ?? null,
+        );
 
         const restaurado = await this.archivoRepository.restaurar(id);
         if (!restaurado) throw HttpError.notFound('Archivo no encontrado');
@@ -58,18 +60,5 @@ export class ArchivoPapeleraService {
         });
 
         return restaurado;
-    }
-
-    private async validarPadreDisponible(archivo: IArchivo): Promise<void> {
-        if (!archivo.carpetaPadre) return;
-
-        const padre = await this.carpetaRepository.buscarPorId(
-            archivo.carpetaPadre.toString(),
-        );
-        if (!padre || padre.enPapelera) {
-            throw HttpError.badRequest(
-                'No se puede restaurar: la carpeta padre no está disponible',
-            );
-        }
     }
 }

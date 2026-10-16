@@ -27,3 +27,5 @@ coverage/
 
 # otros
 .prettierrc
+smoke-test.sh
+docs/

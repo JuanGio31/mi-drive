@@ -4,6 +4,7 @@ import { ActividadService } from '../../modules/actividad/actividad.service';
 import { ArchivoCompartidosService } from '../../modules/archivo/archivo-compartido.service';
 import { ArchivoPapeleraService } from '../../modules/archivo/archivo-papelera.service';
 import { ArchivoPermisosService } from '../../modules/archivo/archivo-permisos.service';
+import { ArchivoValidator } from '../../modules/archivo/archivo.validator';
 import { ArchivoController } from '../../modules/archivo/archivo.controller';
 import { MongoArchivoRepository } from '../../modules/archivo/archivo.repository';
 import { ArchivoService } from '../../modules/archivo/archivo.service';
@@ -12,9 +13,13 @@ import { AuthService } from '../../modules/auth/auth.service';
 import { CarpetaCompartidosService } from '../../modules/carpeta/carpeta-compartido.service';
 import { CarpetaPapeleraService } from '../../modules/carpeta/carpeta-papelera.service';
 import { CarpetaPermisosService } from '../../modules/carpeta/carpeta-permisos.service';
+import { CarpetaValidator } from '../../modules/carpeta/carpeta.validator';
 import { CarpetaController } from '../../modules/carpeta/carpeta.controller';
 import { MongoCarpetaRepository } from '../../modules/carpeta/carpeta.repository';
 import { CarpetaService } from '../../modules/carpeta/carpeta.service';
+import { ReporteController } from '../../modules/reporte/reporte.controller';
+import { MongoReporteRepository } from '../../modules/reporte/reporte.repository';
+import { ReporteService } from '../../modules/reporte/reporte.service';
 import { UsuarioPermisosService } from '../../modules/usuario/usuario-permisos.services';
 import { UsuarioController } from '../../modules/usuario/usuario.controller';
 import { MongoUsuarioRepository } from '../../modules/usuario/usuario.repository';
@@ -25,6 +30,7 @@ const usuarioRepository = new MongoUsuarioRepository();
 const carpetaRepository = new MongoCarpetaRepository();
 const archivoRepository = new MongoArchivoRepository();
 const actividadRepository = new MongoActividadRepository();
+const reporteRepository = new MongoReporteRepository();
 
 // Actividades
 const actividadService = new ActividadService(
@@ -48,9 +54,11 @@ const authController = new AuthController(authService);
 
 // Carpetas
 const carpetaPermisosService = new CarpetaPermisosService(carpetaRepository);
+const carpetaValidator = new CarpetaValidator(carpetaRepository);
 const carpetaService = new CarpetaService(
     carpetaRepository,
     carpetaPermisosService,
+    carpetaValidator,
     actividadService,
 );
 const carpetaCompartidosService = new CarpetaCompartidosService(
@@ -61,6 +69,7 @@ const carpetaCompartidosService = new CarpetaCompartidosService(
 const carpetaPapeleraService = new CarpetaPapeleraService(
     carpetaRepository,
     carpetaPermisosService,
+    carpetaValidator,
     actividadService,
 );
 const carpetaController = new CarpetaController(
@@ -75,9 +84,14 @@ const archivoPermisosService = new ArchivoPermisosService(
     carpetaRepository,
     carpetaPermisosService,
 );
+const archivoValidator = new ArchivoValidator(
+    archivoRepository,
+    carpetaRepository,
+);
 const archivoService = new ArchivoService(
     archivoRepository,
     archivoPermisosService,
+    archivoValidator,
     actividadService,
 );
 const archivoCompartidosService = new ArchivoCompartidosService(
@@ -87,8 +101,8 @@ const archivoCompartidosService = new ArchivoCompartidosService(
 );
 const archivoPapeleraService = new ArchivoPapeleraService(
     archivoRepository,
-    carpetaRepository,
     archivoPermisosService,
+    archivoValidator,
     actividadService,
 );
 const archivoController = new ArchivoController(
@@ -96,6 +110,14 @@ const archivoController = new ArchivoController(
     archivoCompartidosService,
     archivoPapeleraService,
 );
+
+// Reportes
+const reporteService = new ReporteService(
+    reporteRepository,
+    usuarioRepository,
+    actividadService,
+);
+const reporteController = new ReporteController(reporteService);
 
 // Exportacion
 export const container = {
@@ -132,6 +154,10 @@ export const container = {
 
     // Actividades
     actividadController,
+
+    // Reportes
+    reporteService,
+    reporteController,
 };
 
 export type Container = typeof container;

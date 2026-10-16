@@ -443,6 +443,8 @@ const seed = async (): Promise<void> => {
     }[] = [];
 
     // Compartir carpetas de Ana con Carlos y Lucía
+    const bulkCarpetas: any[] = [];
+
     for (const carpeta of [
         docsAna,
         proyAna,
@@ -460,18 +462,20 @@ const seed = async (): Promise<void> => {
                 NivelPermiso.Escritura,
                 NivelPermiso.Comentar,
             ]);
-            await CarpetaModel.updateOne(
-                { _id: carpeta._id },
-                {
-                    $push: {
-                        compartidoCon: {
-                            usuario: destino._id,
-                            permiso,
-                            fechaCompartido: fechaAleatoria(30),
+            bulkCarpetas.push({
+                updateOne: {
+                    filter: { _id: carpeta._id },
+                    update: {
+                        $push: {
+                            compartidoCon: {
+                                usuario: destino._id,
+                                permiso,
+                                fechaCompartido: fechaAleatoria(30),
+                            },
                         },
                     },
                 },
-            );
+            });
             operacionesCompartir.push({
                 usuarioId: ana._id.toString(),
                 recursoId: carpeta._id.toString(),
@@ -491,18 +495,20 @@ const seed = async (): Promise<void> => {
             NivelPermiso.Lectura,
             NivelPermiso.Escritura,
         ]);
-        await CarpetaModel.updateOne(
-            { _id: carpeta._id },
-            {
-                $push: {
-                    compartidoCon: {
-                        usuario: ana._id,
-                        permiso,
-                        fechaCompartido: fechaAleatoria(25),
+        bulkCarpetas.push({
+            updateOne: {
+                filter: { _id: carpeta._id },
+                update: {
+                    $push: {
+                        compartidoCon: {
+                            usuario: ana._id,
+                            permiso,
+                            fechaCompartido: fechaAleatoria(25),
+                        },
                     },
                 },
             },
-        );
+        });
         operacionesCompartir.push({
             usuarioId: carlos._id.toString(),
             recursoId: carpeta._id.toString(),
@@ -515,8 +521,14 @@ const seed = async (): Promise<void> => {
         compartidosCreados++;
     }
 
+    if (bulkCarpetas.length > 0) {
+        await CarpetaModel.bulkWrite(bulkCarpetas);
+    }
+
     // Compartir algunos archivos directamente
     const archivosACompartir = archivos.slice(0, 15);
+    const bulkArchivos: any[] = [];
+
     for (const archivo of archivosACompartir) {
         const propietario = archivo.propietario.toString();
         const posibles = [ana, carlos, lucia].filter(
@@ -529,18 +541,20 @@ const seed = async (): Promise<void> => {
             NivelPermiso.Comentar,
         ]);
 
-        await ArchivoModel.updateOne(
-            { _id: archivo._id },
-            {
-                $push: {
-                    compartidoCon: {
-                        usuario: destino._id,
-                        permiso,
-                        fechaCompartido: fechaAleatoria(20),
+        bulkArchivos.push({
+            updateOne: {
+                filter: { _id: archivo._id },
+                update: {
+                    $push: {
+                        compartidoCon: {
+                            usuario: destino._id,
+                            permiso,
+                            fechaCompartido: fechaAleatoria(20),
+                        },
                     },
                 },
             },
-        );
+        });
         operacionesCompartir.push({
             usuarioId: propietario,
             recursoId: archivo._id.toString(),
@@ -553,18 +567,20 @@ const seed = async (): Promise<void> => {
         compartidosCreados++;
     }
 
+    if (bulkArchivos.length > 0) {
+        await ArchivoModel.bulkWrite(bulkArchivos);
+    }
+
     console.log(`   ✓ ${compartidosCreados} operaciones de compartición`);
 
     // 6. Enviar algunos recursos a papelera
     console.log('\n🗑️  Enviando recursos a papelera...');
 
     const archivosAPapelera = archivos.slice(15, 20); // 5 archivos
-    for (const archivo of archivosAPapelera) {
-        await ArchivoModel.updateOne(
-            { _id: archivo._id },
-            { enPapelera: true, fechaEnvioPapelera: fechaAleatoria(10) },
-        );
-    }
+    await ArchivoModel.updateMany(
+        { _id: { $in: archivosAPapelera.map((a) => a._id) } },
+        { enPapelera: true, fechaEnvioPapelera: fechaAleatoria(10) },
+    );
 
     // 1 carpeta a papelera (sin hijos)
     const carpetaAPapelera = sem2;

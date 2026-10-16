@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 import { ICarpetaRepository } from './carpeta.repository';
 import { CarpetaPermisosService } from './carpeta-permisos.service';
-// import { ActividadService } from '../actividad/actividad.service';
+import { CarpetaValidator } from './carpeta.validator';
 import { ICarpeta } from './carpeta.model';
 import {
     CrearCarpetaDTO,
@@ -17,21 +17,28 @@ export class CarpetaService {
     constructor(
         private readonly carpetaRepository: ICarpetaRepository,
         private readonly permisosService: CarpetaPermisosService,
+        private readonly validator: CarpetaValidator,
         private readonly actividadService: ActividadService,
     ) {}
 
     async crear(dto: CrearCarpetaDTO, usuarioId: string): Promise<ICarpeta> {
         const carpetaPadre = dto.carpetaPadre ?? null;
 
+        // 1. Validaciones
         if (carpetaPadre) {
+            await this.validator.validarPadreDisponible(carpetaPadre);
             await this.permisosService.validarPadreEditable(
                 carpetaPadre,
                 usuarioId,
             );
         }
+        await this.validator.validarNombreUnico(
+            usuarioId,
+            carpetaPadre,
+            dto.nombre,
+        );
 
-        await this.validarNombreUnico(usuarioId, carpetaPadre, dto.nombre);
-
+        // 2. Operación
         const carpeta = await this.carpetaRepository.crear({
             nombre: dto.nombre,
             propietario: new Types.ObjectId(usuarioId),
@@ -42,6 +49,7 @@ export class CarpetaService {
             enPapelera: false,
         });
 
+        // 3. Efectos secundarios
         await this.registrarActividad(
             usuarioId,
             AccionActividad.Crear,
@@ -73,23 +81,26 @@ export class CarpetaService {
         dto: RenombrarCarpetaDTO,
         usuarioId: string,
     ): Promise<ICarpeta> {
+        // 1. Validaciones
         const carpeta = await this.permisosService.obtenerConPermisoEdicion(
             id,
             usuarioId,
         );
 
-        await this.validarNombreUnico(
+        await this.validator.validarNombreUnico(
             carpeta.propietario.toString(),
             carpeta.carpetaPadre?.toString() ?? null,
             dto.nombre,
             id,
         );
 
+        // 2. Operación
         const actualizada = await this.carpetaRepository.actualizar(id, {
             nombre: dto.nombre,
         });
         if (!actualizada) throw HttpError.notFound('Carpeta no encontrada');
 
+        // 3. Efectos secundarios
         await this.registrarActividad(
             usuarioId,
             AccionActividad.Renombrar,
@@ -107,30 +118,29 @@ export class CarpetaService {
         dto: MoverCarpetaDTO,
         usuarioId: string,
     ): Promise<ICarpeta> {
+        const nuevoPadreId = dto.carpetaPadre;
+
+        // 1. Validaciones
         const carpeta = await this.permisosService.obtenerConPermisoEdicion(
             id,
             usuarioId,
         );
-        const nuevoPadreId = dto.carpetaPadre;
-
-        if (nuevoPadreId === id) {
-            throw HttpError.badRequest(
-                'No se puede mover una carpeta dentro de sí misma',
+        await this.validator.validarSinCiclos(id, nuevoPadreId);
+        if (nuevoPadreId) {
+            await this.validator.validarPadreDisponible(nuevoPadreId);
+            await this.permisosService.validarPadreEditable(
+                nuevoPadreId,
+                usuarioId,
             );
         }
-
-        await this.permisosService.validarPadreEditable(
-            nuevoPadreId,
-            usuarioId,
-        );
-        await this.validarSinCiclos(id, nuevoPadreId);
-        await this.validarNombreUnico(
+        await this.validator.validarNombreUnico(
             carpeta.propietario.toString(),
             nuevoPadreId,
             carpeta.nombre,
             id,
         );
 
+        // 2. Operación
         const actualizada = await this.carpetaRepository.actualizar(id, {
             carpetaPadre: nuevoPadreId
                 ? new Types.ObjectId(nuevoPadreId)
@@ -138,6 +148,7 @@ export class CarpetaService {
         });
         if (!actualizada) throw HttpError.notFound('Carpeta no encontrada');
 
+        // 3. Efectos secundarios
         await this.registrarActividad(
             usuarioId,
             AccionActividad.Mover,
@@ -151,42 +162,7 @@ export class CarpetaService {
         return actualizada;
     }
 
-    // metodos privados
-
-    private async validarNombreUnico(
-        propietarioId: string,
-        carpetaPadre: string | null,
-        nombre: string,
-        excluirId?: string,
-    ): Promise<void> {
-        const existe = await this.carpetaRepository.existeCarpetaConNombre(
-            propietarioId,
-            carpetaPadre,
-            nombre,
-            excluirId,
-        );
-        if (existe) {
-            throw HttpError.conflict(
-                'Ya existe una carpeta con ese nombre en esta ubicación',
-            );
-        }
-    }
-
-    private async validarSinCiclos(
-        id: string,
-        nuevoPadreId: string | null,
-    ): Promise<void> {
-        if (!nuevoPadreId) return;
-
-        const descendientes =
-            await this.carpetaRepository.obtenerDescendientesIds(id);
-        if (descendientes.includes(nuevoPadreId)) {
-            throw HttpError.badRequest(
-                'No se puede mover una carpeta dentro de uno de sus descendientes',
-            );
-        }
-    }
-
+    // Métodos privados
     private async registrarActividad(
         usuarioId: string,
         accion: AccionActividad,

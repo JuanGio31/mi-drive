@@ -13,13 +13,13 @@ const PermisoSchema = z.enum(
 
 /** Body para crear una carpeta, con padre opcional (omitido = raíz). */
 export const CrearCarpetaSchema = z.object({
-    nombre: z.string().min(1, 'El nombre es obligatorio').max(200),
+    nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(200),
     carpetaPadre: ObjectIdSchema.nullable().optional(),
 });
 
 /** Body para renombrar una carpeta. */
 export const RenombrarCarpetaSchema = z.object({
-    nombre: z.string().min(1).max(200),
+    nombre: z.string().trim().min(1, 'El nombre es obligatorio').max(200),
 });
 
 /** Body para mover una carpeta (null = llevar a la raíz). */

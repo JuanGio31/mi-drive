@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 import { IArchivoRepository } from './archivo.repository';
 import { ArchivoPermisosService } from './archivo-permisos.service';
+import { ArchivoValidator } from './archivo.validator';
 import { ActividadService } from '../actividad/actividad.service';
 import {
     CrearArchivoDTO,
@@ -21,6 +22,7 @@ export class ArchivoService {
     constructor(
         private readonly archivoRepository: IArchivoRepository,
         private readonly permisosService: ArchivoPermisosService,
+        private readonly validator: ArchivoValidator,
         private readonly actividadService: ActividadService,
     ) {}
 
@@ -40,7 +42,11 @@ export class ArchivoService {
             propietarioId = carpetaInfo!.propietarioId;
         }
 
-        await this.validarNombreUnico(propietarioId, carpetaPadre, dto.nombre);
+        await this.validator.validarNombreUnico(
+            propietarioId,
+            carpetaPadre,
+            dto.nombre,
+        );
 
         const tamanio = Buffer.byteLength(dto.contenido, 'utf8');
 
@@ -135,7 +141,7 @@ export class ArchivoService {
             usuarioId,
         );
 
-        await this.validarNombreUnico(
+        await this.validator.validarNombreUnico(
             archivo.propietario.toString(),
             archivo.carpetaPadre?.toString() ?? null,
             dto.nombre,
@@ -177,7 +183,7 @@ export class ArchivoService {
             );
         }
 
-        await this.validarNombreUnico(
+        await this.validator.validarNombreUnico(
             archivo.propietario.toString(),
             nuevoPadreId,
             archivo.nombre,
@@ -205,26 +211,6 @@ export class ArchivoService {
     }
 
     // Metodos privados
-
-    private async validarNombreUnico(
-        propietarioId: string,
-        carpetaPadre: string | null,
-        nombre: string,
-        excluirId?: string,
-    ): Promise<void> {
-        const existe = await this.archivoRepository.existeArchivoConNombre(
-            propietarioId,
-            carpetaPadre,
-            nombre,
-            excluirId,
-        );
-        if (existe) {
-            throw HttpError.conflict(
-                'Ya existe un archivo con ese nombre en esta ubicación',
-            );
-        }
-    }
-
     private async obtenerCarpetasCompartidasIds(
         usuarioId: string,
     ): Promise<string[]> {
