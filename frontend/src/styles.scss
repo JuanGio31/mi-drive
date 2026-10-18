@@ -36,4 +36,104 @@ body {
   margin: 0;
   height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+/* Estilos del markdown renderizado en el visor de archivos.
+   Viven aquí porque el contenido de [innerHTML] no lleva el atributo de
+   encapsulación de los estilos del componente. */
+.markdown {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #1e293b;
+  word-break: break-word;
+}
+.markdown > :first-child {
+  margin-top: 0;
+}
+.markdown > :last-child {
+  margin-bottom: 0;
+}
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  color: #0f172a;
+  line-height: 1.25;
+  margin: 1.3em 0 0.5em;
+}
+.markdown h1 {
+  font-size: 1.6rem;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid #e2e8f0;
+}
+.markdown h2 {
+  font-size: 1.3rem;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid #f1f5f9;
+}
+.markdown h3 {
+  font-size: 1.1rem;
+}
+.markdown p,
+.markdown ul,
+.markdown ol,
+.markdown blockquote,
+.markdown pre,
+.markdown table {
+  margin: 0 0 1em;
+}
+.markdown a {
+  color: #0369a1;
+}
+.markdown ul,
+.markdown ol {
+  padding-left: 1.4em;
+}
+.markdown li {
+  margin: 0.25em 0;
+}
+.markdown code {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 0.85em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.markdown pre {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  overflow: auto;
+}
+.markdown pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.85em;
+}
+.markdown blockquote {
+  border-left: 3px solid #cbd5e1;
+  padding: 0.2em 1em;
+  color: #64748b;
+}
+.markdown table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.markdown th,
+.markdown td {
+  border: 1px solid #e2e8f0;
+  padding: 6px 10px;
+  text-align: left;
+}
+.markdown th {
+  background: #f8fafc;
+}
+.markdown hr {
+  border: 0;
+  border-top: 1px solid #e2e8f0;
+  margin: 1.4em 0;
+}
+.markdown img {
+  max-width: 100%;
+}
+

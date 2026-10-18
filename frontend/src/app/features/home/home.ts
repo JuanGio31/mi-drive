@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
     <button (click)="logout()">Cerrar sesión</button>
   </div>`,
   // templateUrl: './home.html',
-  // styleUrl: './home.scss',
+  styleUrl: './home.scss',
 })
 export class HomeComponent {
   readonly authService = inject(AuthService);

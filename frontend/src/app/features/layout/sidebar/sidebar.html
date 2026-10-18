@@ -1,0 +1,37 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+  <div
+    class="brand"
+    (click)="toggleCollapse()"
+    style="cursor: pointer"
+    [matTooltip]="collapsed() ? 'Expandir' : 'Colapsar'"
+  >
+    <mat-icon class="brand-icon">cloud</mat-icon>
+    @if (!collapsed()) {
+      <span class="brand-name">Drive</span>
+    }
+  </div>
+
+  <button class="new-btn" matRipple>
+    <mat-icon>add</mat-icon>
+    @if (!collapsed()) {
+      <span>Nuevo</span>
+    }
+  </button>
+
+  <nav class="nav">
+    @for (item of items; track item.route) {
+      <a
+        class="nav-item"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        [matTooltip]="collapsed() ? item.label : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon>{{ item.icon }}</mat-icon>
+        @if (!collapsed()) {
+          <span>{{ item.label }}</span>
+        }
+      </a>
+    }
+  </nav>
+</aside>

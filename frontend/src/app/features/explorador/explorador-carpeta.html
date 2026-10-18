@@ -1,0 +1,40 @@
+@if (cargando()) {
+  <div class="estado">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+} @else if (error()) {
+  <div class="estado error">{{ error() }}</div>
+} @else if (vacio()) {
+  <div class="estado">Esta carpeta está vacía.</div>
+} @else {
+  <ul class="lista">
+    @for (carpeta of carpetas(); track carpeta._id) {
+      <li
+        class="fila fila-carpeta"
+        role="button"
+        tabindex="0"
+        (click)="abrirCarpeta.emit(carpeta)"
+        (keydown.enter)="abrirCarpeta.emit(carpeta)"
+      >
+        <mat-icon class="icono">folder</mat-icon>
+        <span class="nombre">{{ carpeta.nombre }}</span>
+        <span class="meta">Carpeta</span>
+      </li>
+    }
+
+    @for (archivo of archivos(); track archivo._id) {
+      <li
+        class="fila fila-archivo"
+        role="button"
+        tabindex="0"
+        (click)="abrirArchivo.emit(archivo)"
+        (keydown.enter)="abrirArchivo.emit(archivo)"
+      >
+        <mat-icon class="icono">{{ iconoArchivo(archivo.tipo) }}</mat-icon>
+        <span class="nombre">{{ archivo.nombre }}</span>
+        <span class="tipo">{{ archivo.tipo }}</span>
+        <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
+      </li>
+    }
+  </ul>
+}

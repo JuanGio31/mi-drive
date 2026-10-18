@@ -1,0 +1,26 @@
+<div class="mi-unidad">
+  <header class="encabezado">
+    <div class="titulo">
+      @if (carpeta()) {
+        <button mat-icon-button class="volver" (click)="subir()" aria-label="Volver">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+      }
+      <h1>{{ carpeta()?.nombre || 'Mi Unidad' }}</h1>
+    </div>
+
+    <p class="ruta">
+      <a routerLink="/mi-unidad">Mi Unidad</a>
+      @if (carpeta(); as c) {
+        <span class="sep">/</span>
+        <span>{{ c.nombre }}</span>
+      }
+    </p>
+  </header>
+
+  <app-explorador-carpeta
+    [carpetaId]="carpetaId()"
+    (abrirCarpeta)="irACarpeta($event)"
+    (abrirArchivo)="abrirArchivo($event)"
+  />
+</div>

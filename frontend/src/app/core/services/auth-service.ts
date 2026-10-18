@@ -1,16 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ApiService } from './api-service';
 import { Observable, tap } from 'rxjs';
-
-export interface LoginReponse {
-  token: string;
-  usuario: {
-    id: string;
-    nombre: string;
-    correo: string;
-    rol: 'administrador' | 'usuario';
-  };
-}
+import { LoginResponse, Rol, UsuarioSesion } from '../models';
 
 const TOKEN_KEY = 'dms_token';
 const USER_KEY = 'dms_user';
@@ -22,10 +13,10 @@ export class AuthService {
   private readonly api = inject(ApiService);
 
   // Signal para el usuario actual/logueado
-  readonly usuario = signal<LoginReponse['usuario'] | null>(this.loadUser());
+  readonly usuario = signal<UsuarioSesion | null>(this.loadUser());
 
-  signIn(correo: string, password: string): Observable<LoginReponse> {
-    return this.api.post<LoginReponse>('auth/sign-in', { correo, password }).pipe(
+  signIn(correo: string, password: string): Observable<LoginResponse> {
+    return this.api.post<LoginResponse>('auth/sign-in', { correo, password }).pipe(
       // tap para actualizar estado luego de login exitoso
       tap((res) => {
         this.guardarSesion(res);
@@ -33,8 +24,8 @@ export class AuthService {
     );
   }
 
-  signUp(nombre: string, correo: string, password: string): Observable<LoginReponse> {
-    return this.api.post<LoginReponse>('auth/sign-up', { nombre, correo, password }).pipe(
+  signUp(nombre: string, correo: string, password: string): Observable<LoginResponse> {
+    return this.api.post<LoginResponse>('auth/sign-up', { nombre, correo, password }).pipe(
       tap((res) => {
         this.guardarSesion(res);
       }),
@@ -56,19 +47,19 @@ export class AuthService {
   }
 
   esAdmin(): boolean {
-    return this.usuario()?.rol === 'administrador';
+    return this.usuario()?.rol === Rol.Administrador;
   }
 
-  private guardarSesion(res: LoginReponse): void {
+  private guardarSesion(res: LoginResponse): void {
     localStorage.setItem(TOKEN_KEY, res.token);
     localStorage.setItem(USER_KEY, JSON.stringify(res.usuario));
     this.usuario.set(res.usuario);
   }
 
-  private loadUser(): LoginReponse['usuario'] | null {
+  private loadUser(): UsuarioSesion | null {
     try {
       const user = localStorage.getItem(USER_KEY); // persistir el token entre recargas
-      return user ? (JSON.parse(user) as LoginReponse['usuario']) : null;
+      return user ? (JSON.parse(user) as UsuarioSesion) : null;
     } catch {
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(TOKEN_KEY);

@@ -93,33 +93,6 @@
           }
         </mat-form-field>
 
-        <!-- Fuerza + requisitos en vivo -->
-        @if (valoresClave().password) {
-          <div class="fuerza">
-            <div class="fuerza-barra" aria-hidden="true">
-              @for (i of [1, 2, 3, 4]; track i) {
-                <span
-                  class="segmento"
-                  [class.activo]="fuerza() >= i"
-                  [style.background]="fuerza() >= i ? colorFuerza() : null"
-                ></span>
-              }
-            </div>
-            <span class="fuerza-etiqueta" [style.color]="colorFuerza()">
-              {{ etiquetaFuerza() }}
-            </span>
-          </div>
-
-          <ul class="requisitos">
-            @for (r of requisitos(); track r.texto) {
-              <li [class.ok]="r.ok">
-                <mat-icon>{{ r.ok ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-                <span>{{ r.texto }}</span>
-              </li>
-            }
-          </ul>
-        }
-
         <!-- Confirmar password -->
         <mat-form-field appearance="outline" class="full-width" floatLabel="always">
           <mat-label>Confirmar contraseña</mat-label>
@@ -151,6 +124,33 @@
             <mat-error>Las contraseñas no coinciden</mat-error>
           }
         </mat-form-field>
+
+        <!-- Fuerza + requisitos en vivo -->
+        @if (valoresClave().password) {
+          <div class="fuerza">
+            <div class="fuerza-barra" aria-hidden="true">
+              @for (i of [1, 2, 3, 4]; track i) {
+                <span
+                  class="segmento"
+                  [class.activo]="fuerza() >= i"
+                  [style.background]="fuerza() >= i ? colorFuerza() : null"
+                ></span>
+              }
+            </div>
+            <span class="fuerza-etiqueta" [style.color]="colorFuerza()">
+              {{ etiquetaFuerza() }}
+            </span>
+          </div>
+
+          <ul class="requisitos">
+            @for (r of requisitos(); track r.texto) {
+              <li [class.ok]="r.ok">
+                <mat-icon>{{ r.ok ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+                <span>{{ r.texto }}</span>
+              </li>
+            }
+          </ul>
+        }
 
         <!-- Actions -->
         <div class="actions">

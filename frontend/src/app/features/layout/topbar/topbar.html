@@ -1,0 +1,47 @@
+<div class="topbar">
+  <div class="search">
+    <mat-icon>search</mat-icon>
+    <input type="text" placeholder="Buscar en Drive" [(ngModel)]="searchQuery" />
+  </div>
+
+  <div class="actions">
+    <button class="icon-btn" mat-icon-button title="Ayuda">
+      <mat-icon>help_outline</mat-icon>
+    </button>
+    <button class="icon-btn" mat-icon-button title="Configuración">
+      <mat-icon>settings</mat-icon>
+    </button>
+
+    <button
+      class="avatar-btn"
+      [matMenuTriggerFor]="userMenu"
+      [attr.aria-label]="user()?.nombre || 'Perfil'"
+    >
+      <div class="avatar">{{ initials() }}</div>
+    </button>
+
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <div class="menu-header">
+        <div class="avatar">{{ initials() }}</div>
+        <div>
+          <strong>{{ user()?.nombre || 'Usuario' }}</strong>
+          <small>{{ user()?.correo || 'correo@drive.com' }}</small>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+      <button mat-menu-item>
+        <mat-icon>person</mat-icon>
+        <span>Mi perfil</span>
+      </button>
+      <button mat-menu-item>
+        <mat-icon>cloud</mat-icon>
+        <span>Almacenamiento</span>
+      </button>
+      <mat-divider></mat-divider>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Cerrar sesión</span>
+      </button>
+    </mat-menu>
+  </div>
+</div>

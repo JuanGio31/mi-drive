@@ -1,0 +1,80 @@
+.topbar {
+  height: 64px;
+  background: white;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 720px) 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  flex-shrink: 0;
+}
+.search {
+  grid-column: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f1f5f9;
+  border-radius: 999px;
+  padding: 10px 20px;
+  transition: background 0.2s;
+}
+.search:focus-within {
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.search mat-icon {
+  color: #64748b;
+  font-size: 20px;
+}
+.search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+.actions {
+  grid-column: 3;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.icon-btn {
+  color: #475569;
+}
+.avatar-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-left: 8px;
+}
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.menu-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+.menu-header strong {
+  display: block;
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+.menu-header small {
+  color: #64748b;
+  font-size: 0.75rem;
+}

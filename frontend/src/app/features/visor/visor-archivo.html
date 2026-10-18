@@ -1,0 +1,41 @@
+<div class="visor">
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <div class="estado error">{{ error() }}</div>
+  } @else if (archivo(); as a) {
+    <header class="encabezado">
+      <button
+        mat-icon-button
+        class="volver"
+        (click)="volver()"
+        aria-label="Volver"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <div class="info">
+        <h1>{{ a.nombre }}</h1>
+        <p class="meta">
+          <span class="tipo">{{ a.tipo }}</span>
+          {{ formatearTamanio(a.tamanio) }}
+        </p>
+      </div>
+
+      <span class="modo">
+        <mat-icon>{{ esMarkdown() ? 'visibility' : 'subject' }}</mat-icon>
+        {{ esMarkdown() ? 'Vista renderizada' : 'Texto plano' }}
+      </span>
+    </header>
+
+    <section class="contenido">
+      @if (esMarkdown()) {
+        <div class="markdown" [innerHTML]="html()"></div>
+      } @else {
+        <pre class="texto">{{ a.contenido }}</pre>
+      }
+    </section>
+  }
+</div>

@@ -1,0 +1,75 @@
+:host {
+  display: block;
+  min-height: 100%;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border-radius: 24px;
+  padding: 24px 28px;
+}
+
+.encabezado {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.volver {
+  color: #475569;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+.info h1 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.info .meta {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+.tipo {
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #0369a1;
+  background: #e0f2fe;
+  border-radius: 6px;
+  padding: 2px 8px;
+  margin-right: 8px;
+}
+
+.modo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #64748b;
+  flex-shrink: 0;
+}
+
+.contenido {
+  background: white;
+  border-radius: 16px;
+  padding: 28px 32px;
+  overflow: auto;
+}
+
+.texto {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: #1e293b;
+}
