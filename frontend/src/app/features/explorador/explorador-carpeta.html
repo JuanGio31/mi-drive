@@ -7,33 +7,41 @@
 } @else if (vacio()) {
   <div class="estado">Esta carpeta está vacía.</div>
 } @else {
-  <ul class="lista">
+  <ul class="lista" [class.cuadricula]="vista() === 'cuadricula'">
     @for (carpeta of carpetas(); track carpeta._id) {
-      <li
-        class="fila fila-carpeta"
-        role="button"
-        tabindex="0"
-        (click)="abrirCarpeta.emit(carpeta)"
-        (keydown.enter)="abrirCarpeta.emit(carpeta)"
-      >
-        <mat-icon class="icono">folder</mat-icon>
-        <span class="nombre">{{ carpeta.nombre }}</span>
-        <span class="meta">Carpeta</span>
+      <li>
+        <app-menu-contextual
+          class="fila fila-carpeta"
+          [class.vista-cuadricula]="vista() === 'cuadricula'"
+          tabindex="0"
+          [items]="menuDe({ tipo: 'carpeta', carpeta })"
+          (click)="abrirCarpeta.emit(carpeta)"
+          (keydown.enter)="abrirCarpeta.emit(carpeta)"
+          (seleccionar)="emitirAccion($event, { tipo: 'carpeta', carpeta })"
+        >
+          <mat-icon class="icono">folder</mat-icon>
+          <span class="nombre">{{ carpeta.nombre }}</span>
+          <span class="meta">Carpeta</span>
+        </app-menu-contextual>
       </li>
     }
 
     @for (archivo of archivos(); track archivo._id) {
-      <li
-        class="fila fila-archivo"
-        role="button"
-        tabindex="0"
-        (click)="abrirArchivo.emit(archivo)"
-        (keydown.enter)="abrirArchivo.emit(archivo)"
-      >
-        <mat-icon class="icono">{{ iconoArchivo(archivo.tipo) }}</mat-icon>
-        <span class="nombre">{{ archivo.nombre }}</span>
-        <span class="tipo">{{ archivo.tipo }}</span>
-        <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
+      <li>
+        <app-menu-contextual
+          class="fila fila-archivo"
+          [class.vista-cuadricula]="vista() === 'cuadricula'"
+          tabindex="0"
+          [items]="menuDe({ tipo: 'archivo', archivo })"
+          (click)="abrirArchivo.emit(archivo)"
+          (keydown.enter)="abrirArchivo.emit(archivo)"
+          (seleccionar)="emitirAccion($event, { tipo: 'archivo', archivo })"
+        >
+          <mat-icon class="icono">{{ iconoArchivo(archivo.tipo) }}</mat-icon>
+          <span class="nombre">{{ archivo.nombre }}</span>
+          <span class="tipo">{{ archivo.tipo }}</span>
+          <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
+        </app-menu-contextual>
       </li>
     }
   </ul>

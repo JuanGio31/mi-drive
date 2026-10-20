@@ -63,6 +63,22 @@ export class ArchivoController {
         }
     };
 
+    /** Lista los archivos propios que están en la papelera. */
+    listarPapelera = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> => {
+        try {
+            const archivos = await this.archivoService.listarPapelera(
+                this.getUsuarioId(req),
+            );
+            res.json(archivos);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     buscarPorId = async (
         req: Request,
         res: Response,

@@ -14,11 +14,19 @@ export class ArchivoPapeleraService {
         private readonly actividadService: ActividadService,
     ) {}
 
+    /**
+     * Envía un archivo a la papelera. Solo el propietario puede hacerlo y el
+     * archivo queda marcado como raíz de su propio envío.
+     */
     async enviar(id: string, usuarioId: string): Promise<IArchivo> {
-        const archivo = await this.permisosService.obtenerConPermisoEdicion(
+        const archivo = await this.permisosService.obtenerComoPropietario(
             id,
             usuarioId,
+            true,
         );
+        if (archivo.enPapelera) {
+            throw HttpError.badRequest('El archivo ya está en la papelera');
+        }
 
         const actualizado = await this.archivoRepository.enviarAPapelera(id);
         if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
@@ -34,14 +42,24 @@ export class ArchivoPapeleraService {
         return actualizado;
     }
 
+    /**
+     * Restaura un archivo enviado individualmente a la papelera. Si se eliminó
+     * junto con su carpeta, debe restaurarse la carpeta contenedora.
+     */
     async restaurar(id: string, usuarioId: string): Promise<IArchivo> {
-        const archivo = await this.permisosService.obtenerConPermisoEdicion(
+        const archivo = await this.permisosService.obtenerComoPropietario(
             id,
             usuarioId,
+            true,
         );
 
         if (!archivo.enPapelera) {
             throw HttpError.badRequest('El archivo no está en la papelera');
+        }
+        if (archivo.papeleraRaiz?.toString() !== id) {
+            throw HttpError.badRequest(
+                'El archivo se eliminó junto con su carpeta; restaure la carpeta',
+            );
         }
 
         await this.validator.validarPadreDisponible(

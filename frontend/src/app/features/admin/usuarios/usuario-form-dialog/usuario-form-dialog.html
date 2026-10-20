@@ -1,0 +1,79 @@
+<h2 mat-dialog-title>
+  {{ esEdicion ? 'Editar usuario' : 'Nuevo usuario' }}
+</h2>
+
+<mat-dialog-content>
+  @if (error()) {
+    <div class="aviso-error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <form [formGroup]="form" class="formulario" (ngSubmit)="guardar()">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre</mat-label>
+      <input matInput formControlName="nombre" autocomplete="name" />
+      @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
+        <mat-error>El nombre es obligatorio.</mat-error>
+      }
+      @if (form.controls.nombre.touched && form.controls.nombre.hasError('minlength')) {
+        <mat-error>Mínimo 2 caracteres.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Correo</mat-label>
+      <input matInput type="email" formControlName="correo" autocomplete="email" />
+      @if (form.controls.correo.touched && form.controls.correo.hasError('required')) {
+        <mat-error>El correo es obligatorio.</mat-error>
+      }
+      @if (form.controls.correo.touched && form.controls.correo.hasError('email')) {
+        <mat-error>Introduce un correo válido.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (!esEdicion) {
+      <mat-form-field appearance="outline">
+        <mat-label>Contraseña inicial</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="new-password" />
+        <mat-hint>Mínimo 6 caracteres.</mat-hint>
+        @if (form.controls.password.touched && form.controls.password.value.length < 6) {
+          <mat-error>Debe tener al menos 6 caracteres.</mat-error>
+        }
+      </mat-form-field>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Rol</mat-label>
+      <mat-select formControlName="rol">
+        @for (rol of roles; track rol) {
+          <mat-option [value]="rol">
+            {{ rol === 'administrador' ? 'Administrador' : 'Usuario' }}
+          </mat-option>
+        }
+      </mat-select>
+      @if (esPropio) {
+        <mat-hint>No puedes cambiar tu propio rol.</mat-hint>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" mat-dialog-close>Cancelar</button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="button"
+    [disabled]="guardando()"
+    (click)="guardar()"
+  >
+    @if (guardando()) {
+      <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+    } @else {
+      <mat-icon>save</mat-icon>
+    }
+    {{ esEdicion ? 'Guardar cambios' : 'Crear usuario' }}
+  </button>
+</mat-dialog-actions>

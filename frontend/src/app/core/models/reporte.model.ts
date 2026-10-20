@@ -19,6 +19,14 @@ export interface PeriodoQuery extends RangoFechasQuery {
   unidad?: UnidadPeriodo;
 }
 
+/** GET /reportes/admin/resumen → totales del dashboard. */
+export interface ResumenAdmin {
+  archivos: { total: number; tamañoTotal: number };
+  carpetas: { total: number };
+  usuarios: { total: number; activos: number; inactivos: number };
+  compartidos: { archivos: number; carpetas: number; total: number };
+}
+
 // ============ Archivos y almacenamiento ============
 
 /** GET /reportes/archivos/por-tipo */

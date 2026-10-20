@@ -24,6 +24,11 @@ export class CarpetaService {
     return this.api.get<ListarCarpetasResponse>('carpetas', buildParams(query));
   }
 
+  /** GET /carpetas/papelera. */
+  listarPapelera(): Observable<Carpeta[]> {
+    return this.api.get<Carpeta[]>('carpetas/papelera');
+  }
+
   /** GET /carpetas/:id. */
   buscarPorId(id: string): Observable<Carpeta> {
     return this.api.get<Carpeta>(`carpetas/${id}`);

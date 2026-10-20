@@ -63,6 +63,73 @@
   font-size: 0.8rem;
 }
 
+.lista.cuadricula {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
+}
+
+.lista.cuadricula > li {
+  min-width: 0;
+}
+
+.lista.cuadricula .fila {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 158px;
+  padding: 16px;
+}
+
+.lista.cuadricula .icono {
+  font-size: 44px;
+  width: 44px;
+  height: 44px;
+}
+
+.lista.cuadricula .nombre {
+  flex: none;
+  width: 100%;
+  min-height: 2.6em;
+  white-space: normal;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lista.cuadricula .tipo {
+  margin-top: auto;
+}
+
+.lista.cuadricula .fila-carpeta .meta {
+  margin-top: auto;
+}
+
+.lista.cuadricula .meta {
+  font-size: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .lista.cuadricula {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .lista.cuadricula .fila {
+    min-height: 144px;
+    padding: 14px;
+  }
+
+  .lista.cuadricula .icono {
+    font-size: 38px;
+    width: 38px;
+    height: 38px;
+  }
+}
+
 .estado {
   display: flex;
   align-items: center;

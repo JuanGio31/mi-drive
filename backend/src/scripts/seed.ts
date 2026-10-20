@@ -212,7 +212,7 @@ const seed = async (): Promise<void> => {
             createdAt: fechaAleatoria(40),
             updatedAt: fechaAleatoria(8),
         },
-    ]);
+    ].map((c) => ({ ...c, creadoPor: c.propietario })));
 
     const [docsAna, proyAna, persCarlos, trabCarlos, apuntesLucia] = raices;
     if (!docsAna || !proyAna || !persCarlos || !trabCarlos || !apuntesLucia) {
@@ -281,7 +281,7 @@ const seed = async (): Promise<void> => {
             createdAt: fechaAleatoria(35),
             updatedAt: fechaAleatoria(2),
         },
-    ]);
+    ].map((c) => ({ ...c, creadoPor: c.propietario })));
 
     const [contratos, facturas, dms, recibos, reportes, universidad] = nivel2;
     if (
@@ -347,7 +347,7 @@ const seed = async (): Promise<void> => {
             createdAt: fechaAleatoria(20),
             updatedAt: fechaAleatoria(3),
         },
-    ]);
+    ].map((c) => ({ ...c, creadoPor: c.propietario })));
 
     const [contratos2026, backend, frontend, sem1, sem2] = nivel3;
     if (!contratos2026 || !backend || !frontend || !sem1 || !sem2) {
@@ -425,7 +425,9 @@ const seed = async (): Promise<void> => {
         }
     }
 
-    const archivos = (await ArchivoModel.insertMany(archivosData)) as unknown as IArchivo[];
+    const archivos = (await ArchivoModel.insertMany(
+        archivosData.map((a) => ({ ...a, creadoPor: a.propietario })),
+    )) as unknown as IArchivo[];
     console.log(`   ✓ ${archivos.length} archivos creados`);
 
     // 5. Compartidos (20+)
@@ -579,14 +581,32 @@ const seed = async (): Promise<void> => {
     const archivosAPapelera = archivos.slice(15, 20); // 5 archivos
     await ArchivoModel.updateMany(
         { _id: { $in: archivosAPapelera.map((a) => a._id) } },
-        { enPapelera: true, fechaEnvioPapelera: fechaAleatoria(10) },
+        [
+            {
+                $set: {
+                    enPapelera: true,
+                    fechaEnvioPapelera: fechaAleatoria(10),
+                    papeleraRaiz: '$_id',
+                },
+            },
+        ],
+        { updatePipeline: true },
     );
 
     // 1 carpeta a papelera (sin hijos)
     const carpetaAPapelera = sem2;
     await CarpetaModel.updateOne(
         { _id: carpetaAPapelera._id },
-        { enPapelera: true, fechaEnvioPapelera: fechaAleatoria(8) },
+        [
+            {
+                $set: {
+                    enPapelera: true,
+                    fechaEnvioPapelera: fechaAleatoria(8),
+                    papeleraRaiz: '$_id',
+                },
+            },
+        ],
+        { updatePipeline: true },
     );
 
     console.log(`   ✓ 5 archivos y 1 carpeta en papelera`);

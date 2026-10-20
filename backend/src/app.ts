@@ -9,6 +9,7 @@ import carpetaRoutes from './modules/carpeta/carpeta.routes';
 import archivoRoutes from './modules/archivo/archivo.routes';
 import actividadRoutes from './modules/actividad/actividad.routes';
 import reporteRoutes from './modules/reporte/repotte.routes';
+import busquedaRoutes from './modules/busqueda/busqueda.routes';
 import { env } from './shared/config/env';
 
 const corsOptions: CorsOptions = {
@@ -50,6 +51,7 @@ export const createApp = (): Application => {
     app.use('/api/archivos', archivoRoutes);
     app.use('/api/actividad', actividadRoutes);
     app.use('/api/reportes', reporteRoutes);
+    app.use('/api/buscar', busquedaRoutes);
 
     // Manejo de rutas no encontradas
     app.use(notFoundHandler);

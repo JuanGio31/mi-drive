@@ -1,0 +1,42 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  min-width: 380px;
+}
+
+.formulario mat-form-field {
+  width: 100%;
+}
+
+.aviso-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+.aviso-error mat-icon {
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+
+.btn-spinner {
+  display: inline-block;
+  margin-right: 8px;
+}
+
+@media (max-width: 520px) {
+  .formulario {
+    min-width: 0;
+  }
+}

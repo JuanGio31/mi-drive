@@ -14,10 +14,12 @@ export interface IArchivo extends Document {
     contenido: string;
     tamanio: number;
     propietario: Types.ObjectId;
+    creadoPor: Types.ObjectId;
     carpetaPadre: Types.ObjectId | null;
     compartidoCon: ICompartidoArchivo[];
     enPapelera: boolean;
     fechaEnvioPapelera: Date | null;
+    papeleraRaiz: Types.ObjectId | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -74,6 +76,12 @@ const ArchivoSchema = new Schema<IArchivo>(
             required: true,
             index: true,
         },
+        creadoPor: {
+            type: Schema.Types.ObjectId,
+            ref: 'Usuario',
+            required: true,
+            index: true,
+        },
         carpetaPadre: {
             type: Schema.Types.ObjectId,
             ref: 'Carpeta',
@@ -92,6 +100,11 @@ const ArchivoSchema = new Schema<IArchivo>(
         fechaEnvioPapelera: {
             type: Date,
             default: null,
+        },
+        papeleraRaiz: {
+            type: Schema.Types.ObjectId,
+            default: null,
+            index: true,
         },
     },
     {

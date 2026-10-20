@@ -1,0 +1,33 @@
+<div
+  #contexto
+  class="contexto"
+  [matContextMenuTriggerFor]="menu"
+  [matContextMenuTriggerDisabled]="items().length === 0"
+>
+  <ng-content />
+
+  <button
+    mat-icon-button
+    type="button"
+    class="gatillo"
+    (click)="abrirDesdeBoton($event)"
+    (keydown)="detenerPropagacion($event)"
+    aria-label="Más acciones"
+  >
+    <mat-icon>more_vert</mat-icon>
+  </button>
+</div>
+
+<mat-menu #menu="matMenu" xPosition="after" yPosition="below">
+  @for (item of items(); track item.id) {
+    <button
+      mat-menu-item
+      type="button"
+      [class.peligroso]="item.peligroso"
+      (click)="detenerPropagacion($event); seleccionar.emit(item.id)"
+    >
+      <mat-icon>{{ item.icono }}</mat-icon>
+      <span>{{ item.etiqueta }}</span>
+    </button>
+  }
+</mat-menu>

@@ -38,9 +38,26 @@ export const ActualizarUsuarioSchema = z
             .toLowerCase()
             .optional(),
         activo: z.boolean().optional(),
+        rol: z.enum(Object.values(Rol) as [string, ...string[]]).optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: 'Debe proporcionar al menos un campo para actualizar',
+    });
+
+export const CambiarPasswordSchema = z
+    .object({
+        passwordActual: z
+            .string()
+            .trim()
+            .min(1, 'La contraseña actual es obligatoria'),
+        passwordNueva: z
+            .string()
+            .trim()
+            .min(6, 'La nueva contraseña debe tener al menos 6 caracteres'),
+    })
+    .refine((data) => data.passwordActual !== data.passwordNueva, {
+        message: 'La nueva contraseña debe ser diferente a la actual',
+        path: ['passwordNueva'],
     });
 
 export const UsuarioIdParamSchema = z.object({
@@ -71,4 +88,5 @@ export const ListarUsuarioQuerySchema = z.object({
 // Tipos inferidos de zod
 export type CrearUsuarioDTO = z.infer<typeof CrearUsuarioSchema>;
 export type ActualizarUsuarioDTO = z.infer<typeof ActualizarUsuarioSchema>;
+export type CambiarPasswordDTO = z.infer<typeof CambiarPasswordSchema>;
 export type ListarUsuarioQueryDTO = z.infer<typeof ListarUsuarioQuerySchema>;

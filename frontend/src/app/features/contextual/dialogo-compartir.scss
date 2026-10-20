@@ -1,0 +1,37 @@
+.campo {
+  width: 100%;
+  min-width: 360px;
+}
+
+.opcion-usuario {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.opcion-nombre {
+  color: #1e293b;
+}
+
+.opcion-correo {
+  color: #94a3b8;
+  font-size: 0.78rem;
+}
+
+.actual {
+  color: #64748b;
+  font-size: 0.75rem;
+  margin-left: 12px;
+}
+
+.estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+.estado.error {
+  color: #dc2626;
+}

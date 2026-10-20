@@ -1,0 +1,69 @@
+<h2 mat-dialog-title>Compartir “{{ nombre }}”</h2>
+
+<mat-dialog-content>
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <p class="estado error">{{ error() }}</p>
+  } @else if (opciones().length === 0) {
+    <p class="estado">No hay otros usuarios disponibles.</p>
+  } @else {
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Buscar usuario</mat-label>
+      <input
+        matInput
+        type="text"
+        autocomplete="off"
+        placeholder="Nombre o correo"
+        [matAutocomplete]="auto"
+        [ngModel]="busqueda()"
+        (ngModelChange)="alEscribir($event)"
+      />
+      <mat-icon matSuffix>search</mat-icon>
+      <mat-autocomplete
+        #auto="matAutocomplete"
+        (optionSelected)="alElegir($event.option.value)"
+      >
+        @for (opcion of sugerencias(); track opcion._id) {
+          <mat-option [value]="opcion._id">
+            <span class="opcion-usuario">
+              <span class="opcion-nombre">{{ opcion.nombre }}</span>
+              <span class="opcion-correo">{{ opcion.correo }}</span>
+            </span>
+            @if (opcion.permisoActual) {
+              <span class="actual">
+                ya tiene {{ etiqueta(opcion.permisoActual) }}
+              </span>
+            }
+          </mat-option>
+        }
+        @if (sugerencias().length === 0) {
+          <mat-option disabled>Sin coincidencias</mat-option>
+        }
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="campo">
+      <mat-label>Permiso</mat-label>
+      <mat-select [(ngModel)]="permiso">
+        @for (opcion of permisos; track opcion) {
+          <mat-option [value]="opcion">{{ etiqueta(opcion) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  <button
+    mat-flat-button
+    type="button"
+    [disabled]="!usuarioId"
+    (click)="confirmar()"
+  >
+    Compartir
+  </button>
+</mat-dialog-actions>

@@ -4,14 +4,18 @@ import { ApiService } from './api-service';
 import { buildParams } from '../utils/query-params';
 import {
   ActualizarUsuarioDto,
+  CambiarPasswordDto,
   CrearUsuarioDto,
   ListarUsuariosQuery,
+  ListarUsuariosResponse,
   Usuario,
+  UsuarioDirectorio,
 } from '../models';
 
 /**
  * Consume /api/usuarios.
- * Requiere rol administrador salvo buscarPorId/actualizar sobre el propio usuario.
+ * Requiere rol administrador salvo buscarPorId/actualizar/cambiarPassword
+ * sobre el propio usuario.
  */
 @Injectable({
   providedIn: 'root',
@@ -19,9 +23,14 @@ import {
 export class UsuarioService {
   private readonly api = inject(ApiService);
 
-  /** GET /usuarios (admin). */
-  listar(query: ListarUsuariosQuery = {}): Observable<Usuario[]> {
-    return this.api.get<Usuario[]>('usuarios', buildParams(query));
+  /** GET /usuarios (admin) → usuarios de la página + total. */
+  listar(query: ListarUsuariosQuery = {}): Observable<ListarUsuariosResponse> {
+    return this.api.get<ListarUsuariosResponse>('usuarios', buildParams(query));
+  }
+
+  /** GET /usuarios/directorio → usuarios activos (id, nombre, correo, rol). */
+  directorio(): Observable<UsuarioDirectorio[]> {
+    return this.api.get<UsuarioDirectorio[]>('usuarios/directorio');
   }
 
   /** GET /usuarios/:id. */
@@ -37,6 +46,11 @@ export class UsuarioService {
   /** PATCH /usuarios/:id. */
   actualizar(id: string, dto: ActualizarUsuarioDto): Observable<Usuario> {
     return this.api.patch<Usuario>(`usuarios/${id}`, dto);
+  }
+
+  /** PATCH /usuarios/:id/password → cambia la contraseña del propio usuario. */
+  cambiarPassword(id: string, dto: CambiarPasswordDto): Observable<{ mensaje: string }> {
+    return this.api.patch<{ mensaje: string }>(`usuarios/${id}/password`, dto);
   }
 
   /** DELETE /usuarios/:id → soft delete (desactiva). Respuesta 200 con el usuario. */

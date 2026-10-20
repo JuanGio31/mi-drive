@@ -4,7 +4,15 @@ import { CarpetaModel } from '../carpeta/carpeta.model';
 import { UsuarioModel } from '../usuario/usuario.model';
 import { ActividadModel } from '../actividad/actividad.model';
 
+export interface ResumenAdmin {
+    archivos: { total: number; tamañoTotal: number };
+    carpetas: { total: number };
+    usuarios: { total: number; activos: number; inactivos: number };
+    compartidos: { archivos: number; carpetas: number; total: number };
+}
+
 export interface IReporteRepository {
+    resumen(): Promise<ResumenAdmin>;
     archivosPorTipo(): Promise<
         { tipo: string; total: number; tamañoTotal: number }[]
     >;
@@ -18,6 +26,71 @@ export interface IReporteRepository {
 }
 
 export class MongoReporteRepository implements IReporteRepository {
+    // ============ Resumen del dashboard ============
+
+    /** Totales globales para las tarjetas KPI del administrador. */
+    async resumen(): Promise<ResumenAdmin> {
+        const [archivos, carpetas, usuarios, archivosCompartidos, carpetasCompartidas] =
+            await Promise.all([
+                ArchivoModel.aggregate([
+                    { $match: { enPapelera: false } },
+                    {
+                        $group: {
+                            _id: null,
+                            total: { $sum: 1 },
+                            tamañoTotal: { $sum: '$tamanio' },
+                        },
+                    },
+                ]).exec() as Promise<
+                    { total: number; tamañoTotal: number }[]
+                >,
+                CarpetaModel.countDocuments({ enPapelera: false }).exec(),
+                UsuarioModel.aggregate([
+                    {
+                        $group: {
+                            _id: null,
+                            total: { $sum: 1 },
+                            activos: { $sum: { $cond: ['$activo', 1, 0] } },
+                        },
+                    },
+                ]).exec() as Promise<
+                    { total: number; activos: number }[]
+                >,
+                ArchivoModel.countDocuments({
+                    enPapelera: false,
+                    'compartidoCon.0': { $exists: true },
+                }).exec(),
+                CarpetaModel.countDocuments({
+                    enPapelera: false,
+                    'compartidoCon.0': { $exists: true },
+                }).exec(),
+            ]);
+
+        const archivosTotales = archivos[0] ?? {
+            total: 0,
+            tamañoTotal: 0,
+        };
+        const usuariosTotales = usuarios[0] ?? { total: 0, activos: 0 };
+
+        return {
+            archivos: {
+                total: archivosTotales.total,
+                tamañoTotal: archivosTotales.tamañoTotal,
+            },
+            carpetas: { total: carpetas },
+            usuarios: {
+                total: usuariosTotales.total,
+                activos: usuariosTotales.activos,
+                inactivos: usuariosTotales.total - usuariosTotales.activos,
+            },
+            compartidos: {
+                archivos: archivosCompartidos,
+                carpetas: carpetasCompartidas,
+                total: archivosCompartidos + carpetasCompartidas,
+            },
+        };
+    }
+
     // ============ Reportes de archivos ============
 
     async archivosPorTipo() {
@@ -27,7 +100,7 @@ export class MongoReporteRepository implements IReporteRepository {
                 $group: {
                     _id: '$tipo',
                     total: { $sum: 1 },
-                    tamañoTotal: { $sum: '$tamaño' },
+                    tamañoTotal: { $sum: '$tamanio' },
                 },
             },
             {
@@ -71,7 +144,7 @@ export class MongoReporteRepository implements IReporteRepository {
                     id: { $toString: '$_id' },
                     nombre: 1,
                     tipo: 1,
-                    tamaño: 1,
+                    tamaño: '$tamanio',
                     createdAt: 1,
                     propietario: {
                         id: { $toString: '$propietarioInfo._id' },
@@ -119,7 +192,7 @@ export class MongoReporteRepository implements IReporteRepository {
                 $group: {
                     _id: '$propietario',
                     totalArchivos: { $sum: 1 },
-                    tamañoTotal: { $sum: '$tamaño' },
+                    tamañoTotal: { $sum: '$tamanio' },
                 },
             },
             { $sort: { totalArchivos: -1 } },

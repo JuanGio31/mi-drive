@@ -12,6 +12,8 @@ export interface Carpeta {
   _id: string;
   nombre: string;
   propietario: string;
+  /** Permiso efectivo del usuario actual (lo agrega el backend). */
+  miPermiso?: NivelPermiso | null;
   carpetaPadre: string | null;
   compartidoCon: CompartidoCon[];
   enPapelera: boolean;

@@ -26,14 +26,20 @@ const PeriodoQuerySchema = z.object({
 router.use(authenticate);
 
 // ============ Archivos y almacenamiento ============
-router.get('/archivos/por-tipo', reporteController.archivosPorTipo);
+router.get(
+    '/archivos/por-tipo',
+    authorize(Rol.Administrador),
+    reporteController.archivosPorTipo,
+);
 router.get(
     '/archivos/por-rango',
+    authorize(Rol.Administrador),
     validateQuery(RangoFechasSchema),
     reporteController.archivosPorRango,
 );
 router.get(
     '/archivos/mas-operaciones',
+    authorize(Rol.Administrador),
     validateQuery(TopLimiteSchema),
     reporteController.archivosConMasOperaciones,
 );
@@ -41,11 +47,13 @@ router.get(
 // ============ Usuarios ============
 router.get(
     '/usuarios/top-archivos',
+    authorize(Rol.Administrador),
     validateQuery(TopLimiteSchema),
     reporteController.topUsuarios,
 );
 router.get(
     '/usuarios/mas-compartidos',
+    authorize(Rol.Administrador),
     validateQuery(TopLimiteSchema),
     reporteController.usuariosMasCompartidos,
 );
@@ -53,6 +61,7 @@ router.get(
 // ============ Compartición ============
 router.get(
     '/compartidos/mas-compartidos',
+    authorize(Rol.Administrador),
     validateQuery(TopLimiteSchema),
     reporteController.archivosMasCompartidos,
 );
@@ -86,9 +95,26 @@ router.get(
 
 // ============ Endpoints globales (solo admin) ============
 router.get(
+    '/admin/resumen',
+    authorize(Rol.Administrador),
+    reporteController.resumen,
+);
+router.get(
     '/admin/archivos/por-tipo',
     authorize(Rol.Administrador),
     reporteController.archivosPorTipo,
+);
+router.get(
+    '/admin/actividad/por-tipo',
+    authorize(Rol.Administrador),
+    validateQuery(PeriodoQuerySchema),
+    reporteController.operacionesPorTipoGlobal,
+);
+router.get(
+    '/admin/actividad/por-periodo',
+    authorize(Rol.Administrador),
+    validateQuery(PeriodoQuerySchema),
+    reporteController.operacionesPorPeriodoGlobal,
 );
 
 export default router;

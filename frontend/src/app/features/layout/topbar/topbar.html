@@ -1,7 +1,84 @@
 <div class="topbar">
   <div class="search">
     <mat-icon>search</mat-icon>
-    <input type="text" placeholder="Buscar en Drive" [(ngModel)]="searchQuery" />
+    <input
+      type="text"
+      placeholder="Buscar en Drive"
+      autocomplete="off"
+      [matAutocomplete]="resultados"
+      [ngModel]="texto()"
+      (ngModelChange)="alEscribir($event)"
+    />
+    @if (texto()) {
+      <button
+        class="limpiar"
+        type="button"
+        (click)="limpiar()"
+        aria-label="Limpiar búsqueda"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+
+    <mat-autocomplete
+      #resultados="matAutocomplete"
+      class="panel-busqueda"
+      [displayWith]="mostrarResultado"
+      (optionSelected)="abrir($event.option.value)"
+    >
+      @if (cargando()) {
+        <mat-option disabled>
+          <span class="estado">
+            <mat-spinner diameter="18"></mat-spinner>
+            Buscando…
+          </span>
+        </mat-option>
+      } @else if (!consulta()) {
+        <mat-option disabled>
+          <span class="estado">Escribe el nombre de un archivo o carpeta</span>
+        </mat-option>
+      } @else if (error()) {
+        <mat-option disabled>
+          <span class="estado error">{{ error() }}</span>
+        </mat-option>
+      } @else if (sinResultados()) {
+        <mat-option disabled>
+          <span class="estado">
+            Sin resultados para “{{ consulta() }}”
+          </span>
+        </mat-option>
+      } @else if (carpetas().length > 0 || archivos().length > 0) {
+        @if (carpetas().length > 0) {
+          <mat-optgroup label="Carpetas">
+            @for (carpeta of carpetas(); track carpeta._id) {
+              <mat-option [value]="valorCarpeta(carpeta)">
+                <mat-icon class="icono-carpeta">folder</mat-icon>
+                <span class="resultado">
+                  <span class="nombre">{{ carpeta.nombre }}</span>
+                  <span class="meta">Carpeta</span>
+                </span>
+              </mat-option>
+            }
+          </mat-optgroup>
+        }
+
+        @if (archivos().length > 0) {
+          <mat-optgroup label="Archivos">
+            @for (archivo of archivos(); track archivo._id) {
+              <mat-option [value]="valorArchivo(archivo)">
+                <mat-icon class="icono-archivo">
+                  {{ iconoArchivo(archivo.tipo) }}
+                </mat-icon>
+                <span class="resultado">
+                  <span class="nombre">{{ archivo.nombre }}</span>
+                  <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
+                </span>
+              </mat-option>
+            }
+          </mat-optgroup>
+        }
+      }
+    </mat-autocomplete>
   </div>
 
   <div class="actions">
@@ -29,13 +106,9 @@
         </div>
       </div>
       <mat-divider></mat-divider>
-      <button mat-menu-item>
+      <button mat-menu-item (click)="abrirPerfil()">
         <mat-icon>person</mat-icon>
         <span>Mi perfil</span>
-      </button>
-      <button mat-menu-item>
-        <mat-icon>cloud</mat-icon>
-        <span>Almacenamiento</span>
       </button>
       <mat-divider></mat-divider>
       <button mat-menu-item (click)="logout()">

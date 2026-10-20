@@ -1,0 +1,249 @@
+<div class="perfil">
+  <header class="cabecera">
+    <h1>Mi perfil</h1>
+    <p>Administra tus datos personales y tu contraseña.</p>
+  </header>
+
+  <section class="tarjeta identidad">
+    <div class="avatar">{{ iniciales() }}</div>
+
+    <div class="identidad-datos">
+      <h2>{{ user()?.nombre || 'Usuario' }}</h2>
+      <p class="correo">{{ user()?.correo }}</p>
+
+      <div class="chips">
+        <span class="chip">
+          <mat-icon>badge</mat-icon>
+          {{ rolEtiqueta() }}
+        </span>
+
+        @if (perfil(); as p) {
+          <span class="chip" [class.activo]="p.activo" [class.inactivo]="!p.activo">
+            <mat-icon>{{ p.activo ? 'check_circle' : 'block' }}</mat-icon>
+            {{ p.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+          <span class="chip">
+            <mat-icon>event</mat-icon>
+            Miembro desde {{ miembroDesde() }}
+          </span>
+        }
+      </div>
+    </div>
+
+    @if (cargandoPerfil()) {
+      <mat-spinner diameter="22"></mat-spinner>
+    }
+  </section>
+
+  @if (errorPerfil()) {
+    <div class="aviso error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ errorPerfil() }}</span>
+    </div>
+  }
+
+  <section class="tarjeta">
+    <h2><mat-icon>person</mat-icon>Datos personales</h2>
+    <p class="descripcion">
+      Puedes cambiar tu nombre y tu correo. El rol y el estado de la cuenta los
+      gestiona un administrador.
+    </p>
+
+    @if (exitoDatos()) {
+      <div class="aviso exito">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ exitoDatos() }}</span>
+      </div>
+    }
+    @if (errorDatos()) {
+      <div class="aviso error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorDatos() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="datosForm" (ngSubmit)="guardarDatos()">
+      <div class="campos">
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" autocomplete="name" />
+          @if (
+            datosForm.get('nombre')?.hasError('required') &&
+            datosForm.get('nombre')?.touched
+          ) {
+            <mat-error>El nombre es obligatorio.</mat-error>
+          }
+          @if (
+            datosForm.get('nombre')?.hasError('minlength') &&
+            datosForm.get('nombre')?.touched
+          ) {
+            <mat-error>El nombre debe tener al menos 2 caracteres.</mat-error>
+          }
+          @if (
+            datosForm.get('nombre')?.hasError('maxlength') &&
+            datosForm.get('nombre')?.touched
+          ) {
+            <mat-error>El nombre debe tener máximo 150 caracteres.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Correo</mat-label>
+          <input
+            matInput
+            type="email"
+            formControlName="correo"
+            autocomplete="email"
+          />
+          @if (
+            datosForm.get('correo')?.hasError('required') &&
+            datosForm.get('correo')?.touched
+          ) {
+            <mat-error>El correo es obligatorio.</mat-error>
+          }
+          @if (
+            datosForm.get('correo')?.hasError('email') &&
+            datosForm.get('correo')?.touched
+          ) {
+            <mat-error>Introduce un correo válido.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="acciones">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="guardandoDatos()"
+        >
+          @if (guardandoDatos()) {
+            <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
+          Guardar cambios
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="tarjeta">
+    <h2><mat-icon>lock</mat-icon>Cambiar contraseña</h2>
+    <p class="descripcion">
+      Por seguridad debes confirmar tu contraseña actual. La nueva debe tener al
+      menos 6 caracteres.
+    </p>
+
+    @if (exitoPassword()) {
+      <div class="aviso exito">
+        <mat-icon>check_circle</mat-icon>
+        <span>{{ exitoPassword() }}</span>
+      </div>
+    }
+    @if (errorPassword()) {
+      <div class="aviso error">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorPassword() }}</span>
+      </div>
+    }
+
+    <form [formGroup]="passwordForm" (ngSubmit)="cambiarPassword()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Contraseña actual</mat-label>
+        <input
+          matInput
+          formControlName="passwordActual"
+          [type]="verActual() ? 'text' : 'password'"
+          autocomplete="current-password"
+        />
+        <button
+          mat-icon-button
+          matSuffix
+          type="button"
+          (click)="verActual.set(!verActual())"
+          [attr.aria-label]="verActual() ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'"
+        >
+          <mat-icon>{{ verActual() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (passwordForm.get('passwordActual')?.touched) {
+          @if (passwordForm.get('passwordActual')?.hasError('required')) {
+            <mat-error>La contraseña actual es obligatoria.</mat-error>
+          }
+        }
+      </mat-form-field>
+
+      <div class="campos">
+        <mat-form-field appearance="outline">
+          <mat-label>Nueva contraseña</mat-label>
+          <input
+            matInput
+            formControlName="passwordNueva"
+            [type]="verNueva() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="verNueva.set(!verNueva())"
+            [attr.aria-label]="verNueva() ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'"
+          >
+            <mat-icon>{{ verNueva() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (passwordForm.get('passwordNueva')?.touched) {
+            @if (passwordForm.get('passwordNueva')?.hasError('required')) {
+              <mat-error>La nueva contraseña es obligatoria.</mat-error>
+            }
+            @if (passwordForm.get('passwordNueva')?.hasError('minlength')) {
+              <mat-error>Debe tener al menos 6 caracteres.</mat-error>
+            }
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Confirmar nueva contraseña</mat-label>
+          <input
+            matInput
+            formControlName="confirmar"
+            [type]="verConfirmar() ? 'text' : 'password'"
+            autocomplete="new-password"
+          />
+          <button
+            mat-icon-button
+            matSuffix
+            type="button"
+            (click)="verConfirmar.set(!verConfirmar())"
+            [attr.aria-label]="verConfirmar() ? 'Ocultar confirmación' : 'Mostrar confirmación'"
+          >
+            <mat-icon>{{ verConfirmar() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (passwordForm.get('confirmar')?.touched) {
+            @if (passwordForm.get('confirmar')?.hasError('required')) {
+              <mat-error>Confirma la nueva contraseña.</mat-error>
+            }
+            @if (passwordForm.hasError('noCoinciden')) {
+              <mat-error>Las contraseñas no coinciden.</mat-error>
+            }
+          }
+        </mat-form-field>
+      </div>
+
+      <div class="acciones">
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          [disabled]="cambiandoPassword()"
+        >
+          @if (cambiandoPassword()) {
+            <mat-spinner diameter="18" class="btn-spinner"></mat-spinner>
+          } @else {
+            <mat-icon>lock_reset</mat-icon>
+          }
+          Actualizar contraseña
+        </button>
+      </div>
+    </form>
+  </section>
+</div>

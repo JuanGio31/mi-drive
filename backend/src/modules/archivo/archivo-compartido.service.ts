@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { IArchivoRepository } from './archivo.repository';
 import { ArchivoPermisosService } from './archivo-permisos.service';
 import { ActividadService } from '../actividad/actividad.service';
+import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { IArchivo, ICompartidoArchivo } from './archivo.model';
 import { CompartirArchivoDTO } from './archivo.dto';
 import { HttpError } from '../../shared/errors/http-error';
@@ -16,8 +17,13 @@ export class ArchivoCompartidosService {
         private readonly archivoRepository: IArchivoRepository,
         private readonly permisosService: ArchivoPermisosService,
         private readonly actividadService: ActividadService,
+        private readonly usuarioRepository: IUsuarioRepository,
     ) {}
 
+    /**
+     * Comparte un archivo con un usuario activo existente. Solo el propietario
+     * puede hacerlo; si ya estaba compartido, actualiza el permiso.
+     */
     async compartir(
         id: string,
         dto: CompartirArchivoDTO,
@@ -30,6 +36,11 @@ export class ArchivoCompartidosService {
 
         if (dto.usuarioId === usuarioId) {
             throw HttpError.badRequest('No puedes compartir contigo mismo');
+        }
+
+        const destino = await this.usuarioRepository.buscarPorId(dto.usuarioId);
+        if (!destino || !destino.activo) {
+            throw HttpError.notFound('Usuario destino no encontrado');
         }
 
         const yaCompartido = archivo.compartidoCon.some(

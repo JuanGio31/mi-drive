@@ -15,8 +15,15 @@ import { IArchivo } from './archivo.model';
 import {
     AccionActividad,
     ExtensionArchivo,
+    NivelPermiso,
     TipoRecurso,
 } from '../../shared/types/enums';
+import { CachePermisos } from '../carpeta/carpeta-permisos.service';
+
+/** Archivo serializado con el permiso efectivo del usuario actual. */
+export type ArchivoConPermiso = IArchivo & {
+    miPermiso: NivelPermiso | null;
+};
 
 export class ArchivoService {
     constructor(
@@ -56,6 +63,7 @@ export class ArchivoService {
             contenido: dto.contenido,
             tamanio,
             propietario: new Types.ObjectId(propietarioId),
+            creadoPor: new Types.ObjectId(usuarioId),
             carpetaPadre: carpetaPadre
                 ? new Types.ObjectId(carpetaPadre)
                 : null,
@@ -76,18 +84,38 @@ export class ArchivoService {
         return archivo;
     }
 
+    /**
+     * Lista los archivos de una carpeta. Resuelve una sola vez el permiso del
+     * padre y lo usa para todos los hijos, sin consultas por archivo.
+     */
     async listar(
         usuarioId: string,
         filtros: ListarArchivosQueryDTO,
-    ): Promise<IArchivo[]> {
-        const carpetasCompartidas = filtros.incluirCompartidas
-            ? await this.obtenerCarpetasCompartidasIds(usuarioId)
-            : [];
+    ): Promise<ArchivoConPermiso[]> {
+        const carpetaPadre = filtros.carpetaPadre ?? null;
+        let permisoPadre: NivelPermiso | null = null;
 
-        return this.archivoRepository.listar(
+        if (carpetaPadre) {
+            permisoPadre = await this.permisosService.obtenerPermisoCarpeta(
+                carpetaPadre,
+                usuarioId,
+            );
+            if (!permisoPadre) {
+                throw HttpError.notFound('Carpeta no encontrada');
+            }
+        }
+
+        const archivos = await this.archivoRepository.listar(
             usuarioId,
             filtros,
-            carpetasCompartidas,
+            permisoPadre !== null,
+        );
+
+        return archivos.map((archivo) =>
+            this.conPermiso(
+                archivo,
+                this.permisoDeArchivo(archivo, usuarioId, permisoPadre),
+            ),
         );
     }
 
@@ -95,8 +123,34 @@ export class ArchivoService {
         return this.archivoRepository.listarCompartidosCon(usuarioId);
     }
 
-    async buscarPorId(id: string, usuarioId: string): Promise<IArchivo> {
-        return this.permisosService.obtenerConAcceso(id, usuarioId);
+    async listarPapelera(usuarioId: string): Promise<IArchivo[]> {
+        return this.archivoRepository.listarPapelera(usuarioId);
+    }
+
+    /**
+     * Carga un archivo accesible y adjunta el permiso efectivo del usuario.
+     * Usa una caché local para reutilizar la resolución de ancestros.
+     */
+    async buscarPorId(
+        id: string,
+        usuarioId: string,
+    ): Promise<ArchivoConPermiso> {
+        const cache: CachePermisos = new Map();
+        const archivo = await this.permisosService.obtenerConAcceso(
+            id,
+            usuarioId,
+            false,
+            cache,
+        );
+        const permisos = await this.permisosService.obtenerPermiso(
+            [archivo],
+            usuarioId,
+            cache,
+        );
+        return this.conPermiso(
+            archivo,
+            permisos.get(archivo._id.toString()) ?? null,
+        );
     }
 
     async actualizarContenido(
@@ -165,26 +219,33 @@ export class ArchivoService {
         return actualizado;
     }
 
+    /**
+     * Mueve un archivo (solo el propietario). Si cambia de árbol, el archivo
+     * pasa a pertenecer al dueño de la carpeta destino para conservar el
+     * invariante de un único propietario por árbol.
+     */
     async mover(
         id: string,
         dto: MoverArchivoDTO,
         usuarioId: string,
     ): Promise<IArchivo> {
-        const archivo = await this.permisosService.obtenerConPermisoEdicion(
+        const archivo = await this.permisosService.obtenerComoPropietario(
             id,
             usuarioId,
         );
         const nuevoPadreId = dto.carpetaPadre;
+        let propietarioId = archivo.propietario.toString();
 
         if (nuevoPadreId) {
-            await this.permisosService.validarCarpetaDestino(
+            const destino = await this.permisosService.validarCarpetaDestino(
                 nuevoPadreId,
                 usuarioId,
             );
+            propietarioId = destino!.propietarioId;
         }
 
         await this.validator.validarNombreUnico(
-            archivo.propietario.toString(),
+            propietarioId,
             nuevoPadreId,
             archivo.nombre,
             id,
@@ -194,6 +255,7 @@ export class ArchivoService {
             carpetaPadre: nuevoPadreId
                 ? new Types.ObjectId(nuevoPadreId)
                 : null,
+            propietario: new Types.ObjectId(propietarioId),
         });
         if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
 
@@ -211,10 +273,34 @@ export class ArchivoService {
     }
 
     // Metodos privados
-    private async obtenerCarpetasCompartidasIds(
+    /**
+     * Calcula el permiso de un archivo en memoria: dueño, share directo o el
+     * permiso heredado de la carpeta que se está listando.
+     */
+    private permisoDeArchivo(
+        archivo: IArchivo,
         usuarioId: string,
-    ): Promise<string[]> {
-        return this.permisosService.obtenerIdsCarpetasCompartidas(usuarioId);
+        permisoHeredado: NivelPermiso | null,
+    ): NivelPermiso | null {
+        if (archivo.propietario.toString() === usuarioId) {
+            return NivelPermiso.Escritura;
+        }
+
+        const directo = archivo.compartidoCon.find(
+            (c) => c.usuario.toString() === usuarioId,
+        );
+        return directo ? directo.permiso : permisoHeredado;
+    }
+
+    /** Serializa el archivo agregando `miPermiso` para el frontend. */
+    private conPermiso(
+        archivo: IArchivo,
+        permiso: NivelPermiso | null,
+    ): ArchivoConPermiso {
+        return {
+            ...archivo.toObject(),
+            miPermiso: permiso,
+        } as unknown as ArchivoConPermiso;
     }
 
     private async registrarActividad(

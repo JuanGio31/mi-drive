@@ -28,6 +28,13 @@
         <mat-icon>{{ esMarkdown() ? 'visibility' : 'subject' }}</mat-icon>
         {{ esMarkdown() ? 'Vista renderizada' : 'Texto plano' }}
       </span>
+
+      @if (puedeEditar()) {
+        <button mat-stroked-button type="button" (click)="editar()">
+          <mat-icon>edit</mat-icon>
+          Editar
+        </button>
+      }
     </header>
 
     <section class="contenido">

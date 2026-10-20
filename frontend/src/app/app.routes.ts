@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth-guard';
+import { adminGuard } from './core/guards/auth-guard';
+import { descartarCambiosGuard } from './features/editor/descartar-cambios.guard';
 
 export const routes: Routes = [
   // Rutas de autenticación (signIn y signUp)
@@ -32,13 +34,63 @@ export const routes: Routes = [
         title: 'Mi Unidad',
       },
       {
+        path: 'archivo/:id/editar',
+        loadComponent: () =>
+          import('./features/editor/editor-archivo').then((m) => m.EditorArchivoComponent),
+        canDeactivate: [descartarCambiosGuard],
+        title: 'Editar archivo',
+      },
+      {
         path: 'archivo/:id',
         loadComponent: () =>
           import('./features/visor/visor-archivo').then((m) => m.VisorArchivoComponent),
         title: 'Archivo',
       },
+      {
+        path: 'perfil',
+        loadComponent: () =>
+          import('./features/perfil/perfil').then((m) => m.PerfilComponent),
+        title: 'Mi perfil',
+      },
+      {
+        path: 'admin',
+        canActivate: [adminGuard],
+        children: [
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+          {
+            path: 'dashboard',
+            loadComponent: () =>
+              import('./features/admin/dashboard/dashboard').then((m) => m.AdminDashboardComponent),
+            title: 'Dashboard admin',
+          },
+          {
+            path: 'usuarios',
+            loadComponent: () =>
+              import('./features/admin/usuarios/usuarios').then((m) => m.AdminUsuariosComponent),
+            title: 'Usuarios',
+          },
+          {
+            path: 'reportes',
+            loadComponent: () =>
+              import('./features/admin/reportes/reportes').then((m) => m.AdminReportesComponent),
+            title: 'Reportes',
+          },
+          {
+            path: 'actividad',
+            loadComponent: () =>
+              import('./features/admin/actividad/actividad').then((m) => m.AdminActividadComponent),
+            title: 'Actividad',
+          },
+        ],
+      },
+      {
+        path: 'papelera',
+        loadComponent: () =>
+          import('./features/papelera/papelera').then((m) => m.PapeleraComponent),
+        title: 'Papelera',
+      },
       // Aquí se irán añadiendo las secciones del sidebar:
-      // recientes, compartidos, papelera
+      // recientes, compartidos
       {
         path: '',
         redirectTo: 'home',

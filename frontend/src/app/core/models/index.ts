@@ -3,5 +3,7 @@ export * from './auth.model';
 export * from './usuario.model';
 export * from './carpeta.model';
 export * from './archivo.model';
+export * from './busqueda.model';
+export * from './recurso';
 export * from './actividad.model';
 export * from './reporte.model';

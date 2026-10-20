@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ActividadService } from './actividad.service';
 import { HttpError } from '../../shared/errors/http-error';
+import { TipoRecurso } from '../../shared/types/enums';
 
 export class ActividadController {
     constructor(private readonly actividadService: ActividadService) {}
@@ -25,29 +26,32 @@ export class ActividadController {
         }
     };
 
-    /** Historial global (solo admin) */
+    /** Historial global paginado (solo admin). */
     listar = async (
         req: Request,
         res: Response,
         next: NextFunction,
     ): Promise<void> => {
         try {
-            const actividades = await this.actividadService.listar(req.query);
-            res.json(actividades);
+            res.json(await this.actividadService.listarPaginado(req.query));
         } catch (error) {
             next(error);
         }
     };
 
+    /** Historial de un recurso; el servicio valida que el usuario pueda verlo. */
     listarPorRecurso = async (
         req: Request,
         res: Response,
         next: NextFunction,
     ): Promise<void> => {
         try {
+            if (!req.user) throw HttpError.unauthorized();
             const actividades = await this.actividadService.listarPorRecurso(
-                req.params.tipo as string,
+                req.params.tipo as TipoRecurso,
                 req.params.id as string,
+                req.user.id,
+                req.user.rol,
             );
             res.json(actividades);
         } catch (error) {

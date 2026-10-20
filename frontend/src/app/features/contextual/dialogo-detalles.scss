@@ -1,0 +1,131 @@
+.titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.icono-titulo {
+  color: #64748b;
+}
+
+.nombre-titulo {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.bloque {
+  margin-bottom: 22px;
+}
+.bloque:last-child {
+  margin-bottom: 0;
+}
+
+.bloque h3 {
+  margin: 0 0 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.datos {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+  min-width: 420px;
+}
+
+.dato dt {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+.dato dd {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.accesos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 420px;
+}
+
+.acceso {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+.acceso:hover {
+  background: #f8fafc;
+}
+
+.avatar {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.quien {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.persona {
+  color: #1e293b;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.correo {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tu {
+  color: #94a3b8;
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.permiso {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+.nivel {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #0369a1;
+}
+.origen {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.estado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 8px;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+.estado.error {
+  color: #dc2626;
+}

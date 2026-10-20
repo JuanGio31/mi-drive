@@ -1,12 +1,39 @@
 <div class="mi-unidad">
   <header class="encabezado">
-    <div class="titulo">
-      @if (carpeta()) {
-        <button mat-icon-button class="volver" (click)="subir()" aria-label="Volver">
-          <mat-icon>arrow_back</mat-icon>
+    <div class="barra-superior">
+      <div class="titulo">
+        @if (carpeta()) {
+          <button mat-icon-button class="volver" (click)="subir()" aria-label="Volver">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+        }
+        <h1>{{ carpeta()?.nombre || 'Mi Unidad' }}</h1>
+      </div>
+
+      <div class="selector-vista" role="group" aria-label="Vista de archivos">
+        <button
+          mat-icon-button
+          type="button"
+          [class.activo]="vista() === 'lista'"
+          [attr.aria-pressed]="vista() === 'lista'"
+          aria-label="Vista de lista"
+          matTooltip="Vista de lista"
+          (click)="cambiarVista('lista')"
+        >
+          <mat-icon>view_list</mat-icon>
         </button>
-      }
-      <h1>{{ carpeta()?.nombre || 'Mi Unidad' }}</h1>
+        <button
+          mat-icon-button
+          type="button"
+          [class.activo]="vista() === 'cuadricula'"
+          [attr.aria-pressed]="vista() === 'cuadricula'"
+          aria-label="Vista de cuadrícula"
+          matTooltip="Vista de cuadrícula"
+          (click)="cambiarVista('cuadricula')"
+        >
+          <mat-icon>grid_view</mat-icon>
+        </button>
+      </div>
     </div>
 
     <p class="ruta">
@@ -20,7 +47,10 @@
 
   <app-explorador-carpeta
     [carpetaId]="carpetaId()"
+    [recarga]="recarga()"
+    [vista]="vista()"
     (abrirCarpeta)="irACarpeta($event)"
     (abrirArchivo)="abrirArchivo($event)"
+    (accion)="onAccion($event)"
   />
 </div>

@@ -1,6 +1,9 @@
 import { Types } from 'mongoose';
 import { ICarpetaRepository } from './carpeta.repository';
-import { CarpetaPermisosService } from './carpeta-permisos.service';
+import {
+    CachePermisos,
+    CarpetaPermisosService,
+} from './carpeta-permisos.service';
 import { CarpetaValidator } from './carpeta.validator';
 import { ICarpeta } from './carpeta.model';
 import {
@@ -11,37 +14,53 @@ import {
 } from './carpeta.dto';
 import { HttpError } from '../../shared/errors/http-error';
 import { ActividadService } from '../actividad/actividad.service';
-import { AccionActividad, TipoRecurso } from '../../shared/types/enums';
+import {
+    AccionActividad,
+    NivelPermiso,
+    TipoRecurso,
+} from '../../shared/types/enums';
+import { IArchivoRepository } from '../archivo/archivo.repository';
+
+/** Carpeta serializada con el permiso efectivo del usuario actual. */
+export type CarpetaConPermiso = ICarpeta & {
+    miPermiso: NivelPermiso | null;
+};
 
 export class CarpetaService {
     constructor(
         private readonly carpetaRepository: ICarpetaRepository,
+        private readonly archivoRepository: IArchivoRepository,
         private readonly permisosService: CarpetaPermisosService,
         private readonly validator: CarpetaValidator,
         private readonly actividadService: ActividadService,
     ) {}
 
+    /**
+     * Crea una carpeta. Si tiene padre, el propietario es el dueño del árbol
+     * (no el creador) y se registra `creadoPor` para la atribución.
+     */
     async crear(dto: CrearCarpetaDTO, usuarioId: string): Promise<ICarpeta> {
         const carpetaPadre = dto.carpetaPadre ?? null;
+        let propietarioId = usuarioId;
 
-        // 1. Validaciones
         if (carpetaPadre) {
-            await this.validator.validarPadreDisponible(carpetaPadre);
-            await this.permisosService.validarPadreEditable(
+            const padre = await this.permisosService.validarPadreEditable(
                 carpetaPadre,
                 usuarioId,
             );
+            propietarioId = padre!.propietario.toString();
         }
+
         await this.validator.validarNombreUnico(
-            usuarioId,
+            propietarioId,
             carpetaPadre,
             dto.nombre,
         );
 
-        // 2. Operación
         const carpeta = await this.carpetaRepository.crear({
             nombre: dto.nombre,
-            propietario: new Types.ObjectId(usuarioId),
+            propietario: new Types.ObjectId(propietarioId),
+            creadoPor: new Types.ObjectId(usuarioId),
             carpetaPadre: carpetaPadre
                 ? new Types.ObjectId(carpetaPadre)
                 : null,
@@ -49,7 +68,6 @@ export class CarpetaService {
             enPapelera: false,
         });
 
-        // 3. Efectos secundarios
         await this.registrarActividad(
             usuarioId,
             AccionActividad.Crear,
@@ -59,21 +77,102 @@ export class CarpetaService {
         return carpeta;
     }
 
+    /**
+     * Lista el contenido de una carpeta. En la raíz devuelve lo propio y las
+     * carpetas compartidas como puntos de entrada; dentro de una carpeta con
+     * acceso devuelve todas sus subcarpetas (permisos heredados) y calcula
+     * `miPermiso` en memoria, sin consultas por hija.
+     */
     async listar(usuarioId: string, filtros: ListarCarpetasQuery) {
-        const propias = await this.carpetaRepository.listarPorPropietarioYPadre(
+        const carpetaPadre = filtros.carpetaPadre ?? null;
+        const cache: CachePermisos = new Map();
+
+        if (!carpetaPadre) {
+            const propias =
+                await this.carpetaRepository.listarPorPropietarioYPadre(
+                    usuarioId,
+                    null,
+                );
+            const compartidas =
+                await this.carpetaRepository.listarCompartidasCon(
+                    usuarioId,
+                    null,
+                    true,
+                );
+
+            return {
+                propias: propias.map((carpeta) =>
+                    this.conPermiso(
+                        carpeta,
+                        this.permisosService.obtenerPermiso(
+                            carpeta,
+                            usuarioId,
+                        ),
+                    ),
+                ),
+                compartidas: compartidas.map((carpeta) =>
+                    this.conPermiso(
+                        carpeta,
+                        this.permisosService.obtenerPermiso(
+                            carpeta,
+                            usuarioId,
+                        ),
+                    ),
+                ),
+            };
+        }
+
+        const padre = await this.permisosService.obtenerConAcceso(
+            carpetaPadre,
             usuarioId,
-            filtros.carpetaPadre ?? null,
+            false,
+            cache,
         );
+        const permisoPadre = await this.permisosService.obtenerPermisoEfectivo(
+            padre,
+            usuarioId,
+            cache,
+        );
+        const hijas = await this.carpetaRepository.listarPorPadre(carpetaPadre);
 
-        const compartidas = filtros.incluirCompartidas
-            ? await this.carpetaRepository.listarCompartidasCon(usuarioId)
-            : [];
-
-        return { propias, compartidas };
+        return {
+            propias: hijas.map((carpeta) =>
+                this.conPermiso(
+                    carpeta,
+                    this.permisosService.obtenerPermiso(carpeta, usuarioId) ??
+                        permisoPadre,
+                ),
+            ),
+            compartidas: [],
+        };
     }
 
-    async buscarPorId(id: string, usuarioId: string): Promise<ICarpeta> {
-        return this.permisosService.obtenerConAcceso(id, usuarioId);
+    /** Lista las carpetas propias que están en la papelera. */
+    async listarPapelera(usuarioId: string): Promise<ICarpeta[]> {
+        return this.carpetaRepository.listarPapelera(usuarioId);
+    }
+
+    /**
+     * Carga una carpeta accesible y adjunta el permiso efectivo del usuario.
+     */
+    async buscarPorId(
+        id: string,
+        usuarioId: string,
+    ): Promise<CarpetaConPermiso> {
+        const cache: CachePermisos = new Map();
+        const carpeta = await this.permisosService.obtenerConAcceso(
+            id,
+            usuarioId,
+            false,
+            cache,
+        );
+        const permiso = await this.permisosService.obtenerPermisoEfectivo(
+            carpeta,
+            usuarioId,
+            cache,
+        );
+
+        return this.conPermiso(carpeta, permiso);
     }
 
     async renombrar(
@@ -81,7 +180,6 @@ export class CarpetaService {
         dto: RenombrarCarpetaDTO,
         usuarioId: string,
     ): Promise<ICarpeta> {
-        // 1. Validaciones
         const carpeta = await this.permisosService.obtenerConPermisoEdicion(
             id,
             usuarioId,
@@ -94,13 +192,11 @@ export class CarpetaService {
             id,
         );
 
-        // 2. Operación
         const actualizada = await this.carpetaRepository.actualizar(id, {
             nombre: dto.nombre,
         });
         if (!actualizada) throw HttpError.notFound('Carpeta no encontrada');
 
-        // 3. Efectos secundarios
         await this.registrarActividad(
             usuarioId,
             AccionActividad.Renombrar,
@@ -113,42 +209,63 @@ export class CarpetaService {
         return actualizada;
     }
 
+    /**
+     * Mueve una carpeta (solo el propietario). Si cambia de árbol, el
+     * subárbol completo pasa al dueño del destino para conservar un único
+     * propietario por árbol; los archivos internos se actualizan en bloque.
+     */
     async mover(
         id: string,
         dto: MoverCarpetaDTO,
         usuarioId: string,
     ): Promise<ICarpeta> {
         const nuevoPadreId = dto.carpetaPadre;
-
-        // 1. Validaciones
-        const carpeta = await this.permisosService.obtenerConPermisoEdicion(
+        const carpeta = await this.permisosService.obtenerComoPropietario(
             id,
             usuarioId,
         );
+        let propietarioId = carpeta.propietario.toString();
+
         await this.validator.validarSinCiclos(id, nuevoPadreId);
+
         if (nuevoPadreId) {
-            await this.validator.validarPadreDisponible(nuevoPadreId);
-            await this.permisosService.validarPadreEditable(
+            const padre = await this.permisosService.validarPadreEditable(
                 nuevoPadreId,
                 usuarioId,
             );
+            propietarioId = padre!.propietario.toString();
         }
+
         await this.validator.validarNombreUnico(
-            carpeta.propietario.toString(),
+            propietarioId,
             nuevoPadreId,
             carpeta.nombre,
             id,
         );
 
-        // 2. Operación
+        const descendientes =
+            await this.carpetaRepository.obtenerDescendientesIds(id);
+
         const actualizada = await this.carpetaRepository.actualizar(id, {
             carpetaPadre: nuevoPadreId
                 ? new Types.ObjectId(nuevoPadreId)
                 : null,
+            propietario: new Types.ObjectId(propietarioId),
         });
         if (!actualizada) throw HttpError.notFound('Carpeta no encontrada');
 
-        // 3. Efectos secundarios
+        if (propietarioId !== usuarioId) {
+            const ids = [id, ...descendientes];
+            await this.carpetaRepository.actualizarPropietarioArbol(
+                ids,
+                propietarioId,
+            );
+            await this.archivoRepository.actualizarPropietarioPorCarpetas(
+                ids,
+                propietarioId,
+            );
+        }
+
         await this.registrarActividad(
             usuarioId,
             AccionActividad.Mover,
@@ -163,6 +280,17 @@ export class CarpetaService {
     }
 
     // Métodos privados
+    /** Serializa la carpeta agregando `miPermiso` para el frontend. */
+    private conPermiso(
+        carpeta: ICarpeta,
+        permiso: NivelPermiso | null,
+    ): CarpetaConPermiso {
+        return {
+            ...carpeta.toObject(),
+            miPermiso: permiso,
+        } as unknown as CarpetaConPermiso;
+    }
+
     private async registrarActividad(
         usuarioId: string,
         accion: AccionActividad,

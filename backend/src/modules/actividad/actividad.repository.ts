@@ -1,12 +1,15 @@
 import { Types } from 'mongoose';
 import { ActividadModel, IActividad } from './actividad.model';
 import { FiltrosActividad } from './actividad.dto';
+import { TipoRecurso } from '../../shared/types/enums';
 
 export interface IActividadRepository {
     crear(data: Partial<IActividad>): Promise<IActividad>;
     listar(filtros: FiltrosActividad): Promise<IActividad[]>;
+    contar(filtros: FiltrosActividad): Promise<number>;
+    /** Historial de un recurso concreto (archivo, carpeta o usuario). */
     listarPorRecurso(
-        recursoTipo: string,
+        recursoTipo: TipoRecurso,
         recursoId: string,
     ): Promise<IActividad[]>;
     contarPorAccion(
@@ -39,12 +42,21 @@ export class MongoActividadRepository implements IActividadRepository {
             .exec();
     }
 
+    /**
+     * Busca las últimas 200 actividades de un recurso. Tipar `recursoTipo`
+     * como el enum del modelo evita el desajuste de overloads de Mongoose.
+     */
+    /** Cuenta actividades con los mismos filtros que `listar`. */
+    async contar(filtros: FiltrosActividad): Promise<number> {
+        return ActividadModel.countDocuments(this.construirQuery(filtros)).exec();
+    }
+
     async listarPorRecurso(
-        recursoTipo: string,
+        recursoTipo: TipoRecurso,
         recursoId: string,
     ): Promise<IActividad[]> {
         return ActividadModel.find({
-            recursoTipo: { $eq: recursoTipo },
+            recursoTipo,
             recursoId: new Types.ObjectId(recursoId),
         })
             .sort({ createdAt: -1 })

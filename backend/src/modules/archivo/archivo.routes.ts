@@ -33,6 +33,9 @@ router.get(
 
 router.get('/compartidos', archivoController.listarCompartidos);
 
+// GET /papelera → archivos propios que están en la papelera.
+router.get('/papelera', archivoController.listarPapelera);
+
 router.get(
     '/:id',
     validateParams(ArchivoIdParamSchema),

@@ -14,6 +14,7 @@ import {
   RangoFechasQuery,
   RecursosCompartidosResponse,
   RecursosRecibidosResponse,
+  ResumenAdmin,
   TopLimiteQuery,
   TopUsuarioItem,
   UsuarioMasCompartidosItem,
@@ -100,8 +101,29 @@ export class ReporteService {
 
   // ============ Globales (solo admin) ============
 
+  /** GET /reportes/admin/resumen → totales para el dashboard. */
+  resumenAdmin(): Observable<ResumenAdmin> {
+    return this.api.get<ResumenAdmin>('reportes/admin/resumen');
+  }
+
   /** GET /reportes/admin/archivos/por-tipo. */
   archivosPorTipoGlobal(): Observable<ArchivosPorTipoItem[]> {
     return this.api.get<ArchivosPorTipoItem[]>('reportes/admin/archivos/por-tipo');
+  }
+
+  /** GET /reportes/admin/actividad/por-tipo → conteo global por acción. */
+  operacionesPorTipoGlobal(query: PeriodoQuery = {}): Observable<ConteoPorAccion[]> {
+    return this.api.get<ConteoPorAccion[]>(
+      'reportes/admin/actividad/por-tipo',
+      buildParams(query),
+    );
+  }
+
+  /** GET /reportes/admin/actividad/por-periodo → conteo global por período. */
+  operacionesPorPeriodoGlobal(query: PeriodoQuery = {}): Observable<ConteoPorPeriodo[]> {
+    return this.api.get<ConteoPorPeriodo[]>(
+      'reportes/admin/actividad/por-periodo',
+      buildParams(query),
+    );
   }
 }

@@ -1,0 +1,199 @@
+:host {
+  display: block;
+  min-height: 100%;
+  background: #f8fafc;
+  border-radius: 24px;
+}
+
+.admin-pagina {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-cabecera h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+.admin-cabecera p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.total {
+  color: #64748b;
+  font-size: 0.85rem;
+  padding-top: 6px;
+}
+
+.tarjeta {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+}
+
+.filtros {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+}
+
+.filtros mat-form-field {
+  width: 190px;
+}
+
+.filtros-acciones {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.tabla-tarjeta {
+  overflow: hidden;
+}
+
+.tabla {
+  width: 100%;
+}
+
+.usuario-texto,
+.recurso-texto {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.nombre {
+  color: #0f172a;
+  font-weight: 500;
+}
+
+.correo {
+  color: #64748b;
+  font-size: 0.76rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.chip mat-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+.chip.azul {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+.chip.violeta {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+.chip.verde {
+  background: #ecfdf5;
+  color: #047857;
+}
+.chip.rojo {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+.chip.gris {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.col-detalle {
+  width: 80px;
+  text-align: center;
+}
+
+.icono-detalle {
+  color: #94a3b8;
+  cursor: help;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 40px 16px;
+  color: #94a3b8;
+}
+
+.vacio mat-icon {
+  font-size: 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.vacio p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.aviso.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.aviso mat-icon {
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+}
+
+@media (max-width: 760px) {
+  .admin-pagina {
+    padding: 20px 12px 36px;
+  }
+
+  .filtros mat-form-field {
+    width: calc(50% - 7px);
+  }
+
+  .filtros-acciones {
+    margin-left: 0;
+  }
+}

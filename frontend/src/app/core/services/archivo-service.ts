@@ -32,6 +32,11 @@ export class ArchivoService {
     return this.api.get<Archivo[]>('archivos/compartidos');
   }
 
+  /** GET /archivos/papelera. */
+  listarPapelera(): Observable<Archivo[]> {
+    return this.api.get<Archivo[]>('archivos/papelera');
+  }
+
   /** GET /archivos/:id. */
   buscarPorId(id: string): Observable<Archivo> {
     return this.api.get<Archivo>(`archivos/${id}`);

@@ -2,7 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api-service';
 import { buildParams } from '../utils/query-params';
-import { Actividad, FiltrosActividad, TipoRecursoActividad } from '../models';
+import {
+  Actividad,
+  ActividadesPagina,
+  FiltrosActividad,
+  TipoRecursoActividad,
+} from '../models';
 
 /** Consume /api/actividad (auditoría / historial de acciones). */
 @Injectable({
@@ -11,9 +16,9 @@ import { Actividad, FiltrosActividad, TipoRecursoActividad } from '../models';
 export class ActividadService {
   private readonly api = inject(ApiService);
 
-  /** GET /actividad → historial global (solo admin). */
-  listar(filtros: FiltrosActividad = {}): Observable<Actividad[]> {
-    return this.api.get<Actividad[]>('actividad', buildParams(filtros));
+  /** GET /actividad → historial global paginado (solo admin). */
+  listar(filtros: FiltrosActividad = {}): Observable<ActividadesPagina> {
+    return this.api.get<ActividadesPagina>('actividad', buildParams(filtros));
   }
 
   /** GET /actividad/mi-historial → historial del usuario autenticado. */

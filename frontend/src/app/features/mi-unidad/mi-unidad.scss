@@ -11,6 +11,36 @@
   margin-bottom: 16px;
 }
 
+.barra-superior {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.selector-vista {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 10px;
+  background: #e2e8f0;
+}
+
+.selector-vista button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  color: #64748b;
+}
+
+.selector-vista button.activo {
+  background: #fff;
+  color: #0369a1;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
 .titulo {
   display: flex;
   align-items: center;

@@ -7,6 +7,7 @@ import { env } from '../../shared/config/env';
 import { UsuarioPermisosService } from './usuario-permisos.services';
 import {
     ActualizarUsuarioDTO,
+    CambiarPasswordDTO,
     CrearUsuarioDTO,
     ListarUsuarioQueryDTO,
 } from './usuario.dto';
@@ -53,12 +54,33 @@ export class UsuarioService {
         return usuario;
     }
 
+    /** Lista usuarios con paginación y total para el panel de administración. */
     async listar(
         filtros: ListarUsuarioQueryDTO,
         usuarioEjecutorId: string,
-    ): Promise<IUsuario[]> {
+    ): Promise<{
+        usuarios: IUsuario[];
+        total: number;
+        page: number;
+        limit: number;
+    }> {
         await this.permisosService.obtenerComoAdmin(usuarioEjecutorId);
-        return this.usuarioRepository.listar(filtros);
+
+        const page = filtros.page ?? 1;
+        const limit = filtros.limit ?? 50;
+        const [usuarios, total] = await Promise.all([
+            this.usuarioRepository.listar(filtros),
+            this.usuarioRepository.contar(filtros),
+        ]);
+
+        return { usuarios, total, page, limit };
+    }
+
+    /** Usuarios activos (id, nombre, correo, rol). Accesible a cualquier usuario autenticado. */
+    async directorio(): Promise<
+        Pick<IUsuario, '_id' | 'nombre' | 'correo' | 'rol'>[]
+    > {
+        return this.usuarioRepository.directorio();
     }
 
     async buscarPorId(
@@ -73,6 +95,11 @@ export class UsuarioService {
         );
     }
 
+    /**
+     * Actualiza nombre/correo del propio usuario o de cualquiera si es admin.
+     * Cambiar `activo` y `rol` queda reservado a administradores; un admin no
+     * puede cambiarse el rol a sí mismo.
+     */
     async actualizar(
         id: string,
         dto: ActualizarUsuarioDTO,
@@ -96,7 +123,32 @@ export class UsuarioService {
             }
         }
 
-        const actualizado = await this.usuarioRepository.actualizar(id, dto);
+        const cambios: Partial<IUsuario> = {};
+        if (dto.nombre !== undefined) cambios.nombre = dto.nombre;
+        if (dto.correo !== undefined) cambios.correo = dto.correo;
+        if (dto.activo !== undefined) {
+            if (rolUsuario !== Rol.Administrador) {
+                throw HttpError.forbidden(
+                    'Solo un administrador puede cambiar el estado del usuario',
+                );
+            }
+            cambios.activo = dto.activo;
+        }
+        if (dto.rol !== undefined) {
+            if (rolUsuario !== Rol.Administrador) {
+                throw HttpError.forbidden(
+                    'Solo un administrador puede cambiar el rol del usuario',
+                );
+            }
+            if (id === usuarioId) {
+                throw HttpError.badRequest(
+                    'No puedes cambiar tu propio rol',
+                );
+            }
+            cambios.rol = dto.rol as Rol;
+        }
+
+        const actualizado = await this.usuarioRepository.actualizar(id, cambios);
         if (!actualizado) throw HttpError.notFound('Usuario no encontrado');
 
         await this.actividadService.registrar({
@@ -105,16 +157,66 @@ export class UsuarioService {
             recursoTipo: TipoRecurso.Usuario,
             recursoId: id,
             recursoNombre: actualizado.nombre,
+            ...(dto.rol ? { metadata: { rol: actualizado.rol } } : {}),
         });
 
         return actualizado;
     }
 
+    /**
+     * Cambia la contraseña del propio usuario. Exige la contraseña actual
+     * (se verifica con bcrypt) y registra la acción en la actividad.
+     */
+    async cambiarPassword(
+        id: string,
+        dto: CambiarPasswordDTO,
+        usuarioId: string,
+    ): Promise<void> {
+        if (id !== usuarioId) {
+            throw HttpError.forbidden(
+                'Solo puedes cambiar tu propia contraseña',
+            );
+        }
+
+        const usuario = await this.usuarioRepository.buscarPorIdConPassword(id);
+        if (!usuario) throw HttpError.notFound('Usuario no encontrado');
+
+        const passwordValido = await bcrypt.compare(
+            dto.passwordActual,
+            usuario.passwordHash,
+        );
+        if (!passwordValido) {
+            throw HttpError.badRequest('La contraseña actual no es correcta');
+        }
+
+        const passwordHash = await bcrypt.hash(
+            dto.passwordNueva,
+            env.BCRYPT_ROUNDS,
+        );
+        await this.usuarioRepository.actualizarPassword(id, passwordHash);
+
+        await this.actividadService.registrar({
+            usuarioId,
+            accion: AccionActividad.Actualizar,
+            recursoTipo: TipoRecurso.Usuario,
+            recursoId: id,
+            recursoNombre: usuario.nombre,
+            metadata: { campo: 'password' },
+        });
+    }
+
+    /** Desactiva una cuenta (soft delete). Un admin no puede desactivarse. */
     async desactivar(id: string, usuarioEjecutorId: string): Promise<IUsuario> {
         await this.permisosService.obtenerComoAdmin(usuarioEjecutorId);
 
         if (id === usuarioEjecutorId) {
             throw HttpError.badRequest('No puedes desactivar tu propia cuenta');
+        }
+
+        const usuario = await this.usuarioRepository.buscarPorId(id);
+        if (!usuario) throw HttpError.notFound('Usuario no encontrado');
+        if (!usuario.activo) {
+            throw HttpError.badRequest('El usuario ya está desactivado');
         }
 
         const desactivado = await this.usuarioRepository.desactivar(id);
@@ -129,5 +231,29 @@ export class UsuarioService {
         });
 
         return desactivado;
+    }
+
+    /** Reactiva un usuario desactivado (solo administradores). */
+    async reactivar(id: string, usuarioEjecutorId: string): Promise<IUsuario> {
+        await this.permisosService.obtenerComoAdmin(usuarioEjecutorId);
+
+        const usuario = await this.usuarioRepository.buscarPorId(id);
+        if (!usuario) throw HttpError.notFound('Usuario no encontrado');
+        if (usuario.activo) {
+            throw HttpError.badRequest('El usuario ya está activo');
+        }
+
+        const reactivado = await this.usuarioRepository.reactivar(id);
+        if (!reactivado) throw HttpError.notFound('Usuario no encontrado');
+
+        await this.actividadService.registrar({
+            usuarioId: usuarioEjecutorId,
+            accion: AccionActividad.Reactivar,
+            recursoTipo: TipoRecurso.Usuario,
+            recursoId: id,
+            recursoNombre: reactivado.nombre,
+        });
+
+        return reactivado;
     }
 }

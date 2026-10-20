@@ -39,6 +39,9 @@ router.get(
     carpetaController.listar,
 );
 
+// GET /papelera → carpetas propias que están en la papelera.
+router.get('/papelera', carpetaController.listarPapelera);
+
 // GET /:id → detalle de una carpeta.
 router.get(
     '/:id',

@@ -4,11 +4,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { marked } from 'marked';
 import { map } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
-import { Archivo, ExtensionArchivo } from '../../core/models';
+import { Archivo, ExtensionArchivo, NivelPermiso } from '../../core/models';
 import { ArchivoService } from '../../core/services/archivo-service';
 
 /**
@@ -25,6 +25,7 @@ export class VisorArchivoComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly archivoService = inject(ArchivoService);
   private readonly location = inject(Location);
+  private readonly router = inject(Router);
 
   /** id del archivo desde la URL. */
   readonly id = toSignal(this.route.paramMap.pipe(map((p) => p.get('id'))), {
@@ -37,6 +38,11 @@ export class VisorArchivoComponent {
 
   readonly esMarkdown = computed(
     () => this.archivo()?.tipo === ExtensionArchivo.Md,
+  );
+
+  /** Solo se muestra "Editar" si el backend reporta permiso de escritura. */
+  readonly puedeEditar = computed(
+    () => this.archivo()?.miPermiso === NivelPermiso.Escritura,
   );
 
   /** HTML renderizado del markdown (Angular sanitiza el innerHTML). */
@@ -59,6 +65,11 @@ export class VisorArchivoComponent {
 
   volver(): void {
     this.location.back();
+  }
+
+  editar(): void {
+    const id = this.id();
+    if (id) void this.router.navigate(['/archivo', id, 'editar']);
   }
 
   private async cargar(id: string): Promise<void> {

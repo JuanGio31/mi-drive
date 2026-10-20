@@ -1,9 +1,12 @@
 import { Types } from 'mongoose';
 import { IActividadRepository } from './actividad.repository';
 import { FiltrosActividad } from './actividad.dto';
-import { AccionActividad, TipoRecurso } from '../../shared/types/enums';
+import { AccionActividad, Rol, TipoRecurso } from '../../shared/types/enums';
 import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { IActividad } from './actividad.model';
+import { HttpError } from '../../shared/errors/http-error';
+import { ArchivoPermisosService } from '../archivo/archivo-permisos.service';
+import { CarpetaPermisosService } from '../carpeta/carpeta-permisos.service';
 
 export interface RegistrarActividadParams {
     usuarioId: string;
@@ -20,6 +23,8 @@ export class ActividadService {
     constructor(
         private readonly actividadRepository: IActividadRepository,
         private readonly usuarioRepository: IUsuarioRepository,
+        private readonly archivoPermisosService: ArchivoPermisosService,
+        private readonly carpetaPermisosService: CarpetaPermisosService,
     ) {}
 
     /**
@@ -67,14 +72,82 @@ export class ActividadService {
         return this.actividadRepository.listar(filtros);
     }
 
+    /** Lista actividades con total para la tabla paginada del administrador. */
+    async listarPaginado(filtros: FiltrosActividad): Promise<{
+        actividades: IActividad[];
+        total: number;
+        page: number;
+        limit: number;
+    }> {
+        const page = filtros.page ?? 1;
+        const limit = filtros.limit ?? 50;
+        const [actividades, total] = await Promise.all([
+            this.actividadRepository.listar(filtros),
+            this.actividadRepository.contar(filtros),
+        ]);
+
+        return { actividades, total, page, limit };
+    }
+
+    /**
+     * Historial de un recurso. Valida el acceso al recurso antes de devolver
+     * nada: archivos/carpetas usan los permisos efectivos; los usuarios solo
+     * son visibles para sí mismos o un administrador.
+     */
     async listarPorRecurso(
-        recursoTipo: string,
+        recursoTipo: TipoRecurso,
         recursoId: string,
+        usuarioId: string,
+        rolUsuario: Rol,
     ): Promise<IActividad[]> {
+        await this.validarAccesoRecurso(
+            recursoTipo,
+            recursoId,
+            usuarioId,
+            rolUsuario,
+        );
         return this.actividadRepository.listarPorRecurso(
             recursoTipo,
             recursoId,
         );
+    }
+
+    /** Lanza 404 cuando el recurso no existe o el usuario no puede verlo. */
+    private async validarAccesoRecurso(
+        recursoTipo: TipoRecurso,
+        recursoId: string,
+        usuarioId: string,
+        rolUsuario: Rol,
+    ): Promise<void> {
+        switch (recursoTipo) {
+            case TipoRecurso.Archivo:
+                await this.archivoPermisosService.obtenerConAcceso(
+                    recursoId,
+                    usuarioId,
+                );
+                return;
+            case TipoRecurso.Carpeta:
+                await this.carpetaPermisosService.obtenerConAcceso(
+                    recursoId,
+                    usuarioId,
+                );
+                return;
+            case TipoRecurso.Usuario:
+                if (
+                    recursoId !== usuarioId &&
+                    rolUsuario !== Rol.Administrador
+                ) {
+                    throw HttpError.notFound('Recurso no encontrado');
+                }
+                return;
+            case TipoRecurso.Sistema:
+                if (rolUsuario !== Rol.Administrador) {
+                    throw HttpError.notFound('Recurso no encontrado');
+                }
+                return;
+            default:
+                throw HttpError.badRequest('Tipo de recurso no válido');
+        }
     }
 
     async contarPorAccion(filtros: FiltrosActividad) {

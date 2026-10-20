@@ -14,6 +14,14 @@ export interface Actividad {
   createdAt: string;
 }
 
+/** Respuesta paginada de GET /actividad (admin). */
+export interface ActividadesPagina {
+  actividades: Actividad[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 /** Filtros/query de GET /actividad, /actividad/mi-historial y reportes de actividad. */
 export interface FiltrosActividad {
   usuarioId?: string;

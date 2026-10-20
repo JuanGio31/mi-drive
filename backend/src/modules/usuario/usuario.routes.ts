@@ -7,6 +7,7 @@ import {
 } from '../../shared/middlewares/validate.middleware';
 import {
     ActualizarUsuarioSchema,
+    CambiarPasswordSchema,
     CrearUsuarioSchema,
     ListarUsuarioQuerySchema,
     UsuarioIdParamSchema,
@@ -34,6 +35,10 @@ router.get(
     usuarioController.listar,
 );
 
+// GET /directorio → usuarios activos (id, nombre, correo). Cualquier autenticado.
+// Debe ir antes de /:id para que "directorio" no se interprete como un id.
+router.get('/directorio', usuarioController.listarDirectorio);
+
 router.get(
     '/:id',
     validateParams(UsuarioIdParamSchema),
@@ -46,6 +51,14 @@ router.patch(
     validateParams(UsuarioIdParamSchema),
     validateBody(ActualizarUsuarioSchema),
     usuarioController.actualizar,
+);
+
+// PATCH /:id/password → cambio de contraseña del propio usuario (autoservicio).
+router.patch(
+    '/:id/password',
+    validateParams(UsuarioIdParamSchema),
+    validateBody(CambiarPasswordSchema),
+    usuarioController.cambiarPassword,
 );
 
 // DELETE /:id → soft delete: desactiva el usuario (no lo borra físicamente).

@@ -1,4 +1,8 @@
-<aside class="sidebar" [class.collapsed]="collapsed()">
+<aside
+  class="sidebar"
+  [class.collapsed]="collapsed()"
+  [class.sin-admin]="!esAdmin()"
+>
   <div
     class="brand"
     (click)="toggleCollapse()"
@@ -11,12 +15,35 @@
     }
   </div>
 
-  <button class="new-btn" matRipple>
+  <button
+    class="new-btn"
+    matRipple
+    aria-label="Nuevo"
+    [matMenuTriggerFor]="menuNuevo"
+  >
     <mat-icon>add</mat-icon>
     @if (!collapsed()) {
       <span>Nuevo</span>
     }
   </button>
+
+  <mat-menu #menuNuevo="matMenu" xPosition="after" yPosition="below">
+    <button mat-menu-item (click)="crearCarpeta()">
+      <mat-icon>create_new_folder</mat-icon>
+      <span>Nueva carpeta</span>
+    </button>
+
+    <mat-divider />
+
+    <button mat-menu-item (click)="crearTexto()">
+      <mat-icon>description</mat-icon>
+      <span>Nuevo archivo de texto</span>
+    </button>
+    <button mat-menu-item (click)="crearMarkdown()">
+      <mat-icon>code</mat-icon>
+      <span>Nuevo archivo de markdown</span>
+    </button>
+  </mat-menu>
 
   <nav class="nav">
     @for (item of items; track item.route) {
@@ -34,4 +61,29 @@
       </a>
     }
   </nav>
+
+  @if (esAdmin()) {
+    <mat-divider class="nav-divider" />
+
+    @if (!collapsed()) {
+      <p class="nav-label">Administración</p>
+    }
+
+    <nav class="nav nav-admin">
+      @for (item of adminItems; track item.route) {
+        <a
+          class="nav-item"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          [matTooltip]="collapsed() ? item.label : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+          @if (!collapsed()) {
+            <span>{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+  }
 </aside>

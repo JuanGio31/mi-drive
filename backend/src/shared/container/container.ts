@@ -10,6 +10,8 @@ import { MongoArchivoRepository } from '../../modules/archivo/archivo.repository
 import { ArchivoService } from '../../modules/archivo/archivo.service';
 import { AuthController } from '../../modules/auth/auth.controller';
 import { AuthService } from '../../modules/auth/auth.service';
+import { BusquedaController } from '../../modules/busqueda/busqueda.controller';
+import { BusquedaService } from '../../modules/busqueda/busqueda.service';
 import { CarpetaCompartidosService } from '../../modules/carpeta/carpeta-compartido.service';
 import { CarpetaPapeleraService } from '../../modules/carpeta/carpeta-papelera.service';
 import { CarpetaPermisosService } from '../../modules/carpeta/carpeta-permisos.service';
@@ -32,10 +34,20 @@ const archivoRepository = new MongoArchivoRepository();
 const actividadRepository = new MongoActividadRepository();
 const reporteRepository = new MongoReporteRepository();
 
+// Permisos compartidos por actividad y recursos
+const carpetaPermisosService = new CarpetaPermisosService(carpetaRepository);
+const archivoPermisosService = new ArchivoPermisosService(
+    archivoRepository,
+    carpetaRepository,
+    carpetaPermisosService,
+);
+
 // Actividades
 const actividadService = new ActividadService(
     actividadRepository,
     usuarioRepository,
+    archivoPermisosService,
+    carpetaPermisosService,
 );
 const actividadController = new ActividadController(actividadService);
 
@@ -53,10 +65,10 @@ const authService = new AuthService(usuarioRepository, actividadService);
 const authController = new AuthController(authService);
 
 // Carpetas
-const carpetaPermisosService = new CarpetaPermisosService(carpetaRepository);
 const carpetaValidator = new CarpetaValidator(carpetaRepository);
 const carpetaService = new CarpetaService(
     carpetaRepository,
+    archivoRepository,
     carpetaPermisosService,
     carpetaValidator,
     actividadService,
@@ -65,9 +77,11 @@ const carpetaCompartidosService = new CarpetaCompartidosService(
     carpetaRepository,
     carpetaPermisosService,
     actividadService,
+    usuarioRepository,
 );
 const carpetaPapeleraService = new CarpetaPapeleraService(
     carpetaRepository,
+    archivoRepository,
     carpetaPermisosService,
     carpetaValidator,
     actividadService,
@@ -79,11 +93,6 @@ const carpetaController = new CarpetaController(
 );
 
 // Archivos
-const archivoPermisosService = new ArchivoPermisosService(
-    archivoRepository,
-    carpetaRepository,
-    carpetaPermisosService,
-);
 const archivoValidator = new ArchivoValidator(
     archivoRepository,
     carpetaRepository,
@@ -98,6 +107,7 @@ const archivoCompartidosService = new ArchivoCompartidosService(
     archivoRepository,
     archivoPermisosService,
     actividadService,
+    usuarioRepository,
 );
 const archivoPapeleraService = new ArchivoPapeleraService(
     archivoRepository,
@@ -110,6 +120,13 @@ const archivoController = new ArchivoController(
     archivoCompartidosService,
     archivoPapeleraService,
 );
+
+// Busqueda global
+const busquedaService = new BusquedaService(
+    archivoRepository,
+    carpetaRepository,
+);
+const busquedaController = new BusquedaController(busquedaService);
 
 // Reportes
 const reporteService = new ReporteService(
@@ -151,6 +168,10 @@ export const container = {
     archivoCompartidosService,
     archivoPapeleraService,
     archivoController,
+
+    // Busqueda global
+    busquedaService,
+    busquedaController,
 
     // Actividades
     actividadController,

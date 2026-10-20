@@ -1,0 +1,143 @@
+<div class="admin-pagina">
+  <header class="admin-cabecera">
+    <div>
+      <h1>Usuarios</h1>
+      <p>Administra las cuentas, roles y accesos del sistema.</p>
+    </div>
+
+    <button mat-flat-button color="primary" type="button" (click)="abrirCrear()">
+      <mat-icon>person_add</mat-icon>
+      Nuevo usuario
+    </button>
+  </header>
+
+  @if (error()) {
+    <div class="aviso error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <section class="tarjeta filtros">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Rol</mat-label>
+      <mat-select
+        [value]="rolFiltro()"
+        (selectionChange)="cambiarRol($event.value)"
+      >
+        <mat-option value="">Todos</mat-option>
+        @for (rol of roles; track rol) {
+          <mat-option [value]="rol">{{ etiquetaRol(rol) }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-slide-toggle
+      [checked]="soloActivos()"
+      (change)="cambiarSoloActivos($event.checked)"
+    >
+      Solo activos
+    </mat-slide-toggle>
+
+    <span class="total">{{ total() }} usuario(s)</span>
+  </section>
+
+  <section class="tarjeta tabla-tarjeta">
+    @if (cargando()) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <table mat-table [dataSource]="usuarios()" class="tabla">
+      <ng-container matColumnDef="usuario">
+        <th mat-header-cell *matHeaderCellDef>Usuario</th>
+        <td mat-cell *matCellDef="let usuario">
+          <div class="usuario-celda">
+            <div class="avatar">{{ iniciales(usuario.nombre) }}</div>
+            <div class="usuario-texto">
+              <span class="nombre">{{ usuario.nombre }}</span>
+              <span class="correo">{{ usuario.correo }}</span>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="rol">
+        <th mat-header-cell *matHeaderCellDef>Rol</th>
+        <td mat-cell *matCellDef="let usuario">
+          <span class="chip rol" [class.admin]="usuario.rol === 'administrador'">
+            <mat-icon>{{ usuario.rol === 'administrador' ? 'shield_person' : 'person' }}</mat-icon>
+            {{ etiquetaRol(usuario.rol) }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let usuario">
+          <span class="chip" [class.activo]="usuario.activo" [class.inactivo]="!usuario.activo">
+            <mat-icon>{{ usuario.activo ? 'check_circle' : 'block' }}</mat-icon>
+            {{ usuario.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="registro">
+        <th mat-header-cell *matHeaderCellDef>Registro</th>
+        <td mat-cell *matCellDef="let usuario">{{ formatearFecha(usuario.createdAt) }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef class="col-acciones">Acciones</th>
+        <td mat-cell *matCellDef="let usuario" class="col-acciones">
+          <button
+            mat-icon-button
+            type="button"
+            matTooltip="Editar"
+            (click)="abrirEditar(usuario)"
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+
+          @if (usuario.activo) {
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Desactivar"
+              [disabled]="esPropio(usuario)"
+              (click)="desactivar(usuario)"
+            >
+              <mat-icon>person_off</mat-icon>
+            </button>
+          } @else {
+            <button
+              mat-icon-button
+              type="button"
+              matTooltip="Reactivar"
+              (click)="reactivar(usuario)"
+            >
+              <mat-icon>person_add</mat-icon>
+            </button>
+          }
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+      <tr mat-row *matRowDef="let fila; columns: columnas"></tr>
+    </table>
+
+    @if (!cargando() && usuarios().length === 0) {
+      <div class="vacio">
+        <mat-icon>group_off</mat-icon>
+        <p>No hay usuarios que coincidan con los filtros.</p>
+      </div>
+    }
+
+    <mat-paginator
+      [length]="total()"
+      [pageSize]="limit()"
+      [pageIndex]="page() - 1"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="cambiarPagina($event)"
+    ></mat-paginator>
+  </section>
+</div>

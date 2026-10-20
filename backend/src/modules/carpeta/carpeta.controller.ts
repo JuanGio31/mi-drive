@@ -52,6 +52,22 @@ export class CarpetaController {
         }
     };
 
+    /** Lista las carpetas propias que están en la papelera. */
+    listarPapelera = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> => {
+        try {
+            const carpetas = await this.carpetaService.listarPapelera(
+                this.getUsuarioId(req),
+            );
+            res.json(carpetas);
+        } catch (error) {
+            next(error);
+        }
+    };
+
     /** Devuelve el detalle de una carpeta por su ID. */
     buscarPorId = async (
         req: Request,

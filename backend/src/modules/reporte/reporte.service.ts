@@ -11,6 +11,13 @@ export class ReporteService {
         private readonly actividadService: ActividadService,
     ) {}
 
+    // ============ Dashboard ============
+
+    /** Totales globales del sistema para el dashboard del administrador. */
+    async resumen() {
+        return this.reporteRepository.resumen();
+    }
+
     // ============ Archivos ============
 
     async archivosPorTipo() {

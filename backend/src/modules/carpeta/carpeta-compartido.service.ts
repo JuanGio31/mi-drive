@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 import { ICarpetaRepository } from './carpeta.repository';
 import { CarpetaPermisosService } from './carpeta-permisos.service';
 // import { ActividadService } from '../actividad/actividad.service';
+import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { ICarpeta, ICompartidoCon } from './carpeta.model';
 import { CompartirCarpetaDTO } from './carpeta.dto';
 import { HttpError } from '../../shared/errors/http-error';
@@ -17,8 +18,13 @@ export class CarpetaCompartidosService {
         private readonly carpetaRepository: ICarpetaRepository,
         private readonly permisosService: CarpetaPermisosService,
         private readonly actividadService: ActividadService,
+        private readonly usuarioRepository: IUsuarioRepository,
     ) {}
 
+    /**
+     * Comparte una carpeta con un usuario activo existente. Solo el propietario
+     * puede hacerlo; si ya estaba compartida, actualiza el permiso.
+     */
     async compartir(
         id: string,
         dto: CompartirCarpetaDTO,
@@ -31,6 +37,11 @@ export class CarpetaCompartidosService {
 
         if (dto.usuarioId === usuarioId) {
             throw HttpError.badRequest('No puedes compartir contigo mismo');
+        }
+
+        const destino = await this.usuarioRepository.buscarPorId(dto.usuarioId);
+        if (!destino || !destino.activo) {
+            throw HttpError.notFound('Usuario destino no encontrado');
         }
 
         const yaCompartida = carpeta.compartidoCon.some(

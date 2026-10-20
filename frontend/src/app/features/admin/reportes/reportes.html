@@ -1,0 +1,415 @@
+<div class="admin-pagina">
+  <header class="admin-cabecera">
+    <div>
+      <h1>Reportes</h1>
+      <p>Estadísticas globales de archivos, usuarios, compartición y actividad.</p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="aviso error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (cargando()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  <mat-tab-group animationDuration="0ms" class="tabs-reportes">
+    <!-- ============ Archivos ============ -->
+    <mat-tab label="Archivos">
+      <div class="contenido-tab">
+        <section class="tarjeta">
+          <h2><mat-icon>pie_chart</mat-icon>Distribución por tipo</h2>
+
+          @if (archivosPorTipo().length === 0) {
+            <p class="vacio-texto">Sin archivos registrados.</p>
+          } @else {
+            <div class="distribucion">
+              @for (item of archivosPorTipo(); track item.tipo) {
+                <div class="distribucion-fila">
+                  <span class="distribucion-tipo">.{{ item.tipo }}</span>
+                  <div class="barra">
+                    <div
+                      class="barra-relleno"
+                      [style.width.%]="porcentaje(item.total, totalArchivos())"
+                    ></div>
+                  </div>
+                  <span class="distribucion-valor">{{ item.total }}</span>
+                  <span class="distribucion-meta">
+                    {{ formatearTamanio(tamanoTotal(item)) }}
+                    ({{ porcentaje(tamanoTotal(item), totalAlmacenamiento()) }}%)
+                  </span>
+                </div>
+              }
+            </div>
+            <p class="resumen-linea">
+              {{ totalArchivos() }} archivos · {{ formatearTamanio(totalAlmacenamiento()) }}
+              en total
+            </p>
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>date_range</mat-icon>Archivos por rango</h2>
+
+          <div class="filtros-rango">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Desde</mat-label>
+              <input
+                matInput
+                type="date"
+                [value]="desde()"
+                (change)="desde.set($any($event.target).value)"
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Hasta</mat-label>
+              <input
+                matInput
+                type="date"
+                [value]="hasta()"
+                (change)="hasta.set($any($event.target).value)"
+              />
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="button" (click)="buscarRango()">
+              <mat-icon>search</mat-icon>
+              Buscar
+            </button>
+            <button mat-button type="button" (click)="limpiarRango()">Limpiar</button>
+          </div>
+
+          @if (archivosRango().length === 0) {
+            <p class="vacio-texto">No hay archivos en el rango seleccionado.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Archivo</th>
+                    <th>Tipo</th>
+                    <th>Tamaño</th>
+                    <th>Propietario</th>
+                    <th>Creado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (archivo of archivosRango(); track archivo.id) {
+                    <tr>
+                      <td>{{ archivo.nombre }}</td>
+                      <td>{{ archivo.tipo }}</td>
+                      <td>{{ formatearTamanio(tamano(archivo)) }}</td>
+                      <td>
+                        <span class="doble-linea">
+                          <span>{{ archivo.propietario.nombre }}</span>
+                          <small>{{ archivo.propietario.correo }}</small>
+                        </span>
+                      </td>
+                      <td>{{ formatearFecha(archivo.createdAt) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>local_fire_department</mat-icon>Archivos con más operaciones</h2>
+
+          @if (masOperaciones().length === 0) {
+            <p class="vacio-texto">Sin operaciones registradas.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Archivo</th>
+                    <th>Operaciones</th>
+                    <th>Última</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (archivo of masOperaciones(); track archivo.recursoId) {
+                    <tr>
+                      <td>{{ archivo.recursoNombre || '—' }}</td>
+                      <td>{{ archivo.totalOperaciones }}</td>
+                      <td>{{ formatearFecha(archivo.ultimaOperacion) }}</td>
+                      <td class="acciones-lista">
+                        @for (accion of archivo.acciones; track accion) {
+                          <span class="chip-mini">{{ etiquetaAccion(accion) }}</span>
+                        }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      </div>
+    </mat-tab>
+
+    <!-- ============ Usuarios ============ -->
+    <mat-tab label="Usuarios">
+      <div class="contenido-tab">
+        <section class="tarjeta">
+          <h2><mat-icon>emoji_events</mat-icon>Top usuarios por archivos</h2>
+
+          @if (topUsuarios().length === 0) {
+            <p class="vacio-texto">Sin datos de usuarios.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Archivos</th>
+                    <th>Almacenamiento</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (usuario of topUsuarios(); track usuario.usuarioId) {
+                    <tr>
+                      <td>
+                        <span class="doble-linea">
+                          <span>{{ usuario.nombre }}</span>
+                          <small>{{ usuario.correo }}</small>
+                        </span>
+                      </td>
+                      <td>{{ usuario.rol }}</td>
+                      <td>{{ usuario.totalArchivos }}</td>
+                      <td>{{ formatearTamanio(tamanoTotal(usuario)) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>share</mat-icon>Usuarios con más compartidos</h2>
+
+          @if (usuariosCompartidos().length === 0) {
+            <p class="vacio-texto">Sin comparticiones registradas.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Archivos</th>
+                    <th>Carpetas</th>
+                    <th>Personas alcanzadas</th>
+                    <th>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (usuario of usuariosCompartidos(); track usuario.usuarioId) {
+                    <tr>
+                      <td>
+                        <span class="doble-linea">
+                          <span>{{ usuario.nombre }}</span>
+                          <small>{{ usuario.correo }}</small>
+                        </span>
+                      </td>
+                      <td>{{ usuario.archivosCompartidos }}</td>
+                      <td>{{ usuario.carpetasCompartidas }}</td>
+                      <td>{{ usuario.personasAlcanzadas }}</td>
+                      <td>{{ usuario.totalCompartidos }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+      </div>
+    </mat-tab>
+
+    <!-- ============ Compartición ============ -->
+    <mat-tab label="Compartición">
+      <div class="contenido-tab">
+        <section class="tarjeta">
+          <h2><mat-icon>trending_up</mat-icon>Archivos más compartidos</h2>
+
+          @if (archivosCompartidos().length === 0) {
+            <p class="vacio-texto">Sin archivos compartidos.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Archivo</th>
+                    <th>Tipo</th>
+                    <th>Propietario</th>
+                    <th>Usuarios</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (archivo of archivosCompartidos(); track archivo.archivoId) {
+                    <tr>
+                      <td>{{ archivo.nombre }}</td>
+                      <td>{{ archivo.tipo }}</td>
+                      <td>{{ archivo.propietario.nombre }}</td>
+                      <td>{{ archivo.numUsuarios }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>person_search</mat-icon>Detalle por usuario</h2>
+
+          <mat-form-field appearance="outline" class="selector-usuario">
+            <mat-label>Usuario</mat-label>
+            <mat-select
+              [value]="usuarioSeleccionado()"
+              (selectionChange)="seleccionarUsuario($event.value)"
+            >
+              <mat-option value="">Selecciona un usuario</mat-option>
+              @for (usuario of usuarios(); track usuario._id) {
+                <mat-option [value]="usuario._id">
+                  {{ usuario.nombre }} ({{ usuario.correo }})
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (!usuarioSeleccionado()) {
+            <p class="vacio-texto">Elige un usuario para ver sus recursos.</p>
+          } @else {
+            <div class="columnas-reporte">
+              <div>
+                <h3>Compartidos</h3>
+                @if (compartidosUsuario().length === 0) {
+                  <p class="vacio-texto">No ha compartido recursos.</p>
+                } @else {
+                  <table class="tabla-simple">
+                    <thead>
+                      <tr>
+                        <th>Recurso</th>
+                        <th>Tipo</th>
+                        <th>Usuarios</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (recurso of compartidosUsuario(); track recurso.id) {
+                        <tr>
+                          <td>{{ recurso.nombre }}</td>
+                          <td>{{ recurso.tipo || 'carpeta' }}</td>
+                          <td>{{ recurso.numUsuarios }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+
+              <div>
+                <h3>Recibidos</h3>
+                @if (recibidosUsuario().length === 0) {
+                  <p class="vacio-texto">No ha recibido recursos.</p>
+                } @else {
+                  <table class="tabla-simple">
+                    <thead>
+                      <tr>
+                        <th>Recurso</th>
+                        <th>Propietario</th>
+                        <th>Permiso</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (recurso of recibidosUsuario(); track recurso.id) {
+                        <tr>
+                          <td>{{ recurso.nombre }}</td>
+                          <td>{{ recurso.propietario.nombre }}</td>
+                          <td>{{ recurso.miPermiso }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                }
+              </div>
+            </div>
+          }
+        </section>
+      </div>
+    </mat-tab>
+
+    <!-- ============ Actividad ============ -->
+    <mat-tab label="Actividad">
+      <div class="contenido-tab">
+        <section class="tarjeta">
+          <h2><mat-icon>bar_chart</mat-icon>Operaciones por tipo</h2>
+
+          @if (actividadPorTipo().length === 0) {
+            <p class="vacio-texto">Sin actividad registrada.</p>
+          } @else {
+            <div class="distribucion">
+              @for (item of actividadPorTipo(); track item.accion) {
+                <div class="distribucion-fila">
+                  <span class="distribucion-tipo">{{ etiquetaAccion(item.accion) }}</span>
+                  <div class="barra">
+                    <div
+                      class="barra-relleno"
+                      [style.width.%]="porcentaje(item.total, totalOperacionesTipo())"
+                    ></div>
+                  </div>
+                  <span class="distribucion-valor">{{ item.total }}</span>
+                </div>
+              }
+            </div>
+            <p class="resumen-linea">{{ totalOperacionesTipo() }} operaciones en total</p>
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>timeline</mat-icon>Operaciones por período</h2>
+
+          <mat-form-field appearance="outline" class="selector-unidad">
+            <mat-label>Agrupar por</mat-label>
+            <mat-select
+              [value]="unidad()"
+              (selectionChange)="cambiarUnidad($event.value)"
+            >
+              <mat-option value="dia">Día</mat-option>
+              <mat-option value="mes">Mes</mat-option>
+              <mat-option value="año">Año</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          @if (actividadPorPeriodo().length === 0) {
+            <p class="vacio-texto">Sin actividad en el período.</p>
+          } @else {
+            <div class="distribucion">
+              @for (item of actividadPorPeriodo(); track item.periodo) {
+                <div class="distribucion-fila">
+                  <span class="distribucion-tipo">{{ item.periodo }}</span>
+                  <div class="barra">
+                    <div
+                      class="barra-relleno verde"
+                      [style.width.%]="porcentaje(item.total, totalPeriodo())"
+                    ></div>
+                  </div>
+                  <span class="distribucion-valor">{{ item.total }}</span>
+                </div>
+              }
+            </div>
+            <p class="resumen-linea">{{ totalPeriodo() }} operaciones en total</p>
+          }
+        </section>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

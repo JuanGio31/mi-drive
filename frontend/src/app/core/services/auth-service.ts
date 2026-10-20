@@ -50,6 +50,16 @@ export class AuthService {
     return this.usuario()?.rol === Rol.Administrador;
   }
 
+  /** Actualiza los datos de la sesión tras editar el perfil (conserva el token). */
+  actualizarSesion(cambios: Partial<Omit<UsuarioSesion, 'id'>>): void {
+    const actual = this.usuario();
+    if (!actual) return;
+
+    const actualizado: UsuarioSesion = { ...actual, ...cambios };
+    localStorage.setItem(USER_KEY, JSON.stringify(actualizado));
+    this.usuario.set(actualizado);
+  }
+
   private guardarSesion(res: LoginResponse): void {
     localStorage.setItem(TOKEN_KEY, res.token);
     localStorage.setItem(USER_KEY, JSON.stringify(res.usuario));

@@ -1,0 +1,58 @@
+:host {
+  display: flex;
+  align-items: center;
+}
+
+/* El disparador no debe crear una caja propia: así el contenido proyectado
+   y el botón siguen siendo hijos flex de la fila. */
+.contexto {
+  display: contents;
+}
+
+/* El panel vive en el overlay; el elemento <mat-menu> no debe ocupar espacio. */
+mat-menu {
+  display: none;
+}
+
+/* Se revela al pasar el ratón por la fila o al enfocarla (teclado), para no
+   cargar visualmente cada fila. En táctil queda siempre visible. */
+.gatillo {
+  flex-shrink: 0;
+  color: #94a3b8;
+  opacity: 0;
+  pointer-events: none;
+  transition: color 0.15s, background 0.15s, opacity 0.15s;
+}
+:host(.vista-cuadricula) {
+  position: relative;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+:host(.vista-cuadricula) .gatillo {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+}
+
+:host(:hover) .gatillo,
+:host(:focus-within) .gatillo {
+  opacity: 1;
+  pointer-events: auto;
+}
+.gatillo:hover {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+@media (hover: none) {
+  .gatillo {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.peligroso {
+  color: #dc2626;
+}

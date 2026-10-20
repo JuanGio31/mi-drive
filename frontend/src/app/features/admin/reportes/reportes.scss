@@ -1,0 +1,275 @@
+:host {
+  display: block;
+  min-height: 100%;
+  background: #f8fafc;
+  border-radius: 24px;
+}
+
+.admin-pagina {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 28px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-cabecera h1 {
+  margin: 0 0 4px;
+  font-size: 1.5rem;
+  color: #0f172a;
+}
+
+.admin-cabecera p {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.tabs-reportes {
+  background: transparent;
+}
+
+.contenido-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 16px;
+}
+
+.tarjeta {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.tarjeta h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 0.98rem;
+  color: #0f172a;
+}
+
+.tarjeta h2 mat-icon {
+  color: #2563eb;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.tarjeta h3 {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+/* Distribuciones */
+
+.distribucion {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.distribucion-fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.distribucion-tipo {
+  width: 170px;
+  flex-shrink: 0;
+  color: #334155;
+  font-size: 0.83rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barra {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.barra-relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, #2563eb);
+}
+
+.barra-relleno.verde {
+  background: linear-gradient(90deg, #34d399, #059669);
+}
+
+.distribucion-valor {
+  width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+  color: #0f172a;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.distribucion-meta {
+  width: 150px;
+  flex-shrink: 0;
+  text-align: right;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.resumen-linea {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+/* Filtros */
+
+.filtros-rango {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.filtros-rango mat-form-field {
+  width: 170px;
+}
+
+.selector-usuario {
+  width: 320px;
+  max-width: 100%;
+}
+
+.selector-unidad {
+  width: 180px;
+  margin-bottom: 8px;
+}
+
+/* Tablas */
+
+.tabla-scroll {
+  overflow-x: auto;
+}
+
+.tabla-simple {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.83rem;
+}
+
+.tabla-simple th {
+  text-align: left;
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.tabla-simple td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.tabla-simple tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.tabla-simple tbody tr:hover {
+  background: #f8fafc;
+}
+
+.doble-linea {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.doble-linea small {
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.acciones-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip-mini {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.7rem;
+}
+
+.columnas-reporte {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.vacio-texto {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+.aviso {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.aviso.error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.aviso mat-icon {
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+}
+
+@media (max-width: 760px) {
+  .admin-pagina {
+    padding: 20px 12px 36px;
+  }
+
+  .distribucion-meta {
+    display: none;
+  }
+
+  .distribucion-tipo {
+    width: 120px;
+  }
+
+  .columnas-reporte {
+    grid-template-columns: 1fr;
+  }
+}

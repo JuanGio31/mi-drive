@@ -3,6 +3,7 @@ import { HttpError } from '../errors/http-error';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { Rol } from '../types/enums';
+import { MongoUsuarioRepository } from '../../modules/usuario/usuario.repository';
 
 interface JwtPayload {
     id: string;
@@ -11,11 +12,18 @@ interface JwtPayload {
     rol: Rol;
 }
 
-export const authenticate = (
+const usuarioRepository = new MongoUsuarioRepository();
+
+/**
+ * Verifica el JWT y refresca el usuario desde la base de datos. Así un
+ * usuario desactivado pierde el acceso de inmediato y los cambios de rol se
+ * aplican sin esperar a que caduque el token.
+ */
+export const authenticate = async (
     req: Request,
     _res: Response,
     next: NextFunction,
-): void => {
+): Promise<void> => {
     try {
         const authHeader = req.headers.authorization;
 
@@ -29,11 +37,21 @@ export const authenticate = (
             env.JWT_SECRET,
         ) as JwtPayload;
 
+        const usuario = await usuarioRepository.buscarPorId(payload.id);
+        if (!usuario || !usuario.activo) {
+            next(
+                HttpError.unauthorized(
+                    'Usuario desactivado o no encontrado',
+                ),
+            );
+            return;
+        }
+
         req.user = {
-            id: payload.id,
-            nombre: payload.nombre,
-            correo: payload.correo,
-            rol: payload.rol,
+            id: usuario._id.toString(),
+            nombre: usuario.nombre,
+            correo: usuario.correo,
+            rol: usuario.rol,
         };
 
         next();

@@ -1,0 +1,83 @@
+<div class="editor">
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (!archivo()) {
+    <div class="estado error">
+      <p>{{ error() }}</p>
+      <button mat-stroked-button type="button" (click)="volver()">
+        <mat-icon>arrow_back</mat-icon>
+        Volver
+      </button>
+    </div>
+  } @else if (archivo(); as a) {
+    <header class="encabezado">
+      <button
+        mat-icon-button
+        class="volver"
+        (click)="volver()"
+        aria-label="Volver"
+      >
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+
+      <div class="info">
+        <h1>{{ a.nombre }}</h1>
+        <p class="meta">
+          <span class="tipo">{{ a.tipo }}</span>
+          @if (modificado()) {
+            <span class="pendiente">Cambios sin guardar</span>
+          } @else {
+            <span class="guardado">Guardado</span>
+          }
+        </p>
+      </div>
+
+      @if (esMarkdown()) {
+        <button mat-stroked-button type="button" (click)="alternarPrevia()">
+          <mat-icon>{{ verPrevia() ? 'edit' : 'visibility' }}</mat-icon>
+          {{ verPrevia() ? 'Editar' : 'Vista previa' }}
+        </button>
+      }
+
+      <button
+        mat-flat-button
+        type="button"
+        class="guardar"
+        [disabled]="!modificado() || guardando()"
+        (click)="guardar()"
+      >
+        @if (guardando()) {
+          <mat-spinner diameter="18" class="spinner"></mat-spinner>
+        } @else {
+          <mat-icon>save</mat-icon>
+        }
+        <span>{{ guardando() ? 'Guardando…' : 'Guardar' }}</span>
+      </button>
+    </header>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <section class="contenido">
+      @if (verPrevia() && esMarkdown()) {
+        <div class="markdown" [innerHTML]="html()"></div>
+      } @else {
+        <mat-form-field appearance="outline" class="campo" subscriptSizing="dynamic">
+          <textarea
+            matInput
+            cdkTextareaAutosize
+            [cdkAutosizeMinRows]="14"
+            [cdkAutosizeMaxRows]="20"
+            [ngModel]="contenido()"
+            (ngModelChange)="contenido.set($event)"
+            spellcheck="false"
+            placeholder="Escribe el contenido del archivo…"
+          ></textarea>
+        </mat-form-field>
+      }
+    </section>
+  }
+</div>

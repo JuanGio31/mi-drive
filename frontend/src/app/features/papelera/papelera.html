@@ -1,0 +1,63 @@
+<div class="papelera">
+  <header class="encabezado">
+    <div class="titulo">
+      <h1>Papelera</h1>
+    </div>
+    <p class="ruta">
+      Los elementos que eliminas se conservan aquí. Puedes restaurarlos a su
+      ubicación original.
+    </p>
+  </header>
+
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36"></mat-spinner>
+    </div>
+  } @else if (error() && vacio()) {
+    <div class="estado error">{{ error() }}</div>
+  } @else if (vacio()) {
+    <div class="estado">La papelera está vacía.</div>
+  } @else {
+    @if (error()) {
+      <div class="aviso-error" role="alert">{{ error() }}</div>
+    }
+    <ul class="lista">
+      @for (carpeta of carpetas(); track carpeta._id) {
+        <li>
+          <app-menu-contextual
+            class="fila fila-carpeta"
+            [items]="itemsMenu"
+            (seleccionar)="onAccion($event, { tipo: 'carpeta', carpeta })"
+          >
+            <mat-icon class="icono">folder</mat-icon>
+            <span class="nombre">{{ carpeta.nombre }}</span>
+            <span class="meta">Carpeta</span>
+            <span class="fecha">
+              Eliminado el
+              {{ carpeta.fechaEnvioPapelera | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </app-menu-contextual>
+        </li>
+      }
+
+      @for (archivo of archivos(); track archivo._id) {
+        <li>
+          <app-menu-contextual
+            class="fila fila-archivo"
+            [items]="itemsMenu"
+            (seleccionar)="onAccion($event, { tipo: 'archivo', archivo })"
+          >
+            <mat-icon class="icono">{{ iconoArchivo(archivo.tipo) }}</mat-icon>
+            <span class="nombre">{{ archivo.nombre }}</span>
+            <span class="tipo">{{ archivo.tipo }}</span>
+            <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
+            <span class="fecha">
+              Eliminado el
+              {{ archivo.fechaEnvioPapelera | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+          </app-menu-contextual>
+        </li>
+      }
+    </ul>
+  }
+</div>

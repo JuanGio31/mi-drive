@@ -1,0 +1,82 @@
+<h2 mat-dialog-title class="titulo">
+  <mat-icon class="icono-titulo">{{ icono() }}</mat-icon>
+  <span class="nombre-titulo">{{ nombre }}</span>
+</h2>
+
+<mat-dialog-content>
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+  } @else if (error()) {
+    <p class="estado error">{{ error() }}</p>
+  } @else {
+    <section class="bloque">
+      <h3>Información</h3>
+      <dl class="datos">
+        <div class="dato">
+          <dt>Tipo</dt>
+          <dd>{{ tipoTexto() }}</dd>
+        </div>
+        @if (tamanio()) {
+          <div class="dato">
+            <dt>Tamaño</dt>
+            <dd>{{ tamanio() }}</dd>
+          </div>
+        }
+        <div class="dato">
+          <dt>Ubicación</dt>
+          <dd>{{ ubicacion() }}</dd>
+        </div>
+        @if (!esArchivo(datos.item)) {
+          <div class="dato">
+            <dt>Archivos</dt>
+            <dd>{{ totalArchivos() }}</dd>
+          </div>
+          <div class="dato">
+            <dt>Subcarpetas</dt>
+            <dd>{{ totalSubcarpetas() }}</dd>
+          </div>
+        }
+        <div class="dato">
+          <dt>Creado</dt>
+          <dd>{{ creado | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </div>
+        <div class="dato">
+          <dt>Modificado</dt>
+          <dd>{{ modificado | date: 'dd/MM/yyyy HH:mm' }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="bloque">
+      <h3>Quién tiene acceso ({{ accesos().length }})</h3>
+      <ul class="accesos">
+        @for (acceso of accesos(); track acceso.usuarioId) {
+          <li class="acceso">
+            <mat-icon class="avatar">{{ iconoPermiso(acceso.permiso) }}</mat-icon>
+            <div class="quien">
+              <span class="persona">
+                {{ acceso.nombre }}
+                @if (acceso.esTu) {
+                  <span class="tu">(tú)</span>
+                }
+              </span>
+              <span class="correo">{{ acceso.correo }}</span>
+            </div>
+            <div class="permiso">
+              <span class="nivel">{{ etiquetaPermiso(acceso.permiso) }}</span>
+              @if (acceso.origen) {
+                <span class="origen">{{ acceso.origen }}</span>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cerrar()">Cerrar</button>
+</mat-dialog-actions>

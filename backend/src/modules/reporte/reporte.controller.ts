@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ReporteService } from './reporte.service';
 import { HttpError } from '../../shared/errors/http-error';
+import { Rol } from '../../shared/types/enums';
 
 export class ReporteController {
     constructor(private readonly reporteService: ReporteService) {}
@@ -9,6 +10,34 @@ export class ReporteController {
         if (!req.user) throw HttpError.unauthorized();
         return req.user.id;
     }
+
+    /** Reporte personal: solo el propio usuario o un administrador. */
+    private validarPropioOAdmin(req: Request, usuarioId: string): void {
+        if (!req.user) throw HttpError.unauthorized();
+        if (
+            req.user.id !== usuarioId &&
+            req.user.rol !== Rol.Administrador
+        ) {
+            throw HttpError.forbidden(
+                'No tiene permisos para ver este reporte',
+            );
+        }
+    }
+
+    // ============ Dashboard ============
+
+    /** Totales globales de archivos, carpetas, usuarios y comparticiones. */
+    resumen = async (
+        _req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> => {
+        try {
+            res.json(await this.reporteService.resumen());
+        } catch (error) {
+            next(error);
+        }
+    };
 
     // ============ Archivos ============
 
@@ -114,9 +143,11 @@ export class ReporteController {
         next: NextFunction,
     ): Promise<void> => {
         try {
+            const usuarioId = req.params.usuarioId as string;
+            this.validarPropioOAdmin(req, usuarioId);
             res.json(
                 await this.reporteService.recursosCompartidosPorUsuario(
-                    req.params.usuarioId as string,
+                    usuarioId,
                 ),
             );
         } catch (error) {
@@ -130,9 +161,11 @@ export class ReporteController {
         next: NextFunction,
     ): Promise<void> => {
         try {
+            const usuarioId = req.params.usuarioId as string;
+            this.validarPropioOAdmin(req, usuarioId);
             res.json(
                 await this.reporteService.recursosRecibidosPorUsuario(
-                    req.params.usuarioId as string,
+                    usuarioId,
                 ),
             );
         } catch (error) {
@@ -177,6 +210,54 @@ export class ReporteController {
             res.json(
                 await this.reporteService.operacionesPorTipo(
                     this.getUsuarioId(req),
+                    desde,
+                    hasta,
+                ),
+            );
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    /** Conteo global por acción para el panel de reportes (solo admin). */
+    operacionesPorTipoGlobal = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> => {
+        try {
+            const { desde, hasta } = req.query as {
+                desde?: string;
+                hasta?: string;
+            };
+            res.json(
+                await this.reporteService.operacionesPorTipo(
+                    undefined,
+                    desde,
+                    hasta,
+                ),
+            );
+        } catch (error) {
+            next(error);
+        }
+    };
+
+    /** Conteo global por período para el panel de reportes (solo admin). */
+    operacionesPorPeriodoGlobal = async (
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> => {
+        try {
+            const unidad = (req.query.unidad as 'dia' | 'mes' | 'año') ?? 'dia';
+            const { desde, hasta } = req.query as {
+                desde?: string;
+                hasta?: string;
+            };
+            res.json(
+                await this.reporteService.operacionesPorPeriodo(
+                    unidad,
+                    undefined,
                     desde,
                     hasta,
                 ),

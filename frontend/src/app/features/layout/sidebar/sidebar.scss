@@ -66,7 +66,30 @@
   flex-direction: column;
   gap: 2px;
   width: 100%;
+}
+
+.sidebar.sin-admin .nav {
   margin-bottom: auto;
+}
+
+.nav-admin {
+  margin-bottom: auto;
+}
+
+.nav-divider {
+  width: 100%;
+  margin: 14px 0 10px;
+}
+
+.nav-label {
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 0 14px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #94a3b8;
 }
 .nav-item {
   display: flex;

@@ -1,0 +1,150 @@
+<div class="admin-pagina">
+  <header class="admin-cabecera">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Resumen global de la actividad y el almacenamiento del sistema.</p>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="aviso error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="cargando">
+      <mat-spinner diameter="36"></mat-spinner>
+      <span>Cargando dashboard…</span>
+    </div>
+  } @else if (resumen(); as r) {
+    <section class="kpis">
+      <article class="kpi">
+        <div class="kpi-icono azul"><mat-icon>description</mat-icon></div>
+        <div>
+          <span class="kpi-valor">{{ r.archivos.total }}</span>
+          <span class="kpi-etiqueta">Archivos</span>
+          <span class="kpi-detalle">{{ r.carpetas.total }} carpetas</span>
+        </div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-icono violeta"><mat-icon>storage</mat-icon></div>
+        <div>
+          <span class="kpi-valor">{{ formatearTamanio(tamanoTotal(r.archivos)) }}</span>
+          <span class="kpi-etiqueta">Almacenamiento</span>
+          <span class="kpi-detalle">en archivos activos</span>
+        </div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-icono verde"><mat-icon>share</mat-icon></div>
+        <div>
+          <span class="kpi-valor">{{ r.compartidos.total }}</span>
+          <span class="kpi-etiqueta">Compartidos</span>
+          <span class="kpi-detalle">
+            {{ r.compartidos.archivos }} archivos · {{ r.compartidos.carpetas }} carpetas
+          </span>
+        </div>
+      </article>
+
+      <article class="kpi">
+        <div class="kpi-icono naranja"><mat-icon>group</mat-icon></div>
+        <div>
+          <span class="kpi-valor">{{ r.usuarios.activos }}</span>
+          <span class="kpi-etiqueta">Usuarios activos</span>
+          <span class="kpi-detalle">{{ r.usuarios.total }} en total</span>
+        </div>
+      </article>
+    </section>
+
+    <div class="grid-doble">
+      <section class="tarjeta">
+        <h2><mat-icon>emoji_events</mat-icon>Top usuarios por archivos</h2>
+
+        @if (topUsuarios().length === 0) {
+          <p class="vacio-texto">Todavía no hay archivos registrados.</p>
+        } @else {
+          <ul class="lista-top">
+            @for (usuario of topUsuarios(); track usuario.usuarioId) {
+              <li>
+                <div class="avatar">{{ iniciales(usuario.nombre) }}</div>
+                <div class="top-datos">
+                  <div class="top-linea">
+                    <span class="top-nombre">{{ usuario.nombre }}</span>
+                    <span class="top-valor">{{ usuario.totalArchivos }}</span>
+                  </div>
+                  <mat-progress-bar
+                    mode="determinate"
+                    [value]="porcentajeArchivos(usuario.totalArchivos)"
+                  ></mat-progress-bar>
+                  <span class="top-meta">
+                    {{ formatearTamanio(tamanoTotal(usuario)) }} ·
+                    {{ usuario.correo }}
+                  </span>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+
+      <section class="tarjeta">
+        <h2><mat-icon>share</mat-icon>Archivos más compartidos</h2>
+
+        @if (archivosCompartidos().length === 0) {
+          <p class="vacio-texto">No hay archivos compartidos.</p>
+        } @else {
+          <ul class="lista-compartidos">
+            @for (archivo of archivosCompartidos(); track archivo.archivoId) {
+              <li>
+                <mat-icon class="icono-archivo">description</mat-icon>
+                <div class="top-datos">
+                  <span class="top-nombre">{{ archivo.nombre }}</span>
+                  <span class="top-meta">
+                    {{ archivo.tipo }} · {{ archivo.propietario.nombre }}
+                  </span>
+                </div>
+                <span class="contador" [matTooltip]="'Usuarios con acceso'">
+                  <mat-icon>people</mat-icon>
+                  {{ archivo.numUsuarios }}
+                </span>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    </div>
+
+    <section class="tarjeta">
+      <h2><mat-icon>history</mat-icon>Actividad reciente</h2>
+
+      @if (actividades().length === 0) {
+        <p class="vacio-texto">No hay actividad registrada.</p>
+      } @else {
+        <ul class="timeline">
+          @for (actividad of actividades(); track actividad._id) {
+            <li>
+              <div class="timeline-icono" [class]="'timeline-icono ' + claseAccion(actividad.accion)">
+                <mat-icon>{{ iconoAccion(actividad.accion) }}</mat-icon>
+              </div>
+              <div class="timeline-texto">
+                <span class="timeline-titulo">
+                  <strong>{{ actividad.usuarioNombre }}</strong>
+                  {{ etiquetaAccion(actividad.accion).toLowerCase() }}
+                  @if (actividad.recursoNombre) {
+                    <strong>{{ actividad.recursoNombre }}</strong>
+                  }
+                </span>
+                <span class="timeline-meta">
+                  {{ actividad.recursoTipo }} · {{ formatearFechaHora(actividad.createdAt) }}
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+</div>
