@@ -1,179 +1,168 @@
 # Sistema de Gestión Documental (DMS)
 
-Centraliza, organiza y comparte documentos digitales entre los miembros de una organización de forma segura y colaborativa.
+Aplicación web académica para centralizar, organizar, compartir y auditar documentos
+`.txt` y `.md` entre los usuarios de una organización.
 
-<p align="left">
-  <img src="https://img.shields.io/badge/build-passing-brightgreen?style=flat-square" alt="Build" />
-  <img src="https://img.shields.io/badge/tests-17%2F17%20passing-brightgreen?style=flat-square" alt="Tests" />
-  <img src="https://img.shields.io/badge/node-%3E%3D20.0.0-blue?style=flat-square" alt="Node" />
-  <img src="https://img.shields.io/badge/license-academic-lightgrey?style=flat-square" alt="Licencia" />
-</p>
+![Angular](https://img.shields.io/badge/Angular-21-dd0031)
+![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933)
+![MongoDB](https://img.shields.io/badge/MongoDB-7%2B-47A248)
+![Licencia](https://img.shields.io/badge/licencia-acad%C3%A9mica-lightgrey)
 
----
+## Descripción
 
-## 📌 Descripción
+El sistema ofrece un repositorio centralizado con carpetas jerárquicas, edición de
+archivos de texto y Markdown, compartición con permisos y un registro completo de
+actividad. Incluye papelera con restauración, búsqueda global y un panel de
+administración con usuarios, reportes y auditoría.
 
-En entornos académicos y corporativos, el intercambio desordenado de archivos mediante carpetas locales compartidas o servicios de mensajería genera dificultades recurrentes: pérdida de trazabilidad, conflictos de edición, falta de control en los accesos y ausencia de visibilidad sobre los cambios efectuados.
+## Características
 
-El **Sistema de Gestión Documental (DMS)** atiende este problema al proveer un repositorio centralizado y estructurado. Facilita la organización de la información en carpetas anidadas, permite la edición de contenido en formatos planos y markdown directamente desde la plataforma, y gestiona permisos específicos de compartición bajo un control estricto de auditoría.
+- Autenticación mediante JWT y rutas protegidas.
+- Roles de administrador y usuario.
+- Carpetas anidadas y archivos `.txt`/`.md` almacenados en MongoDB.
+- Permisos de compartición: lectura, escritura y comentar (este último aún sin
+  módulo de comentarios).
+- Editor de texto y visor con vista previa para Markdown.
+- Papelera con eliminación lógica y restauración.
+- Historial de actividad y búsqueda global.
+- Panel administrativo con usuarios, reportes y actividad.
+- Vista de archivos en lista o cuadrícula.
 
-A diferencia del almacenamiento local convencional, la plataforma administra los documentos (`.txt` y `.md`) directamente dentro de una base de datos NoSQL, garantizando un ciclo de vida completo: papelera de reciclaje con restauración de elementos, registro cronológico de actividad y generación de reportes analíticos de uso y almacenamiento.
-
----
-
-## ✨ Características principales
-
-- 🔐 **Autenticación con JWT:** Acceso seguro mediante tokens de sesión y protección de rutas.
-- 👥 **Roles y permisos:** Diferenciación operativa entre administradores y usuarios estándar.
-- 📁 **Estructura jerárquica de carpetas:** Organización en árbol con soporte de anidación multinivel.
-- 📄 **Gestión de archivos (.txt y .md):** Creación, edición y almacenamiento íntegro de contenido en MongoDB.
-- 🤝 **Compartición colaborativa:** Asignación de permisos granulares por usuario (lectura, edición, comentarios).
-- 🗑️ **Papelera de reciclaje:** Eliminación lógica con alternativas de restauración o borrado permanente.
-- 📜 **Historial de actividad:** Registro cronológico de acciones sobre archivos y carpetas con propósitos de auditoría.
-- 📊 **Reportes y estadísticas:** Métricas de volumen de almacenamiento, actividad reciente y uso por usuario.
-
----
-
-## 💻 Stack tecnológico
+## Stack
 
 | Capa | Tecnología |
 |---|---|
-| **Frontend** | Angular 21 (próximamente) |
-| **Backend** | Node.js + Express + TypeScript |
-| **Base de datos** | MongoDB + Mongoose |
-| **Autenticación** | JSON Web Tokens (JWT) |
-| **Validación** | Zod |
+| Frontend | Angular 21, Angular Material, signals |
+| Backend | Node.js, Express 5, TypeScript, Zod |
+| Base de datos | MongoDB, Mongoose |
+| Autenticación | JWT |
+| Pruebas frontend | Vitest |
 
----
+## Requisitos
 
-## 🏗️ Arquitectura
+- Node.js 20.19+ (recomendado 22)
+- npm 10+ (el frontend requiere 11.6+)
+- MongoDB 7+ local o remoto
 
-```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│   Cliente   │ ────► │   Servidor  │ ────► │   MongoDB   │
-│  Angular 21 │ ◄──── │ Express/TS  │ ◄──── │  (NoSQL)    │
-└─────────────┘ HTTP  └─────────────┘       └─────────────┘
-```
+## Instalación y ejecución
 
----
-
-## 🚀 Inicio rápido
-
-### 1. Requisitos previos
-- **Node.js:** `>= 20.0.0`
-- **npm:** `>= 10.0.0`
-- **MongoDB:** `>= 7.0` (instancia local o servicio remoto activo)
-
-### 2. Instalación
-
-Se clona el repositorio y se instalan las dependencias del backend:
+### 1. Clonar el repositorio
 
 ```bash
 git clone https://github.com/JuanGio31/mi-drive.git
-cd mi-drive/backend
-npm install
+cd mi-drive
 ```
 
-### 3. Configuración y ejecución
-
-Se crea el archivo de variables de entorno `.env` dentro del directorio `backend/`:
+### 2. Configurar el backend
 
 ```bash
-PORT=3000
-MONGODB_URI=mongodb://localhost:27017/dms
-JWT_SECRET=tu_secreto_super_seguro
+cd backend
+npm install
+cp .env.example .env
 ```
 
-Se ejecuta el script de inicialización (`seed`) para poblar la base de datos con usuarios y datos de prueba:
+Edita `backend/.env` con tus valores:
+
+```env
+PORT=3000
+NODE_ENV=dev
+MONGO_URI=mongodb://localhost:27017/dms
+JWT_SECRET=un_secreto_de_al_menos_32_caracteres
+JWT_EXPIRES_IN=7d
+CORS_ORIGIN=http://localhost:4200
+```
+
+Inicializa la base de datos y arranca la API:
 
 ```bash
 npm run seed
-```
-
-Se inicia el servidor en modo de desarrollo:
-
-```bash
 npm run dev
 ```
 
-### 4. Verificación del servicio
+> `npm run seed` es destructivo: elimina y vuelve a crear los datos de prueba.
 
-Para comprobar que la API se encuentra operativa, se realiza una petición al endpoint de salud:
+El backend queda disponible en `http://localhost:3000`.
+
+### 3. Configurar el frontend
+
+En otra terminal:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+La aplicación queda disponible en `http://localhost:4200`. El archivo
+`proxy.conf.json` redirige las peticiones `/api` al backend en el puerto 3000.
+
+### 4. Verificar el servicio
 
 ```bash
 curl http://localhost:3000/api/health
 ```
 
 Respuesta esperada:
+
 ```json
-{"status":"ok","timestamp":"2026-10-15T..."}
+{"status":"ok","timestamp":"2026-10-20T..."}
 ```
 
----
+## Credenciales de prueba
 
-## 🔑 Credenciales de prueba
-
-El proceso de inicialización (`seed`) genera tres cuentas de usuario predeterminadas:
-
-| Rol | Email | Contraseña |
+| Rol | Correo | Contraseña |
 |---|---|---|
 | Administrador | `ana@dms.local` | `password123` |
 | Usuario | `carlos@dms.local` | `password123` |
 | Usuario | `lucia@dms.local` | `password123` |
 
----
+## Estructura
 
-## 📂 Estructura del proyecto
-
-```
-dms/
-├── backend/                  # API REST con Express y TypeScript
-│   ├── src/
-│   │   ├── modules/          # Usuarios, autenticación, carpetas, archivos, actividad y reportes
-│   │   ├── shared/           # Configuración, middlewares de autenticación, errores y contenedor
-│   │   └── scripts/          # Script de inicialización de base de datos (seed)
-│   ├── smoke-test.sh         # Script de pruebas de verificación de endpoints
-│   └── package.json
-├── frontend/                 # Aplicación cliente (en desarrollo)
-├── docs/                     # Documentación técnica y funcional
-└── README.md                 # Presentación del proyecto
+```text
+mi-drive/
+├── backend/       # API REST, validaciones, persistencia y seed
+│   └── README.md
+├── frontend/      # Aplicación Angular
+│   └── README.md
+├── docs/          # Manuales en Markdown, capturas y PDF
+└── README.md      # Instalación y presentación general
 ```
 
----
+## Documentación
 
-## 📚 Documentación
+- [Manual técnico](./docs/manual-tecnico.md) ([PDF](./docs/pdf/manual-tecnico.pdf)):
+  arquitectura, modelo documental, API, seguridad y operación.
+- [Manual de usuario](./docs/manual-usuario.md) ([PDF](./docs/pdf/manual-usuario.pdf)):
+  guía de uso con capturas de la interfaz.
+- [Backend](./backend/README.md): estructura, scripts, variables y rutas de la API.
+- [Frontend](./frontend/README.md): estructura, rutas y convenciones de la aplicación.
 
-Para consultar especificaciones técnicas, diseño de datos y guías de uso, están disponibles los siguientes documentos:
+Para regenerar los PDF después de editar los manuales:
 
-- 📘 [Modelo documental](./docs/01-modelo-documental.md)
-- 🛠️ [Manual técnico](./docs/02-manual-tecnico.md)
-- 👤 [Manual de usuario](./docs/03-manual-usuario.md)
-- 🔍 [Auditoría de complejidad](./docs/04-auditoria-complejidad.md)
+```bash
+cd docs/pdf
+node generar.mjs
+```
 
----
+Requiere Google Chrome o Chromium y las dependencias del frontend instaladas.
 
-## 📊 Estado del proyecto
+## Estado
 
-| Componente / Módulo | Estado |
+| Componente | Estado |
 |---|---|
-| Backend completo | ✅ Completado |
-| Módulo de reportes | ✅ Completado |
-| Seed de datos | ✅ Completado |
-| Pruebas de humo (17/17) | ✅ Pasando |
-| Frontend Angular | ⏳ Próximamente |
-| Diagramas UML | ⏳ En desarrollo |
+| Backend REST | Implementado |
+| Autenticación, permisos y papelera | Implementado |
+| Frontend principal | Implementado |
+| Panel de administración | Implementado |
+| Rutas Recientes y Compartidos | Pendiente |
+| Manual técnico y de usuario | Implementado |
 
----
+## Autor
 
-## 👤 Autor
+**Giovan** — [@JuanGio31](https://github.com/JuanGio31)
 
-**Giovan**
-- GitHub: [@JuanGio31](https://github.com/JuanGio31)
+Proyecto académico — Manejo e Implementación de Archivos — CUNOC — 2026.
 
-*Proyecto académico — Manejo e Implementación de Archivos — CUNOC — 2026*
-
----
-
-## 📄 Licencia
+## Licencia
 
 Este proyecto es de uso académico.

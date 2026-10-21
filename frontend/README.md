@@ -1,59 +1,110 @@
-# Frontend
+# Frontend — Sistema de Gestión Documental
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.24.
+Aplicación Angular para explorar, editar, compartir y administrar los documentos
+del sistema DMS.
 
-## Development server
+## Stack
 
-To start a local development server, run:
+- Angular 21 con componentes standalone
+- Signals y change detection zoneless
+- Angular Material
+- Vitest para pruebas unitarias
+- Markdown renderizado con `marked`
 
-```bash
-ng serve
-```
+## Requisitos
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Node.js 20.19+ o 22.12+
+- npm 11.6+
+- Backend disponible en `http://localhost:3000`
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Ejecución
 
 ```bash
-ng generate --help
+cd frontend
+npm install
+npm start
 ```
 
-## Building
+La aplicación queda disponible en `http://localhost:4200`.
 
-To build the project run:
+El archivo `proxy.conf.json` redirige `/api` al backend local. Si el backend no
+está iniciado, las peticiones de autenticación y datos fallarán.
+
+## Scripts
 
 ```bash
-ng build
+npm start        # Servidor de desarrollo
+npm run build    # Build de producción
+npm run watch    # Build en modo observación
+npm test         # Pruebas unitarias con Vitest
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## Estructura
 
-## Running unit tests
+```text
+src/app/
+├── core/
+│   ├── models/      # Modelos e interfaces
+│   ├── services/    # Acceso a la API y sesión
+│   ├── guards/      # Protección de rutas
+│   ├── interceptors/
+│   └── utils/
+├── features/
+│   ├── auth/        # Inicio de sesión y registro
+│   ├── layout/      # Sidebar, topbar y contenedor
+│   ├── home/
+│   ├── mi-unidad/   # Explorador de carpetas
+│   ├── explorador/  # Lista y cuadrícula reutilizable
+│   ├── contextual/  # Menús y diálogos de acciones
+│   ├── editor/
+│   ├── visor/
+│   ├── papelera/
+│   ├── perfil/
+│   └── admin/       # Dashboard, usuarios, reportes y actividad
+├── app.routes.ts
+└── app.config.ts
+```
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Rutas principales
+
+| Ruta | Descripción |
+|---|---|
+| `/auth/sign-in` | Inicio de sesión |
+| `/auth/sign-up` | Registro de usuario |
+| `/home` | Página inicial |
+| `/mi-unidad` | Raíz de archivos del usuario |
+| `/mi-unidad/:id` | Contenido de una carpeta |
+| `/archivo/:id` | Visor de archivo |
+| `/archivo/:id/editar` | Editor de archivo |
+| `/papelera` | Elementos eliminados |
+| `/perfil` | Datos personales y contraseña |
+| `/admin/dashboard` | Panel administrativo |
+| `/admin/usuarios` | Administración de usuarios |
+| `/admin/reportes` | Reportes globales |
+| `/admin/actividad` | Auditoría global |
+
+## Sesión y permisos
+
+- El token y el usuario se guardan en `localStorage` (`dms_token` y `dms_user`).
+- `authGuard` protege el layout; `guestGuard` evita volver al login con sesión activa.
+- `adminGuard` restringe `/admin/*` al rol administrador.
+- El menú administrativo solo aparece para usuarios con rol `administrador`.
+
+## Convenciones de interfaz
+
+- Identificadores, rutas y textos visibles en español.
+- Estado con signals y servicios inyectados con `inject()`.
+- Componentes standalone y rutas cargadas de forma lazy.
+- La vista de Mi Unidad se conserva en `localStorage`
+  (`dms_vista_mi_unidad`: `lista` o `cuadricula`).
+- Los formularios usan Reactive Forms y validaciones alineadas con el backend.
+
+## Verificación
 
 ```bash
-ng test
+npx ng build
+npm test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+La documentación funcional y técnica está en el [manual de usuario](../docs/manual-usuario.md)
+y en el [manual técnico](../docs/manual-tecnico.md).
