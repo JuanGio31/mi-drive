@@ -103,6 +103,7 @@ app.routes.ts
 | Base de datos | MongoDB 7+ | Persistencia documental |
 | ODM | Mongoose | Esquemas, índices y agregaciones |
 | Autenticación | JWT + bcrypt | Sesión y hash de contraseñas |
+| Logs | Pino + `pino-roll` | Diagnóstico técnico y rotación de archivos |
 | Markdown | `marked` | Renderizado en visor y editor |
 
 Requisitos prácticos:
@@ -377,8 +378,10 @@ búsqueda de la barra superior y muestra carpetas y archivos agrupados.
 - Autenticación: `Authorization: Bearer <token>` salvo en registro, login y health.
 - Fechas: ISO 8601.
 - IDs: ObjectId de 24 caracteres hexadecimales.
-- Errores: `{ "error": "mensaje" }` y, en validaciones,
-  `{ "error": "Datos inválidos", "detalles": [...] }`.
+- Errores: `{ "error": "mensaje", "requestId": "..." }` y, en validaciones,
+  `{ "error": "Datos inválidos", "detalles": [...], "requestId": "..." }`.
+- Correlación: cada respuesta incluye `X-Request-Id`; el mismo valor aparece en
+  el log técnico de la petición.
 - Listados paginados:
   - `GET /api/usuarios` → `{ usuarios, total, page, limit }`.
   - `GET /api/actividad` → `{ actividades, total, page, limit }`.
@@ -498,6 +501,11 @@ Filtros disponibles: `usuarioId`, `accion`, `recursoTipo`, `recursoId`, `desde`,
 
 # 9. Actividad y auditoría
 
+## 9.1 Actividad de negocio
+
+La colección `actividades` registra acciones funcionales y es la fuente de los
+reportes y de la auditoría visible en el panel administrativo.
+
 Acciones registradas por el enum `AccionActividad`:
 
 | Valor | Significado |
@@ -519,13 +527,30 @@ Acciones registradas por el enum `AccionActividad`:
 
 Características:
 
-- El registro es **best-effort**: si falla la auditoría, se registra el error en consola
-  pero no se revierte la operación principal.
+- El registro es **best-effort**: si falla la auditoría, el error se envía al
+  logger técnico pero no se revierte la operación principal.
 - Se guardan snapshots de nombre y correo del usuario y del nombre del recurso.
 - La metadata varía según la acción; por ejemplo, un movimiento guarda carpeta de
   origen y destino, y una compartición guarda usuario destino y permiso.
 - El administrador puede filtrar por usuario, acción, tipo de recurso y fechas.
 - Los reportes usan agregaciones de MongoDB para contar por acción y por período.
+
+## 9.2 Logs técnicos
+
+Los logs técnicos no se guardan en `actividades` ni se muestran en el frontend.
+Su objetivo es diagnosticar fallos operativos.
+
+- Implementación: Pino, `pino-http` y `pino-roll`.
+- Salida: consola legible en desarrollo; JSON por stdout y archivo en producción.
+- Archivos: `logs/app.FECHA.N.log`, con rotación diaria o al alcanzar 10 MB.
+- Retención: `LOG_MAX_DAYS` archivos rotados (14 por defecto).
+- Cada petición recibe un UUID en `X-Request-Id` y se registra con método, ruta
+  sin query, estado, duración, IP, user-agent y usuario autenticado.
+- Los `4xx` se registran como `warn`; los `5xx`, como `error` con stack.
+- El serializador de errores solo conserva tipo, mensaje, stack, código y estado;
+  evita propiedades arbitrarias como `body`.
+- Nunca se registran bodies, contraseñas, tokens, cookies ni contenido de archivos.
+- La carpeta `logs/` está excluida de Git y no se expone mediante la API.
 
 # 10. Rendimiento y decisiones técnicas
 
@@ -585,6 +610,10 @@ JWT_SECRET=un_secreto_de_al_menos_32_caracteres
 JWT_EXPIRES_IN=7d
 BCRYPT_ROUNDS=10
 CORS_ORIGIN=http://localhost:4200
+LOG_LEVEL=info
+LOG_DIR=logs
+LOG_MAX_DAYS=14
+LOG_TO_FILE=true
 ```
 
 ```bash

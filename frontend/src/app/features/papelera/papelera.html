@@ -1,11 +1,38 @@
 <div class="papelera">
   <header class="encabezado">
-    <div class="titulo">
-      <h1>Papelera</h1>
+    <div class="barra-superior">
+      <div class="titulo">
+        <h1>Papelera</h1>
+      </div>
+
+      <div class="selector-vista" role="group" aria-label="Vista de la papelera">
+        <button
+          mat-icon-button
+          type="button"
+          [class.activo]="vista() === 'lista'"
+          [attr.aria-pressed]="vista() === 'lista'"
+          aria-label="Vista de lista"
+          matTooltip="Vista de lista"
+          (click)="cambiarVista('lista')"
+        >
+          <mat-icon>view_list</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          type="button"
+          [class.activo]="vista() === 'cuadricula'"
+          [attr.aria-pressed]="vista() === 'cuadricula'"
+          aria-label="Vista de cuadrícula"
+          matTooltip="Vista de cuadrícula"
+          (click)="cambiarVista('cuadricula')"
+        >
+          <mat-icon>grid_view</mat-icon>
+        </button>
+      </div>
     </div>
+
     <p class="ruta">
-      Los elementos que eliminas se conservan aquí. Puedes restaurarlos a su
-      ubicación original.
+      Los elementos que eliminas se conservan aquí. Puedes restaurarlos a su ubicación original.
     </p>
   </header>
 
@@ -21,11 +48,12 @@
     @if (error()) {
       <div class="aviso-error" role="alert">{{ error() }}</div>
     }
-    <ul class="lista">
+    <ul class="lista" [class.cuadricula]="vista() === 'cuadricula'">
       @for (carpeta of carpetas(); track carpeta._id) {
         <li>
           <app-menu-contextual
             class="fila fila-carpeta"
+            [class.vista-cuadricula]="vista() === 'cuadricula'"
             [items]="itemsMenu"
             (seleccionar)="onAccion($event, { tipo: 'carpeta', carpeta })"
           >
@@ -44,6 +72,7 @@
         <li>
           <app-menu-contextual
             class="fila fila-archivo"
+            [class.vista-cuadricula]="vista() === 'cuadricula'"
             [items]="itemsMenu"
             (seleccionar)="onAccion($event, { tipo: 'archivo', archivo })"
           >

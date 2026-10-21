@@ -323,6 +323,9 @@ después.
 
 *Figura 8. Papelera con carpetas y archivos eliminados.*
 
+Puedes alternar entre **lista** y **cuadrícula** desde la cabecera. La preferencia se
+guarda en el navegador y se mantiene en la siguiente visita.
+
 ## 12.1 Enviar a la papelera
 
 1. Abre el menú **⋮** del recurso.

@@ -23,6 +23,24 @@ const EnvSchema = z.object({
                 .map((origin) => origin.trim())
                 .filter((origin) => origin.length > 0),
         ),
+
+    // Logs tecnicos: nivel, carpeta, retencion y persistencia en archivo
+    LOG_LEVEL: z
+        .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
+        .default('info'),
+    LOG_DIR: z.string().min(1).default('logs'),
+    LOG_MAX_DAYS: z
+        .string()
+        .default('14')
+        .transform(Number)
+        .refine(
+            (dias) => Number.isInteger(dias) && dias > 0,
+            'LOG_MAX_DAYS debe ser un entero positivo',
+        ),
+    LOG_TO_FILE: z
+        .enum(['true', 'false'])
+        .default('true')
+        .transform((valor) => valor === 'true'),
 });
 
 const parsed = EnvSchema.safeParse(process.env);

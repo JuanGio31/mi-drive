@@ -11,6 +11,7 @@ reportes y búsqueda del sistema DMS.
 - Validación con Zod
 - Autenticación con JWT
 - Contraseñas con bcrypt
+- Logs técnicos con Pino y rotación de archivos
 
 ## Requisitos
 
@@ -37,6 +38,10 @@ Variables disponibles:
 | `JWT_EXPIRES_IN` | No | `7d` | Vigencia del token |
 | `BCRYPT_ROUNDS` | No | `10` | Rondas de bcrypt |
 | `CORS_ORIGIN` | No | `http://localhost:4200` | Orígenes permitidos, separados por comas |
+| `LOG_LEVEL` | No | `info` | Nivel mínimo de log técnico |
+| `LOG_DIR` | No | `logs` | Carpeta de archivos de log, relativa al directorio de ejecución |
+| `LOG_MAX_DAYS` | No | `14` | Cantidad de archivos rotados que se conservan |
+| `LOG_TO_FILE` | No | `true` | Activa la escritura en archivo |
 
 El nombre correcto de la variable de base de datos es `MONGO_URI`.
 
@@ -44,7 +49,7 @@ El nombre correcto de la variable de base de datos es `MONGO_URI`.
 
 ```bash
 npm run dev        # Servidor en modo desarrollo
-npm run seed       # Reinicia y popula la base de datos
+npm run seed       # Reinicia la base de datos y crea usuarios, carpetas y archivos
 npm run build      # Compila TypeScript a dist/
 npm start          # Ejecuta la versión compilada
 npx tsc --noEmit   # Verificación de tipos
@@ -66,9 +71,10 @@ src/
 │   ├── reporte/
 │   └── busqueda/
 ├── shared/
-│   ├── config/       # Variables de entorno
+│   ├── config/       # Variables de entorno y conexión
 │   ├── container/    # Inyección de dependencias
-│   ├── middlewares/  # Autenticación, validación y errores
+│   ├── logger/       # Logger técnico con Pino
+│   ├── middlewares/  # Autenticación, validación, request ID y errores
 │   ├── errors/
 │   └── utils/
 ├── scripts/
@@ -102,6 +108,28 @@ Convenciones generales:
 - `GET /api/usuarios` y `GET /api/actividad` devuelven respuestas paginadas con
   `total`, `page` y `limit`.
 - Los reportes administrativos requieren rol `administrador`.
+- Cada respuesta incluye `X-Request-Id`; los errores también devuelven
+  `requestId` en el JSON para correlacionarlos con el log técnico.
+- Los controladores son `async` y no usan `try/catch`: Express 5 reenvía
+  automáticamente los rechazos de promesas al middleware de errores.
+
+## Logs y diagnóstico
+
+La **actividad** (`/api/actividad`) es auditoría de negocio y se guarda en
+MongoDB. Los **logs técnicos** son diagnóstico operativo y se escriben en
+`logs/` dentro del directorio desde el que se ejecuta el backend.
+
+- En desarrollo se imprimen en consola de forma legible y también en JSON.
+- En producción se emiten como JSON por stdout y en archivo.
+- Los archivos rotan diariamente y al alcanzar 10 MB; se conservan
+  `LOG_MAX_DAYS` archivos rotados.
+- Se registran todas las peticiones con método, ruta sin query, estado,
+  duración, IP, user-agent, usuario autenticado y `requestId`.
+- Los errores `4xx` se registran como `warn` y los `5xx` como `error` con stack.
+- Nunca se registran bodies, contraseñas, tokens, cookies ni contenido de
+  archivos. El serializador de errores también evita volcar `body`.
+- Los logs técnicos no se muestran en el frontend. La carpeta `logs/` está
+  excluida de Git.
 
 ## Verificación
 

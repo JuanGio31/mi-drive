@@ -1,0 +1,132 @@
+<div class="compartidos">
+  <header class="encabezado">
+    <div class="titulo">
+      <p class="etiqueta">Colaboración</p>
+      <h1>Compartido conmigo</h1>
+      <p class="descripcion">
+        Archivos y carpetas que otros usuarios compartieron directamente contigo.
+      </p>
+    </div>
+
+    <div class="resumen" aria-label="Resumen de recursos compartidos">
+      <div class="dato">
+        <mat-icon>folder_shared</mat-icon>
+        <strong>{{ totalCarpetas() }}</strong>
+        <span>{{ totalCarpetas() === 1 ? 'carpeta' : 'carpetas' }}</span>
+      </div>
+      <div class="dato">
+        <mat-icon>description</mat-icon>
+        <strong>{{ totalArchivos() }}</strong>
+        <span>{{ totalArchivos() === 1 ? 'archivo' : 'archivos' }}</span>
+      </div>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Cargando recursos compartidos…</p>
+    </div>
+  } @else if (error()) {
+    <div class="estado error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button type="button" class="reintentar" (click)="recargar()">Reintentar</button>
+    </div>
+  } @else if (total() === 0) {
+    <div class="estado vacio">
+      <mat-icon>share</mat-icon>
+      <h2>Nada compartido contigo todavía</h2>
+      <p>Cuando alguien comparta una carpeta o un archivo, aparecerá aquí.</p>
+      <a routerLink="/mi-unidad">Ir a Mi Unidad</a>
+    </div>
+  } @else {
+    @if (carpetas().length > 0) {
+      <section class="seccion">
+        <div class="seccion-cabecera">
+          <div>
+            <h2>Carpetas</h2>
+            <p>Puntos de entrada compartidos directamente contigo.</p>
+          </div>
+          <span class="contador">{{ totalCarpetas() }}</span>
+        </div>
+
+        <ul class="lista">
+          @for (item of carpetas(); track item.carpeta._id) {
+            <li>
+              <app-menu-contextual
+                class="fila"
+                tabindex="0"
+                [items]="menuCarpeta(item)"
+                (click)="abrirCarpeta(item.carpeta)"
+                (keydown.enter)="abrirCarpeta(item.carpeta)"
+                (seleccionar)="onAccionCarpeta($event, item)"
+              >
+                <span class="icono carpeta">
+                  <mat-icon>folder</mat-icon>
+                </span>
+                <span class="info">
+                  <span class="nombre">{{ item.carpeta.nombre }}</span>
+                  <span class="meta"> Compartida por {{ item.propietarioNombre }} </span>
+                </span>
+                <span [class]="'chip ' + clasePermiso(item.permiso)">
+                  <mat-icon>{{ iconoPermiso(item.permiso) }}</mat-icon>
+                  {{ etiquetaPermiso(item.permiso) }}
+                </span>
+                <span class="fecha">
+                  {{ formatearFecha(item.fechaCompartido) }}
+                </span>
+              </app-menu-contextual>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (archivos().length > 0) {
+      <section class="seccion">
+        <div class="seccion-cabecera">
+          <div>
+            <h2>Archivos</h2>
+            <p>Archivos compartidos directamente contigo.</p>
+          </div>
+          <span class="contador">{{ totalArchivos() }}</span>
+        </div>
+
+        <ul class="lista">
+          @for (item of archivos(); track item.archivo._id) {
+            <li>
+              <app-menu-contextual
+                class="fila"
+                tabindex="0"
+                [items]="menuArchivo(item)"
+                (click)="abrirArchivo(item.archivo)"
+                (keydown.enter)="abrirArchivo(item.archivo)"
+                (seleccionar)="onAccionArchivo($event, item)"
+              >
+                <span class="icono archivo">
+                  <mat-icon>{{ iconoArchivo(item.archivo.tipo) }}</mat-icon>
+                </span>
+                <span class="info">
+                  <span class="nombre">{{ item.archivo.nombre }}</span>
+                  <span class="meta">
+                    {{ item.archivo.tipo }} · {{ formatearTamanio(item.archivo.tamanio) }} ·
+                    Compartido por
+                    {{ item.propietarioNombre }}
+                  </span>
+                </span>
+                <span [class]="'chip ' + clasePermiso(item.permiso)">
+                  <mat-icon>{{ iconoPermiso(item.permiso) }}</mat-icon>
+                  {{ etiquetaPermiso(item.permiso) }}
+                </span>
+                <span class="fecha">
+                  {{ formatearFecha(item.fechaCompartido) }}
+                </span>
+              </app-menu-contextual>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

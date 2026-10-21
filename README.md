@@ -70,6 +70,10 @@ MONGO_URI=mongodb://localhost:27017/dms
 JWT_SECRET=un_secreto_de_al_menos_32_caracteres
 JWT_EXPIRES_IN=7d
 CORS_ORIGIN=http://localhost:4200
+LOG_LEVEL=info
+LOG_DIR=logs
+LOG_MAX_DAYS=14
+LOG_TO_FILE=true
 ```
 
 Inicializa la base de datos y arranca la API:
@@ -107,6 +111,13 @@ Respuesta esperada:
 ```json
 {"status":"ok","timestamp":"2026-10-20T..."}
 ```
+
+### Logs técnicos
+
+El backend escribe logs de diagnóstico en `backend/logs/`, con rotación diaria y
+retención configurable. No se mezclan con la actividad de negocio ni se muestran
+en el frontend. Cada respuesta incluye `X-Request-Id` para correlacionar un error
+visible con su entrada en el archivo de log.
 
 ## Credenciales de prueba
 
@@ -154,7 +165,7 @@ Requiere Google Chrome o Chromium y las dependencias del frontend instaladas.
 | Autenticación, permisos y papelera | Implementado |
 | Frontend principal | Implementado |
 | Panel de administración | Implementado |
-| Rutas Recientes y Compartidos | Pendiente |
+| Rutas Recientes y Compartidos | Implementado |
 | Manual técnico y de usuario | Implementado |
 
 ## Autor

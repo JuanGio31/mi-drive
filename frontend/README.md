@@ -67,21 +67,23 @@ src/app/
 
 ## Rutas principales
 
-| Ruta | Descripción |
-|---|---|
-| `/auth/sign-in` | Inicio de sesión |
-| `/auth/sign-up` | Registro de usuario |
-| `/home` | Página inicial |
-| `/mi-unidad` | Raíz de archivos del usuario |
-| `/mi-unidad/:id` | Contenido de una carpeta |
-| `/archivo/:id` | Visor de archivo |
-| `/archivo/:id/editar` | Editor de archivo |
-| `/papelera` | Elementos eliminados |
-| `/perfil` | Datos personales y contraseña |
-| `/admin/dashboard` | Panel administrativo |
-| `/admin/usuarios` | Administración de usuarios |
-| `/admin/reportes` | Reportes globales |
-| `/admin/actividad` | Auditoría global |
+| Ruta                  | Descripción                                |
+| --------------------- | ------------------------------------------ |
+| `/auth/sign-in`       | Inicio de sesión                           |
+| `/auth/sign-up`       | Registro de usuario                        |
+| `/home`               | Inicio con carpetas y archivos recientes   |
+| `/mi-unidad`          | Raíz de archivos del usuario               |
+| `/recientes`          | Actividad reciente de archivos y carpetas  |
+| `/compartidos`        | Recursos compartidos con el usuario        |
+| `/mi-unidad/:id`      | Contenido de una carpeta                   |
+| `/archivo/:id`        | Visor de archivo                           |
+| `/archivo/:id/editar` | Editor de archivo                          |
+| `/papelera`           | Elementos eliminados en lista o cuadrícula |
+| `/perfil`             | Datos personales y contraseña              |
+| `/admin/dashboard`    | Panel administrativo                       |
+| `/admin/usuarios`     | Administración de usuarios                 |
+| `/admin/reportes`     | Reportes globales                          |
+| `/admin/actividad`    | Auditoría global                           |
 
 ## Sesión y permisos
 
@@ -95,8 +97,8 @@ src/app/
 - Identificadores, rutas y textos visibles en español.
 - Estado con signals y servicios inyectados con `inject()`.
 - Componentes standalone y rutas cargadas de forma lazy.
-- La vista de Mi Unidad se conserva en `localStorage`
-  (`dms_vista_mi_unidad`: `lista` o `cuadricula`).
+- Las vistas de Mi Unidad y Papelera se conservan en `localStorage`
+  (`dms_vista_mi_unidad` y `dms_vista_papelera`: `lista` o `cuadricula`).
 - Los formularios usan Reactive Forms y validaciones alineadas con el backend.
 
 ## Verificación

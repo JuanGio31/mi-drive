@@ -48,8 +48,7 @@ export const routes: Routes = [
       },
       {
         path: 'perfil',
-        loadComponent: () =>
-          import('./features/perfil/perfil').then((m) => m.PerfilComponent),
+        loadComponent: () => import('./features/perfil/perfil').then((m) => m.PerfilComponent),
         title: 'Mi perfil',
       },
       {
@@ -84,13 +83,23 @@ export const routes: Routes = [
         ],
       },
       {
+        path: 'recientes',
+        loadComponent: () =>
+          import('./features/recientes/recientes').then((m) => m.RecientesComponent),
+        title: 'Recientes',
+      },
+      {
+        path: 'compartidos',
+        loadComponent: () =>
+          import('./features/compartidos/compartidos').then((m) => m.CompartidosComponent),
+        title: 'Compartido conmigo',
+      },
+      {
         path: 'papelera',
         loadComponent: () =>
           import('./features/papelera/papelera').then((m) => m.PapeleraComponent),
         title: 'Papelera',
       },
-      // Aquí se irán añadiendo las secciones del sidebar:
-      // recientes, compartidos
       {
         path: '',
         redirectTo: 'home',

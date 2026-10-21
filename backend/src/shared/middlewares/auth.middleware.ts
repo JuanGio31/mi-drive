@@ -5,6 +5,7 @@ import { env } from '../config/env';
 import { Rol } from '../types/enums';
 import { MongoUsuarioRepository } from '../../modules/usuario/usuario.repository';
 
+/** Datos mínimos esperados dentro del JWT. */
 interface JwtPayload {
     id: string;
     nombre: string;
@@ -15,9 +16,13 @@ interface JwtPayload {
 const usuarioRepository = new MongoUsuarioRepository();
 
 /**
- * Verifica el JWT y refresca el usuario desde la base de datos. Así un
- * usuario desactivado pierde el acceso de inmediato y los cambios de rol se
- * aplican sin esperar a que caduque el token.
+ * Valida `Authorization: Bearer <token>`, verifica el JWT y refresca el
+ * usuario desde MongoDB.
+ *
+ * Asegura que si un usuario desactivado pierde el acceso de inmediato y
+ * los cambios de rol se aplican sin esperar a que caduque el token.
+ * Si es valido, deja `req.user` con los datos vigentes y responde `401`
+ * si el token falta, expiró, es inválido o el usuario ya no está activo.
  */
 export const authenticate = async (
     req: Request,
@@ -39,11 +44,7 @@ export const authenticate = async (
 
         const usuario = await usuarioRepository.buscarPorId(payload.id);
         if (!usuario || !usuario.activo) {
-            next(
-                HttpError.unauthorized(
-                    'Usuario desactivado o no encontrado',
-                ),
-            );
+            next(HttpError.unauthorized('Usuario desactivado o no encontrado'));
             return;
         }
 

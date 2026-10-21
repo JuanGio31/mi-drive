@@ -2,6 +2,15 @@ import 'dotenv/config';
 import { createApp } from './app';
 import { connectDB, disconnectDB } from './shared/config/db';
 import { env } from './shared/config/env';
+import { flushLogger, logger } from './shared/logger/logger';
+
+let cerrando = false;
+
+/** Espera a que los logs se escriban y termina el proceso. */
+const terminar = async (codigo: number): Promise<void> => {
+    await flushLogger();
+    process.exit(codigo);
+};
 
 const iniciarServidor = async (): Promise<void> => {
     await connectDB(env.MONGO_URI);
@@ -9,24 +18,52 @@ const iniciarServidor = async (): Promise<void> => {
     const app = createApp();
 
     const server = app.listen(env.PORT, () => {
-        console.log(`[Info] API en http://localhost:${env.PORT}`);
-        console.log(`[Info] Entorno: ${env.NODE_ENV}`);
+        logger.info({ puerto: env.PORT }, 'API iniciada');
+    });
+
+    server.on('error', (error) => {
+        logger.fatal({ err: error }, 'Error del servidor HTTP');
+        void terminar(1);
     });
 
     // Apagado graceful (ctrl + c)
     const shutdown = async (signal: string) => {
-        console.log(`\n[Info] Recibido ${signal}, cerrando servidor...`);
+        if (cerrando) return;
+        cerrando = true;
+
+        logger.info({ signal }, 'Cerrando servidor');
+
         server.close(async () => {
-            await disconnectDB();
-            process.exit(0);
+            try {
+                await disconnectDB();
+            } catch (error) {
+                logger.error({ err: error }, 'Error al desconectar MongoDB');
+            }
+            await terminar(0);
         });
+
+        // Evita que un cierre bloqueado deje el proceso colgado.
+        setTimeout(() => {
+            logger.error('Cierre forzado por tiempo de espera');
+            void terminar(1);
+        }, 10_000).unref();
     };
 
     process.on('SIGINT', () => shutdown('SIGINT'));
     process.on('SIGTERM', () => shutdown('SIGTERM'));
 };
 
-iniciarServidor().catch((e) => {
-    console.log('[Error] error al iniciar el servidor:', e);
-    process.exit(1);
+process.on('unhandledRejection', (motivo) => {
+    logger.fatal({ err: motivo }, 'Promesa no manejada');
+    void terminar(1);
+});
+
+process.on('uncaughtException', (error) => {
+    logger.fatal({ err: error }, 'Excepción no capturada');
+    void terminar(1);
+});
+
+iniciarServidor().catch((error) => {
+    logger.fatal({ err: error }, 'Error al iniciar el servidor');
+    void terminar(1);
 });

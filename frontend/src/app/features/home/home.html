@@ -1,1 +1,106 @@
-<p>home works!</p>
+<div class="inicio">
+  <header class="bienvenida">
+    <div>
+      <p class="saludo">Hola, {{ usuario()?.nombre || 'usuario' }}</p>
+      <h1>Tu espacio de trabajo</h1>
+      <p class="descripcion">Retoma tus carpetas y archivos más recientes.</p>
+    </div>
+    <a class="boton-primario" routerLink="/mi-unidad">
+      <mat-icon>folder_open</mat-icon>
+      Ir a Mi Unidad
+    </a>
+  </header>
+
+  <section class="seccion">
+    <div class="seccion-cabecera">
+      <div>
+        <h2>Carpetas recientes</h2>
+        <p>Las últimas carpetas que creaste o recibiste.</p>
+      </div>
+      <a class="enlace" routerLink="/mi-unidad">
+        Ver todas
+        <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+
+    @if (cargandoCarpetas()) {
+      <div class="estado">
+        <mat-spinner diameter="30"></mat-spinner>
+      </div>
+    } @else if (errorCarpetas()) {
+      <div class="estado error">{{ errorCarpetas() }}</div>
+    } @else if (carpetas().length === 0) {
+      <div class="vacio">
+        <mat-icon>folder_off</mat-icon>
+        <p>Aún no tienes carpetas. Crea una desde Mi Unidad.</p>
+      </div>
+    } @else {
+      <div class="grid-carpetas">
+        @for (carpeta of carpetas(); track carpeta._id) {
+          <a class="tarjeta-carpeta" [routerLink]="['/mi-unidad', carpeta._id]">
+            <span class="icono-carpeta">
+              <mat-icon>folder</mat-icon>
+            </span>
+            <span class="carpeta-nombre">{{ carpeta.nombre }}</span>
+            <span class="carpeta-meta">
+              @if (esCompartida(carpeta)) {
+                Compartida {{ formatearFecha(fechaCompartida(carpeta)) }}
+              } @else {
+                Creada {{ formatearFecha(carpeta.createdAt) }}
+              }
+            </span>
+          </a>
+        }
+      </div>
+    }
+  </section>
+
+  <section class="seccion">
+    <div class="seccion-cabecera">
+      <div>
+        <h2>Archivos recientes</h2>
+        <p>Últimos archivos creados, editados o compartidos por ti.</p>
+      </div>
+      <a class="enlace" routerLink="/mi-unidad">
+        Explorar
+        <mat-icon>arrow_forward</mat-icon>
+      </a>
+    </div>
+
+    @if (cargandoArchivos()) {
+      <div class="estado">
+        <mat-spinner diameter="30"></mat-spinner>
+      </div>
+    } @else if (errorArchivos()) {
+      <div class="estado error">{{ errorArchivos() }}</div>
+    } @else if (archivos().length === 0) {
+      <div class="vacio">
+        <mat-icon>draft</mat-icon>
+        <p>Aún no hay archivos recientes. Crea o edita uno para verlo aquí.</p>
+      </div>
+    } @else {
+      <ul class="lista-archivos">
+        @for (item of archivos(); track item.id) {
+          <li>
+            <a class="fila-archivo" [routerLink]="['/archivo', item.id]">
+              <span class="icono-archivo">
+                <mat-icon>{{ iconoArchivo(item.tipo) }}</mat-icon>
+              </span>
+              <span class="archivo-info">
+                <span class="archivo-nombre">{{ item.nombre }}</span>
+                <span class="archivo-meta">
+                  <span class="archivo-tipo">{{ item.tipo }}</span>
+                  · {{ formatearFechaHora(item.fecha) }}
+                </span>
+              </span>
+              <span [class]="'chip ' + claseAccionReciente(item)">
+                <mat-icon>{{ iconoAccionReciente(item) }}</mat-icon>
+                {{ textoAccion(item) }}
+              </span>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+</div>

@@ -1,9 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { ArchivoService } from './archivo.service';
 import { ArchivoPapeleraService } from './archivo-papelera.service';
 import { HttpError } from '../../shared/errors/http-error';
 import { ArchivoCompartidosService } from './archivo-compartido.service';
 
+/** Controlador HTTP de archivos: CRUD, contenido, compartidos y papelera. */
 export class ArchivoController {
     constructor(
         private readonly archivoService: ArchivoService,
@@ -11,225 +12,137 @@ export class ArchivoController {
         private readonly papeleraService: ArchivoPapeleraService,
     ) {}
 
+    /** Devuelve el ID del usuario autenticado o lanza `401`. */
     private getUsuarioId(req: Request): string {
         if (!req.user) throw HttpError.unauthorized();
         return req.user.id;
     }
 
-    crear = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.archivoService.crear(
-                req.body,
-                this.getUsuarioId(req),
-            );
-            res.status(201).json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /**
+     * Crea un archivo `.txt` o `.md`; el body se valida con `CrearArchivoSchema`
+     * y responde `201`.
+     */
+    crear = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.archivoService.crear(
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.status(201).json(archivo);
     };
 
-    listar = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivos = await this.archivoService.listar(
-                this.getUsuarioId(req),
-                req.query,
-            );
-            res.json(archivos);
-        } catch (error) {
-            next(error);
-        }
+    /** Lista archivos por carpeta, tipo, búsqueda y paginación. */
+    listar = async (req: Request, res: Response): Promise<void> => {
+        const archivos = await this.archivoService.listar(
+            this.getUsuarioId(req),
+            req.query,
+        );
+        res.json(archivos);
     };
 
-    listarCompartidos = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivos = await this.archivoService.listarCompartidos(
-                this.getUsuarioId(req),
-            );
-            res.json(archivos);
-        } catch (error) {
-            next(error);
-        }
+    /** Lista los archivos compartidos con el usuario autenticado. */
+    listarCompartidos = async (req: Request, res: Response): Promise<void> => {
+        const archivos = await this.archivoService.listarCompartidos(
+            this.getUsuarioId(req),
+        );
+        res.json(archivos);
     };
 
     /** Lista los archivos propios que están en la papelera. */
-    listarPapelera = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivos = await this.archivoService.listarPapelera(
-                this.getUsuarioId(req),
-            );
-            res.json(archivos);
-        } catch (error) {
-            next(error);
-        }
+    listarPapelera = async (req: Request, res: Response): Promise<void> => {
+        const archivos = await this.archivoService.listarPapelera(
+            this.getUsuarioId(req),
+        );
+        res.json(archivos);
     };
 
-    buscarPorId = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.archivoService.buscarPorId(
-                req.params.id as string,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Devuelve un archivo si el usuario tiene acceso; responde `404` si no lo tiene. */
+    buscarPorId = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.archivoService.buscarPorId(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 
-    descargar = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.archivoService.buscarPorId(
-                req.params.id as string,
-                this.getUsuarioId(req),
-            );
-            res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-            res.setHeader(
-                'Content-Disposition',
-                `attachment; filename="${encodeURIComponent(archivo.nombre)}"`,
-            );
-            res.send(archivo.contenido);
-        } catch (error) {
-            next(error);
-        }
+    /** Descarga el contenido como `text/plain` con el nombre original en `Content-Disposition`. */
+    descargar = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.archivoService.buscarPorId(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${encodeURIComponent(archivo.nombre)}"`,
+        );
+        res.send(archivo.contenido);
     };
 
-    actualizarContenido = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.archivoService.actualizarContenido(
-                req.params.id as string,
-                req.body,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Actualiza el contenido y el tamaño del archivo; requiere permiso de edición. */
+    actualizarContenido = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.archivoService.actualizarContenido(
+            req.params.id as string,
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 
-    renombrar = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.archivoService.renombrar(
-                req.params.id as string,
-                req.body,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Renombra el archivo dentro de su carpeta actual. */
+    renombrar = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.archivoService.renombrar(
+            req.params.id as string,
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 
-    mover = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.archivoService.mover(
-                req.params.id as string,
-                req.body,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Mueve el archivo a otra carpeta o a la raíz. */
+    mover = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.archivoService.mover(
+            req.params.id as string,
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 
-    enviarAPapelera = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            await this.papeleraService.enviar(
-                req.params.id as string,
-                this.getUsuarioId(req),
-            );
-            res.status(204).send();
-        } catch (error) {
-            next(error);
-        }
+    /** Envía el archivo a la papelera mediante borrado lógico; responde `204`. */
+    enviarAPapelera = async (req: Request, res: Response): Promise<void> => {
+        await this.papeleraService.enviar(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.status(204).send();
     };
 
-    restaurar = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.papeleraService.restaurar(
-                req.params.id as string,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Restaura el archivo desde la papelera a su ubicación original. */
+    restaurar = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.papeleraService.restaurar(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 
-    compartir = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.compartidosService.compartir(
-                req.params.id as string,
-                req.body,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Comparte el archivo con otro usuario y un permiso; solo el propietario puede hacerlo. */
+    compartir = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.compartidosService.compartir(
+            req.params.id as string,
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 
-    quitarCompartido = async (
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> => {
-        try {
-            const archivo = await this.compartidosService.quitar(
-                req.params.id as string,
-                req.params.usuarioId as string,
-                this.getUsuarioId(req),
-            );
-            res.json(archivo);
-        } catch (error) {
-            next(error);
-        }
+    /** Quita el acceso de un usuario al archivo compartido. */
+    quitarCompartido = async (req: Request, res: Response): Promise<void> => {
+        const archivo = await this.compartidosService.quitar(
+            req.params.id as string,
+            req.params.usuarioId as string,
+            this.getUsuarioId(req),
+        );
+        res.json(archivo);
     };
 }

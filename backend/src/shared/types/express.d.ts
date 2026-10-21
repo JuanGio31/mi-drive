@@ -9,6 +9,8 @@ declare global {
                 correo: string;
                 rol: Rol;
             };
+            /** Id generado por `assignRequestId` para correlacionar logs. */
+            requestId?: string;
         }
     }
 }

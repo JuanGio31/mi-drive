@@ -1,0 +1,90 @@
+<div class="recientes">
+  <header class="encabezado">
+    <div class="titulo">
+      <p class="etiqueta">Actividad</p>
+      <h1>Recientes</h1>
+      <p class="descripcion">Últimos archivos y carpetas sobre los que realizaste alguna acción.</p>
+    </div>
+
+    <div class="resumen" aria-label="Recursos recientes">
+      <div class="dato">
+        <mat-icon>history</mat-icon>
+        <strong>{{ total() }}</strong>
+        <span>{{ total() === 1 ? 'recurso' : 'recursos' }}</span>
+      </div>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Cargando actividad reciente…</p>
+    </div>
+  } @else if (error()) {
+    <div class="estado error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button type="button" class="reintentar" (click)="recargar()">Reintentar</button>
+    </div>
+  } @else if (total() === 0) {
+    <div class="estado vacio">
+      <mat-icon>history_toggle_off</mat-icon>
+      <h2>Todavía no hay actividad reciente</h2>
+      <p>Crea, edita o comparte un recurso y aparecerá aquí.</p>
+      <a routerLink="/mi-unidad">Ir a Mi Unidad</a>
+    </div>
+  } @else {
+    <div class="barra">
+      <div class="filtros" role="group" aria-label="Filtrar por tipo">
+        <button type="button" [class.activo]="filtro() === 'todo'" (click)="filtro.set('todo')">
+          Todo <span>{{ total() }}</span>
+        </button>
+        <button
+          type="button"
+          [class.activo]="filtro() === 'archivos'"
+          (click)="filtro.set('archivos')"
+        >
+          Archivos <span>{{ totalArchivos() }}</span>
+        </button>
+        <button
+          type="button"
+          [class.activo]="filtro() === 'carpetas'"
+          (click)="filtro.set('carpetas')"
+        >
+          Carpetas <span>{{ totalCarpetas() }}</span>
+        </button>
+      </div>
+    </div>
+
+    @if (visibles().length === 0) {
+      <div class="estado vacio">
+        <mat-icon>filter_alt_off</mat-icon>
+        <p>No hay {{ filtro() }} en tu actividad reciente.</p>
+      </div>
+    } @else {
+      <ul class="lista">
+        @for (item of visibles(); track item.id) {
+          <li>
+            <a class="fila" [routerLink]="ruta(item)">
+              <span class="icono" [class.carpeta]="item.tipo === 'carpeta'">
+                <mat-icon>{{ icono(item) }}</mat-icon>
+              </span>
+              <span class="info">
+                <span class="nombre">{{ item.nombre }}</span>
+                <span class="meta">
+                  {{ tipoTexto(item) }} ·
+                  {{ formatearFechaHora(item.fecha) }}
+                </span>
+              </span>
+              <span [class]="'chip ' + claseAccion(item.accion)">
+                <mat-icon>{{ iconoAccion(item.accion) }}</mat-icon>
+                {{ etiquetaAccion(item.accion) }}
+              </span>
+              <mat-icon class="abrir">chevron_right</mat-icon>
+            </a>
+          </li>
+        }
+      </ul>
+    }
+  }
+</div>

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ZodError, ZodSchema } from 'zod/v3';
 
+/** Convierte los issues de Zod al formato `{ path, message }` de la API. */
 const formatZodError = (error: ZodError) => {
     return error.issues.map((issue) => ({
         path: issue.path.join('.'),
@@ -8,6 +9,10 @@ const formatZodError = (error: ZodError) => {
     }));
 };
 
+/**
+ * Valida y reemplaza `req.body` con el resultado de Zod.
+ * Responde `400` con el detalle si la validación falla.
+ */
 export const validateBody = (schema: ZodSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -26,6 +31,10 @@ export const validateBody = (schema: ZodSchema) => {
     };
 };
 
+/**
+ * Valida `req.params` sin modificar el objeto original.
+ * Responde `400` con el detalle si la validación falla.
+ */
 export const validateParams = (schema: ZodSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -44,6 +53,10 @@ export const validateParams = (schema: ZodSchema) => {
     };
 };
 
+/**
+ * Valida y reemplaza `req.query` con el resultado de Zod.
+ * Redefine la propiedad para poder sustituir el valor en Express 5.
+ */
 export const validateQuery = (schema: ZodSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
         try {

@@ -3,6 +3,8 @@ import express from 'express';
 import cors, { CorsOptions } from 'cors';
 import { notFoundHandler } from './shared/middlewares/not-found.middleware';
 import { errorHandler } from './shared/middlewares/error.middleware';
+import { assignRequestId } from './shared/middlewares/request-id.middleware';
+import { requestLogger } from './shared/middlewares/request-logger.middleware';
 import authRoutes from './modules/auth/auth.routes';
 import usuarioRoutes from './modules/usuario/usuario.routes';
 import carpetaRoutes from './modules/carpeta/carpeta.routes';
@@ -24,7 +26,7 @@ const corsOptions: CorsOptions = {
     credentials: true, // permite el uso de cookies
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'], // cabeceras permitidas
-    exposedHeaders: ['Content-Disposition'], // disponible para descarga de archivos con nombre
+    exposedHeaders: ['Content-Disposition', 'X-Request-Id'], // descarga de archivos y correlación de logs
     maxAge: 3600, // cachear preflight durante 1 hora
 };
 
@@ -32,6 +34,11 @@ export const createApp = (): Application => {
     const app = express();
 
     // Middlewares globales
+    // - identifica la petición antes de registrarla o responder errores
+    app.use(assignRequestId);
+    // - registra metadatos de todas las peticiones
+    app.use(requestLogger);
+
     // - permite el uso de CORS antes de las rutas
     app.use(cors(corsOptions));
 

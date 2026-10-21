@@ -5,6 +5,7 @@ import { AccionActividad, Rol, TipoRecurso } from '../../shared/types/enums';
 import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { IActividad } from './actividad.model';
 import { HttpError } from '../../shared/errors/http-error';
+import { logger } from '../../shared/logger/logger';
 import { ArchivoPermisosService } from '../archivo/archivo-permisos.service';
 import { CarpetaPermisosService } from '../carpeta/carpeta-permisos.service';
 
@@ -41,7 +42,12 @@ export class ActividadService {
                     params.usuarioId,
                 );
                 if (!usuario) {
-                    console.warn(
+                    logger.warn(
+                        {
+                            usuarioId: params.usuarioId,
+                            accion: params.accion,
+                            recursoTipo: params.recursoTipo,
+                        },
                         'No se pudo registrar actividad: usuario no encontrado',
                     );
                     return;
@@ -64,7 +70,16 @@ export class ActividadService {
             });
         } catch (error) {
             // La auditoría no debe romper la operación principal
-            console.error('[Error] Error al registrar actividad:', error);
+            logger.error(
+                {
+                    err: error,
+                    usuarioId: params.usuarioId,
+                    accion: params.accion,
+                    recursoTipo: params.recursoTipo,
+                    recursoId: params.recursoId,
+                },
+                'Error al registrar actividad',
+            );
         }
     }
 
