@@ -54,6 +54,7 @@ src/app/
 │   ├── layout/      # Sidebar, topbar y contenedor
 │   ├── home/
 │   ├── mi-unidad/   # Explorador de carpetas
+│   ├── destacados/  # Carpetas y archivos marcados por el usuario
 │   ├── explorador/  # Lista y cuadrícula reutilizable
 │   ├── contextual/  # Menús y diálogos de acciones
 │   ├── editor/
@@ -67,23 +68,24 @@ src/app/
 
 ## Rutas principales
 
-| Ruta                  | Descripción                                |
-| --------------------- | ------------------------------------------ |
-| `/auth/sign-in`       | Inicio de sesión                           |
-| `/auth/sign-up`       | Registro de usuario                        |
-| `/home`               | Inicio con carpetas y archivos recientes   |
-| `/mi-unidad`          | Raíz de archivos del usuario               |
-| `/recientes`          | Actividad reciente de archivos y carpetas  |
-| `/compartidos`        | Recursos compartidos con el usuario        |
-| `/mi-unidad/:id`      | Contenido de una carpeta                   |
-| `/archivo/:id`        | Visor de archivo                           |
-| `/archivo/:id/editar` | Editor de archivo                          |
-| `/papelera`           | Elementos eliminados en lista o cuadrícula |
-| `/perfil`             | Datos personales y contraseña              |
-| `/admin/dashboard`    | Panel administrativo                       |
-| `/admin/usuarios`     | Administración de usuarios                 |
-| `/admin/reportes`     | Reportes globales                          |
-| `/admin/actividad`    | Auditoría global                           |
+| Ruta                  | Descripción                                 |
+| --------------------- | ------------------------------------------- |
+| `/auth/sign-in`       | Inicio de sesión                            |
+| `/auth/sign-up`       | Registro de usuario                         |
+| `/home`               | Inicio con carpetas y vistos recientemente  |
+| `/mi-unidad`          | Raíz de archivos del usuario                |
+| `/destacados`         | Carpetas y archivos marcados por el usuario |
+| `/recientes`          | Actividad reciente de archivos y carpetas   |
+| `/compartidos`        | Recursos compartidos con el usuario         |
+| `/mi-unidad/:id`      | Contenido de una carpeta                    |
+| `/archivo/:id`        | Visor de archivo                            |
+| `/archivo/:id/editar` | Editor de archivo                           |
+| `/papelera`           | Elementos eliminados en lista o cuadrícula  |
+| `/perfil`             | Datos personales y contraseña               |
+| `/admin/dashboard`    | Panel administrativo                        |
+| `/admin/usuarios`     | Administración de usuarios                  |
+| `/admin/reportes`     | Reportes globales                           |
+| `/admin/actividad`    | Auditoría global                            |
 
 ## Sesión y permisos
 

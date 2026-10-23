@@ -15,6 +15,8 @@ import { ArchivoService } from '../../core/services/archivo-service';
 import { AuthService } from '../../core/services/auth-service';
 import { CarpetaService } from '../../core/services/carpeta-service';
 import { claseAccion, etiquetaAccion, iconoAccion } from '../../core/utils/acciones';
+import { carpetaCompartidaConOtros, esCarpetaCompartida } from '../../core/utils/carpetas';
+import { esRecursoDestacado } from '../../core/utils/destacados';
 import { formatearFecha, formatearFechaHora } from '../../core/utils/formato';
 
 const LIMITE_CARPETAS = 10;
@@ -70,8 +72,17 @@ export class HomeComponent {
 
   /** Indica si la carpeta pertenece a otro usuario y fue compartida. */
   esCompartida(carpeta: Carpeta): boolean {
-    const usuarioId = this.usuario()?.id;
-    return !!usuarioId && carpeta.propietario !== usuarioId;
+    return esCarpetaCompartida(carpeta, this.usuario()?.id);
+  }
+
+  /** Indica si una carpeta propia tiene comparticiones directas. */
+  compartidaConOtros(carpeta: Carpeta): boolean {
+    return carpetaCompartidaConOtros(carpeta, this.usuario()?.id);
+  }
+
+  /** Indica si la carpeta está destacada para el usuario actual. */
+  esDestacado(carpeta: Carpeta): boolean {
+    return esRecursoDestacado(carpeta, this.usuario()?.id);
   }
 
   /** Fecha en la que el usuario recibió una carpeta compartida. */
@@ -88,6 +99,7 @@ export class HomeComponent {
 
   /** Etiqueta legible de la última acción registrada sobre el archivo. */
   textoAccion(item: ArchivoReciente): string {
+    if (item.accion === AccionActividad.Abrir) return 'Visto';
     return item.accion ? etiquetaAccion(item.accion) : 'Actualizado';
   }
 
@@ -131,6 +143,23 @@ export class HomeComponent {
     this.errorArchivos.set(null);
 
     try {
+      const vistas = await firstValueFrom(
+        this.actividadService.miHistorial({
+          recursoTipo: TipoRecurso.Archivo,
+          accion: AccionActividad.Abrir,
+          limit: LIMITE_ACTIVIDADES,
+        }),
+      );
+
+      const vistos = this.actividadesUnicas(vistas)
+        .slice(0, LIMITE_CANDIDATOS)
+        .map((actividad) => this.aArchivoReciente(actividad));
+
+      if (vistos.length > 0) {
+        this.archivos.set(vistos.slice(0, LIMITE_ARCHIVOS));
+        return;
+      }
+
       const actividades = await firstValueFrom(
         this.actividadService.miHistorial({
           recursoTipo: TipoRecurso.Archivo,
@@ -149,7 +178,7 @@ export class HomeComponent {
 
       await this.cargarArchivosRaiz();
     } catch {
-      this.errorArchivos.set('No se pudieron cargar los archivos recientes.');
+      this.errorArchivos.set('No se pudieron cargar los archivos vistos.');
     } finally {
       this.cargandoArchivos.set(false);
     }

@@ -16,6 +16,7 @@ export interface Carpeta {
   miPermiso?: NivelPermiso | null;
   carpetaPadre: string | null;
   compartidoCon: CompartidoCon[];
+  destacadoPor: string[];
   enPapelera: boolean;
   fechaEnvioPapelera: string | null;
   createdAt: string;
@@ -42,6 +43,11 @@ export interface MoverCarpetaDto {
 export interface CompartirCarpetaDto {
   usuarioId: string;
   permiso: NivelPermiso;
+}
+
+/** Body de PATCH /carpetas/:id/destacar. */
+export interface DestacarCarpetaDto {
+  destacado: boolean;
 }
 
 /** Query de GET /carpetas. */

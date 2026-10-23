@@ -6,27 +6,22 @@ import { ItemRecurso, esArchivo, nombreItem } from '../../core/models';
 import { ArchivoService } from '../../core/services/archivo-service';
 import { AuthService } from '../../core/services/auth-service';
 import { CarpetaService } from '../../core/services/carpeta-service';
-import {
-  DialogoConfirmarComponent,
-  DatosConfirmar,
-} from './dialogo-confirmar';
-import {
-  DialogoRenombrarComponent,
-  DatosRenombrar,
-} from './dialogo-renombrar';
-import {
-  DatosCompartir,
-  DialogoCompartirComponent,
-  ResultadoCompartir,
-} from './dialogo-compartir';
+import { esRecursoDestacado } from '../../core/utils/destacados';
+import { DialogoConfirmarComponent, DatosConfirmar } from './dialogo-confirmar';
+import { DialogoRenombrarComponent, DatosRenombrar } from './dialogo-renombrar';
+import { DatosCompartir, DialogoCompartirComponent, ResultadoCompartir } from './dialogo-compartir';
 import { DatosDetalles, DialogoDetallesComponent } from './dialogo-detalles';
+import { DatosMover, DialogoMoverComponent, ResultadoMover } from './dialogo-mover';
 
 export type AccionRecurso =
   | 'detalles'
+  | 'destacar'
   | 'renombrar'
   | 'compartir'
+  | 'mover'
   | 'papelera'
-  | 'restaurar';
+  | 'restaurar'
+  | 'eliminar';
 
 /**
  * Ejecuta las acciones del menú contextual sobre un archivo o carpeta,
@@ -45,59 +40,77 @@ export class AccionesRecursosService {
   async ejecutar(accion: AccionRecurso, item: ItemRecurso): Promise<boolean> {
     switch (accion) {
       case 'detalles':
-        await this.verDetalles(item);
-        return false;
+        return this.verDetalles(item);
+      case 'destacar':
+        return this.destacar(item);
       case 'renombrar':
         return this.renombrar(item);
       case 'compartir':
         return this.compartir(item);
+      case 'mover':
+        return this.mover(item);
       case 'papelera':
         return this.enviarAPapelera(item);
       case 'restaurar':
         return this.restaurar(item);
+      case 'eliminar':
+        return this.eliminarPermanente(item);
       default:
         return false;
     }
   }
 
-  private async verDetalles(item: ItemRecurso): Promise<void> {
-    await firstValueFrom(
+  private async verDetalles(item: ItemRecurso): Promise<boolean> {
+    const cambio = await firstValueFrom(
       this.dialog
-        .open<DialogoDetallesComponent, DatosDetalles>(
-          DialogoDetallesComponent,
-          {
-            data: { item, usuarioActualId: this.usuarioActualId() },
-            maxWidth: '95vw',
-            autoFocus: false,
-          },
-        )
+        .open<DialogoDetallesComponent, DatosDetalles, boolean>(DialogoDetallesComponent, {
+          data: { item, usuarioActualId: this.usuarioActualId() },
+          maxWidth: '95vw',
+          autoFocus: false,
+        })
         .afterClosed(),
     );
+    return cambio ?? false;
+  }
+
+  private async destacar(item: ItemRecurso): Promise<boolean> {
+    const recurso = esArchivo(item) ? item.archivo : item.carpeta;
+    const destacado = !esRecursoDestacado(recurso, this.usuarioActualId());
+
+    try {
+      if (esArchivo(item)) {
+        await firstValueFrom(this.archivoService.destacar(item.archivo._id, { destacado }));
+      } else {
+        await firstValueFrom(this.carpetaService.destacar(item.carpeta._id, { destacado }));
+      }
+      this.avisar(
+        destacado
+          ? `“${nombreItem(item)}” se marcó como destacado`
+          : `“${nombreItem(item)}” se quitó de destacados`,
+      );
+      return true;
+    } catch (error) {
+      this.mostrarError(error);
+      return false;
+    }
   }
 
   private async renombrar(item: ItemRecurso): Promise<boolean> {
     const nombre = await firstValueFrom(
       this.dialog
-        .open<DialogoRenombrarComponent, DatosRenombrar, string | null>(
-          DialogoRenombrarComponent,
-          {
-            data: { nombreActual: nombreItem(item), tipo: item.tipo },
-            autoFocus: 'dialog',
-          },
-        )
+        .open<DialogoRenombrarComponent, DatosRenombrar, string | null>(DialogoRenombrarComponent, {
+          data: { nombreActual: nombreItem(item), tipo: item.tipo },
+          autoFocus: 'dialog',
+        })
         .afterClosed(),
     );
     if (!nombre) return false;
 
     try {
       if (esArchivo(item)) {
-        await firstValueFrom(
-          this.archivoService.renombrar(item.archivo._id, { nombre }),
-        );
+        await firstValueFrom(this.archivoService.renombrar(item.archivo._id, { nombre }));
       } else {
-        await firstValueFrom(
-          this.carpetaService.renombrar(item.carpeta._id, { nombre }),
-        );
+        await firstValueFrom(this.carpetaService.renombrar(item.carpeta._id, { nombre }));
       }
       this.avisar(`Se renombró a “${nombre}”`);
       return true;
@@ -110,12 +123,37 @@ export class AccionesRecursosService {
   private async compartir(item: ItemRecurso): Promise<boolean> {
     const resultado = await firstValueFrom(
       this.dialog
-        .open<
+        .open<DialogoCompartirComponent, DatosCompartir, ResultadoCompartir | null>(
           DialogoCompartirComponent,
-          DatosCompartir,
-          ResultadoCompartir | null
-        >(DialogoCompartirComponent, {
-          data: { item, usuarioActualId: this.usuarioActualId() },
+          {
+            data: { item, usuarioActualId: this.usuarioActualId() },
+            autoFocus: false,
+          },
+        )
+        .afterClosed(),
+    );
+    if (!resultado) return false;
+
+    try {
+      if (esArchivo(item)) {
+        await firstValueFrom(this.archivoService.compartir(item.archivo._id, resultado));
+      } else {
+        await firstValueFrom(this.carpetaService.compartir(item.carpeta._id, resultado));
+      }
+      this.avisar('Se actualizaron los permisos');
+      return true;
+    } catch (error) {
+      this.mostrarError(error);
+      return false;
+    }
+  }
+
+  private async mover(item: ItemRecurso): Promise<boolean> {
+    const resultado = await firstValueFrom(
+      this.dialog
+        .open<DialogoMoverComponent, DatosMover, ResultadoMover | null>(DialogoMoverComponent, {
+          data: { item },
+          maxWidth: '95vw',
           autoFocus: false,
         })
         .afterClosed(),
@@ -125,14 +163,18 @@ export class AccionesRecursosService {
     try {
       if (esArchivo(item)) {
         await firstValueFrom(
-          this.archivoService.compartir(item.archivo._id, resultado),
+          this.archivoService.mover(item.archivo._id, {
+            carpetaPadre: resultado.carpetaPadre,
+          }),
         );
       } else {
         await firstValueFrom(
-          this.carpetaService.compartir(item.carpeta._id, resultado),
+          this.carpetaService.mover(item.carpeta._id, {
+            carpetaPadre: resultado.carpetaPadre,
+          }),
         );
       }
-      this.avisar('Se actualizaron los permisos');
+      this.avisar(`“${nombreItem(item)}” se movió correctamente`);
       return true;
     } catch (error) {
       this.mostrarError(error);
@@ -143,30 +185,23 @@ export class AccionesRecursosService {
   private async enviarAPapelera(item: ItemRecurso): Promise<boolean> {
     const confirmado = await firstValueFrom(
       this.dialog
-        .open<DialogoConfirmarComponent, DatosConfirmar, boolean>(
-          DialogoConfirmarComponent,
-          {
-            data: {
-              titulo: 'Mover a la papelera',
-              mensaje: `“${nombreItem(item)}” se moverá a la papelera. Podrás restaurarlo más tarde.`,
-              textoConfirmar: 'Mover a la papelera',
-              peligroso: true,
-            },
+        .open<DialogoConfirmarComponent, DatosConfirmar, boolean>(DialogoConfirmarComponent, {
+          data: {
+            titulo: 'Mover a la papelera',
+            mensaje: `“${nombreItem(item)}” se moverá a la papelera. Podrás restaurarlo más tarde.`,
+            textoConfirmar: 'Mover a la papelera',
+            peligroso: true,
           },
-        )
+        })
         .afterClosed(),
     );
     if (!confirmado) return false;
 
     try {
       if (esArchivo(item)) {
-        await firstValueFrom(
-          this.archivoService.enviarAPapelera(item.archivo._id),
-        );
+        await firstValueFrom(this.archivoService.enviarAPapelera(item.archivo._id));
       } else {
-        await firstValueFrom(
-          this.carpetaService.enviarAPapelera(item.carpeta._id),
-        );
+        await firstValueFrom(this.carpetaService.enviarAPapelera(item.carpeta._id));
       }
       this.avisar(`“${nombreItem(item)}” se movió a la papelera`);
       return true;
@@ -191,6 +226,40 @@ export class AccionesRecursosService {
     }
   }
 
+  private async eliminarPermanente(item: ItemRecurso): Promise<boolean> {
+    const contenido =
+      item.tipo === 'carpeta'
+        ? `“${nombreItem(item)}” y todo su contenido se eliminarán definitivamente.`
+        : `“${nombreItem(item)}” se eliminará definitivamente.`;
+
+    const confirmado = await firstValueFrom(
+      this.dialog
+        .open<DialogoConfirmarComponent, DatosConfirmar, boolean>(DialogoConfirmarComponent, {
+          data: {
+            titulo: 'Eliminar permanentemente',
+            mensaje: `${contenido} Esta acción no se puede deshacer.`,
+            textoConfirmar: 'Eliminar permanentemente',
+            peligroso: true,
+          },
+        })
+        .afterClosed(),
+    );
+    if (!confirmado) return false;
+
+    try {
+      if (esArchivo(item)) {
+        await firstValueFrom(this.archivoService.eliminarPermanente(item.archivo._id));
+      } else {
+        await firstValueFrom(this.carpetaService.eliminarPermanente(item.carpeta._id));
+      }
+      this.avisar(`“${nombreItem(item)}” se eliminó permanentemente`);
+      return true;
+    } catch (error) {
+      this.mostrarError(error);
+      return false;
+    }
+  }
+
   private usuarioActualId(): string {
     return this.auth.usuario()?.id ?? '';
   }
@@ -201,8 +270,7 @@ export class AccionesRecursosService {
 
   private mostrarError(error: unknown): void {
     const mensaje =
-      (error as { error?: { error?: string } })?.error?.error ??
-      'No se pudo completar la acción.';
+      (error as { error?: { error?: string } })?.error?.error ?? 'No se pudo completar la acción.';
     this.snack.open(mensaje, 'Cerrar', { duration: 5000 });
   }
 }

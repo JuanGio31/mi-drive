@@ -25,6 +25,8 @@ administración con usuarios, reportes y auditoría.
 - Editor de texto y visor con vista previa para Markdown.
 - Papelera con eliminación lógica y restauración.
 - Historial de actividad y búsqueda global.
+- Inicio con carpetas y archivos vistos recientemente.
+- Recursos destacados y compartidos por usuario.
 - Panel administrativo con usuarios, reportes y actividad.
 - Vista de archivos en lista o cuadrícula.
 
@@ -165,7 +167,7 @@ Requiere Google Chrome o Chromium y las dependencias del frontend instaladas.
 | Autenticación, permisos y papelera | Implementado |
 | Frontend principal | Implementado |
 | Panel de administración | Implementado |
-| Rutas Recientes y Compartidos | Implementado |
+| Rutas Recientes, Destacados y Compartidos | Implementado |
 | Manual técnico y de usuario | Implementado |
 
 ## Autor

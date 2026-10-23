@@ -47,6 +47,14 @@ export class ArchivoController {
         res.json(archivos);
     };
 
+    /** Lista los archivos destacados y accesibles para el usuario actual. */
+    listarDestacados = async (req: Request, res: Response): Promise<void> => {
+        const archivos = await this.archivoService.listarDestacados(
+            this.getUsuarioId(req),
+        );
+        res.json(archivos);
+    };
+
     /** Lista los archivos propios que están en la papelera. */
     listarPapelera = async (req: Request, res: Response): Promise<void> => {
         const archivos = await this.archivoService.listarPapelera(
@@ -78,8 +86,20 @@ export class ArchivoController {
         res.send(archivo.contenido);
     };
 
+    /** Registra la apertura del archivo en el visor. Responde 204. */
+    abrir = async (req: Request, res: Response): Promise<void> => {
+        await this.archivoService.registrarApertura(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.status(204).send();
+    };
+
     /** Actualiza el contenido y el tamaño del archivo; requiere permiso de edición. */
-    actualizarContenido = async (req: Request, res: Response): Promise<void> => {
+    actualizarContenido = async (
+        req: Request,
+        res: Response,
+    ): Promise<void> => {
         const archivo = await this.archivoService.actualizarContenido(
             req.params.id as string,
             req.body,
@@ -108,6 +128,16 @@ export class ArchivoController {
         res.json(archivo);
     };
 
+    /** Marca o desmarca el archivo como destacado para el usuario actual. */
+    destacar = async (req: Request, res: Response): Promise<void> => {
+        const resultado = await this.archivoService.destacar(
+            req.params.id as string,
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.json(resultado);
+    };
+
     /** Envía el archivo a la papelera mediante borrado lógico; responde `204`. */
     enviarAPapelera = async (req: Request, res: Response): Promise<void> => {
         await this.papeleraService.enviar(
@@ -124,6 +154,15 @@ export class ArchivoController {
             this.getUsuarioId(req),
         );
         res.json(archivo);
+    };
+
+    /** Elimina definitivamente un archivo de la papelera. Responde 204. */
+    eliminarPermanente = async (req: Request, res: Response): Promise<void> => {
+        await this.papeleraService.eliminarPermanente(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.status(204).send();
     };
 
     /** Comparte el archivo con otro usuario y un permiso; solo el propietario puede hacerlo. */

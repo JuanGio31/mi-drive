@@ -17,6 +17,7 @@ import { ArchivoService } from '../../core/services/archivo-service';
 import { AuthService } from '../../core/services/auth-service';
 import { CarpetaService } from '../../core/services/carpeta-service';
 import { UsuarioService } from '../../core/services/usuario-service';
+import { esRecursoDestacado } from '../../core/utils/destacados';
 import { formatearFecha, formatearTamanio } from '../../core/utils/formato';
 import { etiquetaPermiso, iconoPermiso } from '../../core/utils/permisos';
 
@@ -87,12 +88,25 @@ export class CompartidosComponent {
 
   /** Solo se puede renombrar con permiso de escritura; nunca se comparte ni se borra desde aquí. */
   menuCarpeta(item: CarpetaCompartida) {
-    return itemsMenuUnidad(false, item.permiso === NivelPermiso.Escritura);
+    return itemsMenuUnidad(
+      false,
+      item.permiso === NivelPermiso.Escritura,
+      this.esDestacado(item.carpeta),
+    );
   }
 
   /** Solo se puede renombrar con permiso de escritura; nunca se comparte ni se borra desde aquí. */
   menuArchivo(item: ArchivoCompartido) {
-    return itemsMenuUnidad(false, item.permiso === NivelPermiso.Escritura);
+    return itemsMenuUnidad(
+      false,
+      item.permiso === NivelPermiso.Escritura,
+      this.esDestacado(item.archivo),
+    );
+  }
+
+  /** Indica si el recurso está destacado para el usuario actual. */
+  esDestacado(recurso: Carpeta | Archivo): boolean {
+    return esRecursoDestacado(recurso, this.auth.usuario()?.id);
   }
 
   /** Ejecuta una acción sobre una carpeta y recarga la vista si cambió. */

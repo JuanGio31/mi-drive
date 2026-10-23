@@ -34,6 +34,12 @@ export const routes: Routes = [
         title: 'Mi Unidad',
       },
       {
+        path: 'destacados',
+        loadComponent: () =>
+          import('./features/destacados/destacados').then((m) => m.DestacadosComponent),
+        title: 'Destacados',
+      },
+      {
         path: 'archivo/:id/editar',
         loadComponent: () =>
           import('./features/editor/editor-archivo').then((m) => m.EditorArchivoComponent),

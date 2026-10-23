@@ -19,6 +19,7 @@ export interface IArchivoRepository {
         accesoPadre: boolean,
     ): Promise<IArchivo[]>;
     listarCompartidosCon(usuarioId: string): Promise<IArchivo[]>;
+    listarDestacados(usuarioId: string): Promise<IArchivo[]>;
     /** Busca archivos accesibles por nombre (coincidencia parcial, sin distinguir mayúsculas). */
     buscarPorNombre(
         usuarioId: string,
@@ -28,6 +29,11 @@ export interface IArchivoRepository {
     ): Promise<IArchivo[]>;
     listarPapelera(propietarioId: string): Promise<IArchivo[]>;
     actualizar(id: string, data: Partial<IArchivo>): Promise<IArchivo | null>;
+    actualizarDestacado(
+        id: string,
+        usuarioId: string,
+        destacado: boolean,
+    ): Promise<IArchivo | null>;
     existeArchivoConNombre(
         propietarioId: string,
         carpetaPadre: string | null,
@@ -59,6 +65,11 @@ export interface IArchivoRepository {
         propietarioId: string,
     ): Promise<void>;
     eliminarPermanente(archivoId: string): Promise<void>;
+    /** Elimina definitivamente los archivos que pertenecen a un subárbol. */
+    eliminarPermanentePorCarpetas(
+        carpetaIds: string[],
+        raizId: string,
+    ): Promise<number>;
 }
 
 export class MongoArchivoRepository implements IArchivoRepository {
@@ -143,6 +154,17 @@ export class MongoArchivoRepository implements IArchivoRepository {
             .exec();
     }
 
+    /** Lista los archivos marcados por el usuario, ordenados por nombre. */
+    async listarDestacados(usuarioId: string): Promise<IArchivo[]> {
+        return ArchivoModel.find({
+            destacadoPor: new Types.ObjectId(usuarioId),
+            enPapelera: false,
+        })
+            .select('-contenido')
+            .sort({ nombre: 1 })
+            .exec();
+    }
+
     /**
      * Busca por nombre entre los archivos a los que el usuario tiene acceso:
      * propios, compartidos directamente o dentro de carpetas compartidas.
@@ -204,6 +226,22 @@ export class MongoArchivoRepository implements IArchivoRepository {
         return ArchivoModel.findByIdAndUpdate(id, data, {
             returnDocument: 'after',
             runValidators: true,
+        }).exec();
+    }
+
+    async actualizarDestacado(
+        id: string,
+        usuarioId: string,
+        destacado: boolean,
+    ): Promise<IArchivo | null> {
+        const usuario = new Types.ObjectId(usuarioId);
+        const update = destacado
+            ? { $addToSet: { destacadoPor: usuario } }
+            : { $pull: { destacadoPor: usuario } };
+
+        return ArchivoModel.findByIdAndUpdate(id, update, {
+            returnDocument: 'after',
+            timestamps: false,
         }).exec();
     }
 
@@ -361,5 +399,28 @@ export class MongoArchivoRepository implements IArchivoRepository {
 
     async eliminarPermanente(archivoId: string): Promise<void> {
         await ArchivoModel.findByIdAndDelete(archivoId).exec();
+    }
+
+    /**
+     * Elimina los archivos del subárbol. Se incluye `papeleraRaiz` para cubrir
+     * archivos que cayeron en cascada y conservan la raíz del envío.
+     */
+    async eliminarPermanentePorCarpetas(
+        carpetaIds: string[],
+        raizId: string,
+    ): Promise<number> {
+        if (carpetaIds.length === 0) return 0;
+
+        const resultado = await ArchivoModel.deleteMany({
+            $or: [
+                {
+                    carpetaPadre: {
+                        $in: carpetaIds.map((id) => new Types.ObjectId(id)),
+                    },
+                },
+                { papeleraRaiz: new Types.ObjectId(raizId) },
+            ],
+        }).exec();
+        return resultado.deletedCount ?? 0;
     }
 }

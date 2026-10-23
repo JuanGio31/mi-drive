@@ -10,12 +10,7 @@
       (ngModelChange)="alEscribir($event)"
     />
     @if (texto()) {
-      <button
-        class="limpiar"
-        type="button"
-        (click)="limpiar()"
-        aria-label="Limpiar búsqueda"
-      >
+      <button class="limpiar" type="button" (click)="limpiar()" aria-label="Limpiar búsqueda">
         <mat-icon>close</mat-icon>
       </button>
     }
@@ -43,19 +38,26 @@
         </mat-option>
       } @else if (sinResultados()) {
         <mat-option disabled>
-          <span class="estado">
-            Sin resultados para “{{ consulta() }}”
-          </span>
+          <span class="estado"> Sin resultados para “{{ consulta() }}” </span>
         </mat-option>
       } @else if (carpetas().length > 0 || archivos().length > 0) {
         @if (carpetas().length > 0) {
           <mat-optgroup label="Carpetas">
             @for (carpeta of carpetas(); track carpeta._id) {
               <mat-option [value]="valorCarpeta(carpeta)">
-                <mat-icon class="icono-carpeta">folder</mat-icon>
+                <mat-icon class="icono-carpeta" [class.compartida]="esCompartida(carpeta)">
+                  {{ esCompartida(carpeta) ? 'folder_shared' : 'folder' }}
+                </mat-icon>
                 <span class="resultado">
-                  <span class="nombre">{{ carpeta.nombre }}</span>
-                  <span class="meta">Carpeta</span>
+                  <span class="nombre">
+                    @if (esDestacado(carpeta)) {
+                      <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                        star
+                      </mat-icon>
+                    }
+                    {{ carpeta.nombre }}
+                  </span>
+                  <span class="meta">{{ esCompartida(carpeta) ? 'Compartida' : 'Carpeta' }}</span>
                 </span>
               </mat-option>
             }
@@ -70,7 +72,14 @@
                   {{ iconoArchivo(archivo.tipo) }}
                 </mat-icon>
                 <span class="resultado">
-                  <span class="nombre">{{ archivo.nombre }}</span>
+                  <span class="nombre">
+                    @if (esDestacado(archivo)) {
+                      <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                        star
+                      </mat-icon>
+                    }
+                    {{ archivo.nombre }}
+                  </span>
                   <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
                 </span>
               </mat-option>
@@ -82,13 +91,6 @@
   </div>
 
   <div class="actions">
-    <button class="icon-btn" mat-icon-button title="Ayuda">
-      <mat-icon>help_outline</mat-icon>
-    </button>
-    <button class="icon-btn" mat-icon-button title="Configuración">
-      <mat-icon>settings</mat-icon>
-    </button>
-
     <button
       class="avatar-btn"
       [matMenuTriggerFor]="userMenu"

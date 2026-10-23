@@ -17,11 +17,6 @@ export class Layout {
   /** Usuario autenticado actual (modelo UsuarioSesion). */
   readonly user: Signal<UsuarioSesion | null> = this.authService.usuario;
 
-  /** Cierra la sesión del usuario actual. */
-  logout(): void {
-    this.authService.logout();
-  }
-
   /** Indica si el usuario actual es administrador. */
   esAdmin(): boolean {
     return this.authService.esAdmin();

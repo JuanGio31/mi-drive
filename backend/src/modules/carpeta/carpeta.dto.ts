@@ -33,6 +33,10 @@ export const CompartirCarpetaSchema = z.object({
     permiso: PermisoSchema,
 });
 
+export const DestacarCarpetaSchema = z.object({
+    destacado: z.boolean(),
+});
+
 /** Param :id de las rutas de carpeta. */
 export const CarpetaIdParamSchema = z.object({
     id: ObjectIdSchema,
@@ -54,4 +58,5 @@ export type CrearCarpetaDTO = z.infer<typeof CrearCarpetaSchema>;
 export type RenombrarCarpetaDTO = z.infer<typeof RenombrarCarpetaSchema>;
 export type MoverCarpetaDTO = z.infer<typeof MoverCarpetaSchema>;
 export type CompartirCarpetaDTO = z.infer<typeof CompartirCarpetaSchema>;
+export type DestacarCarpetaDTO = z.infer<typeof DestacarCarpetaSchema>;
 export type ListarCarpetasQuery = z.infer<typeof ListarCarpetasQuerySchema>;

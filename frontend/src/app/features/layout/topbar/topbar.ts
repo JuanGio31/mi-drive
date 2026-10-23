@@ -1,34 +1,18 @@
-import {
-  Component,
-  DestroyRef,
-  computed,
-  inject,
-  signal,
-  viewChild,
-} from '@angular/core';
+import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import {
-  MatAutocompleteModule,
-  MatAutocompleteTrigger,
-} from '@angular/material/autocomplete';
-import { MatButtonModule } from '@angular/material/button';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import {
-  Subject,
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  of,
-  switchMap,
-} from 'rxjs';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../core/services/auth-service';
 import { BusquedaService } from '../../../core/services/busqueda-service';
 import { Archivo, Carpeta, ExtensionArchivo } from '../../../core/models';
+import { esCarpetaCompartida } from '../../../core/utils/carpetas';
+import { esRecursoDestacado } from '../../../core/utils/destacados';
 import { formatearTamanio } from '../../../core/utils/formato';
 
 @Component({
@@ -39,7 +23,6 @@ import { formatearTamanio } from '../../../core/utils/formato';
     MatIconModule,
     MatMenuModule,
     MatDividerModule,
-    MatButtonModule,
     MatProgressSpinnerModule,
   ],
   templateUrl: './topbar.html',
@@ -193,7 +176,18 @@ export class Topbar {
     return tipo === ExtensionArchivo.Md ? 'code' : 'description';
   }
 
+  /** Indica si la carpeta del resultado fue compartida con el usuario actual. */
+  esCompartida(carpeta: Carpeta): boolean {
+    return esCarpetaCompartida(carpeta, this.user()?.id);
+  }
+
+  /** Indica si el resultado está destacado para el usuario actual. */
+  esDestacado(recurso: Carpeta | Archivo): boolean {
+    return esRecursoDestacado(recurso, this.user()?.id);
+  }
+
   logout(): void {
     this.authService.logout();
+    void this.router.navigate(['/auth/sign-in'], { replaceUrl: true });
   }
 }

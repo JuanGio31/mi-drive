@@ -16,6 +16,7 @@ export interface ICarpetaRepository {
         carpetaPadre: string | null,
         incluirTodas?: boolean,
     ): Promise<ICarpeta[]>;
+    listarDestacadas(usuarioId: string): Promise<ICarpeta[]>;
     /** Busca carpetas accesibles por nombre (coincidencia parcial, sin distinguir mayúsculas). */
     buscarPorNombre(
         usuarioId: string,
@@ -27,6 +28,11 @@ export interface ICarpetaRepository {
     obtenerDescendientesDeVarias(ids: string[]): Promise<string[]>;
     listarPapelera(propietarioId: string): Promise<ICarpeta[]>;
     actualizar(id: string, data: Partial<ICarpeta>): Promise<ICarpeta | null>;
+    actualizarDestacado(
+        id: string,
+        usuarioId: string,
+        destacado: boolean,
+    ): Promise<ICarpeta | null>;
     existeCarpetaConNombre(
         propietarioId: string,
         carpetaPadre: string | null,
@@ -59,6 +65,8 @@ export interface ICarpetaRepository {
         propietarioId: string,
     ): Promise<void>;
     eliminarPermanente(id: string): Promise<void>;
+    /** Elimina definitivamente un conjunto de carpetas del mismo subárbol. */
+    eliminarPermanenteCascada(ids: string[]): Promise<number>;
     // Búsqueda en el árbol para validar acceso
     buscarPorIdYUsuario(
         carpetaId: string,
@@ -128,6 +136,16 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
         }
 
         return CarpetaModel.find(filtro).sort({ nombre: 1 }).exec();
+    }
+
+    /** Lista las carpetas marcadas por el usuario, ordenadas por nombre. */
+    async listarDestacadas(usuarioId: string): Promise<ICarpeta[]> {
+        return CarpetaModel.find({
+            destacadoPor: new Types.ObjectId(usuarioId),
+            enPapelera: false,
+        })
+            .sort({ nombre: 1 })
+            .exec();
     }
 
     /**
@@ -258,6 +276,22 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
         return CarpetaModel.findByIdAndUpdate(id, data, {
             returnDocument: 'after',
             runValidators: true,
+        }).exec();
+    }
+
+    async actualizarDestacado(
+        id: string,
+        usuarioId: string,
+        destacado: boolean,
+    ): Promise<ICarpeta | null> {
+        const usuario = new Types.ObjectId(usuarioId);
+        const update = destacado
+            ? { $addToSet: { destacadoPor: usuario } }
+            : { $pull: { destacadoPor: usuario } };
+
+        return CarpetaModel.findByIdAndUpdate(id, update, {
+            returnDocument: 'after',
+            timestamps: false,
         }).exec();
     }
 
@@ -433,6 +467,16 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
     /** Elimina definitivamente una carpeta de la base de datos. */
     async eliminarPermanente(id: string): Promise<void> {
         await CarpetaModel.findByIdAndDelete(id).exec();
+    }
+
+    /** Elimina definitivamente todas las carpetas del subárbol indicado. */
+    async eliminarPermanenteCascada(ids: string[]): Promise<number> {
+        if (ids.length === 0) return 0;
+
+        const resultado = await CarpetaModel.deleteMany({
+            _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+        }).exec();
+        return resultado.deletedCount ?? 0;
     }
 
     /** Busca una carpeta por ID solo si el usuario es dueño o está en compartidos. */

@@ -132,6 +132,11 @@ export class UsuarioService {
                     'Solo un administrador puede cambiar el estado del usuario',
                 );
             }
+            if (id === usuarioId) {
+                throw HttpError.badRequest(
+                    'No puedes desactivar tu propia cuenta',
+                );
+            }
             cambios.activo = dto.activo;
         }
         if (dto.rol !== undefined) {
@@ -141,14 +146,15 @@ export class UsuarioService {
                 );
             }
             if (id === usuarioId) {
-                throw HttpError.badRequest(
-                    'No puedes cambiar tu propio rol',
-                );
+                throw HttpError.badRequest('No puedes cambiar tu propio rol');
             }
             cambios.rol = dto.rol as Rol;
         }
 
-        const actualizado = await this.usuarioRepository.actualizar(id, cambios);
+        const actualizado = await this.usuarioRepository.actualizar(
+            id,
+            cambios,
+        );
         if (!actualizado) throw HttpError.notFound('Usuario no encontrado');
 
         await this.actividadService.registrar({

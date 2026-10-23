@@ -1,3 +1,5 @@
+@use '../../../../shared/styles/form-fields' as campos;
+
 .formulario {
   display: flex;
   flex-direction: column;
@@ -8,6 +10,7 @@
 
 .formulario mat-form-field {
   width: 100%;
+  @include campos.campo-compacto;
 }
 
 .aviso-error {

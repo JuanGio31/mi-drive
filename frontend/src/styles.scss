@@ -36,6 +36,31 @@ body {
   margin: 0;
   height: 100%;
 }
+/* Indicador compartido para carpetas propias que también fueron compartidas. */
+.badge-compartida {
+  position: absolute;
+  right: -4px;
+  bottom: -3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+  color: #2563eb;
+  box-shadow: 0 0 0 1px #dbeafe;
+  font-size: 17px;
+  line-height: 17px;
+}
+/* Estrella de recurso destacado por el usuario actual. */
+.icono-destacado {
+  display: inline-flex;
+  vertical-align: -3px;
+  width: 16px;
+  height: 16px;
+  margin-right: 4px;
+  color: #f59e0b;
+  font-size: 16px;
+  line-height: 16px;
+}
 /* Estilos del markdown renderizado en el visor de archivos.
    Viven aquí porque el contenido de [innerHTML] no lleva el atributo de
    encapsulación de los estilos del componente. */
@@ -136,4 +161,3 @@ body {
 .markdown img {
   max-width: 100%;
 }
-

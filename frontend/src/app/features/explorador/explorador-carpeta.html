@@ -19,9 +19,29 @@
           (keydown.enter)="abrirCarpeta.emit(carpeta)"
           (seleccionar)="emitirAccion($event, { tipo: 'carpeta', carpeta })"
         >
-          <mat-icon class="icono">folder</mat-icon>
-          <span class="nombre">{{ carpeta.nombre }}</span>
-          <span class="meta">Carpeta</span>
+          <span class="icono-carpeta" [class.compartida]="esCompartida(carpeta)">
+            <mat-icon class="icono">
+              {{ esCompartida(carpeta) ? 'folder_shared' : 'folder' }}
+            </mat-icon>
+            @if (compartidaConOtros(carpeta)) {
+              <mat-icon
+                class="badge-compartida"
+                title="Compartida con otros usuarios"
+                aria-label="Compartida con otros usuarios"
+              >
+                share
+              </mat-icon>
+            }
+          </span>
+          <span class="nombre">
+            @if (esDestacado(carpeta)) {
+              <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                star
+              </mat-icon>
+            }
+            {{ carpeta.nombre }}
+          </span>
+          <span class="meta">{{ esCompartida(carpeta) ? 'Compartida' : 'Carpeta' }}</span>
         </app-menu-contextual>
       </li>
     }
@@ -38,7 +58,14 @@
           (seleccionar)="emitirAccion($event, { tipo: 'archivo', archivo })"
         >
           <mat-icon class="icono">{{ iconoArchivo(archivo.tipo) }}</mat-icon>
-          <span class="nombre">{{ archivo.nombre }}</span>
+          <span class="nombre">
+            @if (esDestacado(archivo)) {
+              <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                star
+              </mat-icon>
+            }
+            {{ archivo.nombre }}
+          </span>
           <span class="tipo">{{ archivo.tipo }}</span>
           <span class="meta">{{ formatearTamanio(archivo.tamanio) }}</span>
         </app-menu-contextual>

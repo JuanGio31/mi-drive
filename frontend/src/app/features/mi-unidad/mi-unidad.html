@@ -8,31 +8,53 @@
           </button>
         }
         <h1>{{ carpeta()?.nombre || 'Mi Unidad' }}</h1>
+        @if (carpetaCompartida()) {
+          <span class="chip-compartida">
+            <mat-icon>folder_shared</mat-icon>
+            Compartida
+          </span>
+        }
       </div>
 
-      <div class="selector-vista" role="group" aria-label="Vista de archivos">
-        <button
-          mat-icon-button
-          type="button"
-          [class.activo]="vista() === 'lista'"
-          [attr.aria-pressed]="vista() === 'lista'"
-          aria-label="Vista de lista"
-          matTooltip="Vista de lista"
-          (click)="cambiarVista('lista')"
-        >
-          <mat-icon>view_list</mat-icon>
+      <div class="acciones">
+        <button mat-stroked-button type="button" class="subir" (click)="subirArchivo()">
+          <mat-icon>upload_file</mat-icon>
+          Subir
         </button>
-        <button
-          mat-icon-button
-          type="button"
-          [class.activo]="vista() === 'cuadricula'"
-          [attr.aria-pressed]="vista() === 'cuadricula'"
-          aria-label="Vista de cuadrícula"
-          matTooltip="Vista de cuadrícula"
-          (click)="cambiarVista('cuadricula')"
-        >
-          <mat-icon>grid_view</mat-icon>
-        </button>
+
+        <mat-form-field appearance="outline" class="filtro-tipo" subscriptSizing="dynamic">
+          <mat-label>Tipo</mat-label>
+          <mat-select [value]="tipo()" (selectionChange)="tipo.set($event.value)">
+            <mat-option value="todos">Todos</mat-option>
+            <mat-option [value]="tipos.Txt">TXT</mat-option>
+            <mat-option [value]="tipos.Md">Markdown</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div class="selector-vista" role="group" aria-label="Vista de archivos">
+          <button
+            mat-icon-button
+            type="button"
+            [class.activo]="vista() === 'lista'"
+            [attr.aria-pressed]="vista() === 'lista'"
+            aria-label="Vista de lista"
+            matTooltip="Vista de lista"
+            (click)="cambiarVista('lista')"
+          >
+            <mat-icon>view_list</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            type="button"
+            [class.activo]="vista() === 'cuadricula'"
+            [attr.aria-pressed]="vista() === 'cuadricula'"
+            aria-label="Vista de cuadrícula"
+            matTooltip="Vista de cuadrícula"
+            (click)="cambiarVista('cuadricula')"
+          >
+            <mat-icon>grid_view</mat-icon>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -49,6 +71,7 @@
     [carpetaId]="carpetaId()"
     [recarga]="recarga()"
     [vista]="vista()"
+    [tipo]="tipo()"
     (abrirCarpeta)="irACarpeta($event)"
     (abrirArchivo)="abrirArchivo($event)"
     (accion)="onAccion($event)"

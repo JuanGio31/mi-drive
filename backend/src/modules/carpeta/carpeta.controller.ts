@@ -36,6 +36,14 @@ export class CarpetaController {
         res.json(resultado);
     };
 
+    /** Lista las carpetas destacadas y accesibles para el usuario actual. */
+    listarDestacadas = async (req: Request, res: Response): Promise<void> => {
+        const carpetas = await this.carpetaService.listarDestacadas(
+            this.getUsuarioId(req),
+        );
+        res.json(carpetas);
+    };
+
     /** Lista las carpetas propias que están en la papelera. */
     listarPapelera = async (req: Request, res: Response): Promise<void> => {
         const carpetas = await this.carpetaService.listarPapelera(
@@ -73,6 +81,16 @@ export class CarpetaController {
         res.json(carpeta);
     };
 
+    /** Marca o desmarca la carpeta como destacada para el usuario actual. */
+    destacar = async (req: Request, res: Response): Promise<void> => {
+        const resultado = await this.carpetaService.destacar(
+            req.params.id as string,
+            req.body,
+            this.getUsuarioId(req),
+        );
+        res.json(resultado);
+    };
+
     /** Envía una carpeta a la papelera. Responde 204 sin contenido. */
     enviarAPapelera = async (req: Request, res: Response): Promise<void> => {
         await this.papeleraService.enviar(
@@ -89,6 +107,15 @@ export class CarpetaController {
             this.getUsuarioId(req),
         );
         res.json(carpeta);
+    };
+
+    /** Elimina definitivamente una carpeta y su subárbol. Responde 204. */
+    eliminarPermanente = async (req: Request, res: Response): Promise<void> => {
+        await this.papeleraService.eliminarPermanente(
+            req.params.id as string,
+            this.getUsuarioId(req),
+        );
+        res.status(204).send();
     };
 
     /** Comparte una carpeta con otro usuario con un permiso dado. */

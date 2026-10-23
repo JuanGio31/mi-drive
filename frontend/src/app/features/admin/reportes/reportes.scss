@@ -1,3 +1,5 @@
+@use '../../../shared/styles/form-fields' as campos;
+
 :host {
   display: block;
   min-height: 100%;
@@ -145,16 +147,19 @@
 
 .filtros-rango mat-form-field {
   width: 170px;
+  @include campos.campo-compacto;
 }
 
 .selector-usuario {
   width: 320px;
   max-width: 100%;
+  @include campos.campo-compacto;
 }
 
 .selector-unidad {
   width: 180px;
   margin-bottom: 8px;
+  @include campos.campo-compacto;
 }
 
 /* Tablas */

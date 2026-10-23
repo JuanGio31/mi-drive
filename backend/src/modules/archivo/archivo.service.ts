@@ -8,6 +8,7 @@ import {
     ActualizarContenidoDTO,
     RenombrarArchivoDTO,
     MoverArchivoDTO,
+    DestacarArchivoDTO,
     ListarArchivosQueryDTO,
 } from './archivo.dto';
 import { HttpError } from '../../shared/errors/http-error';
@@ -123,6 +124,30 @@ export class ArchivoService {
         return this.archivoRepository.listarCompartidosCon(usuarioId);
     }
 
+    /**
+     * Lista los archivos destacados por el usuario y descarta los que ya no
+     * tiene permiso de ver (por ejemplo, si le revocaron una compartición).
+     */
+    async listarDestacados(usuarioId: string): Promise<ArchivoConPermiso[]> {
+        const archivos = await this.archivoRepository.listarDestacados(
+            usuarioId,
+        );
+        if (archivos.length === 0) return [];
+
+        const permisos = await this.permisosService.obtenerPermiso(
+            archivos,
+            usuarioId,
+        );
+        const resultado: ArchivoConPermiso[] = [];
+
+        for (const archivo of archivos) {
+            const permiso = permisos.get(archivo._id.toString()) ?? null;
+            if (permiso) resultado.push(this.conPermiso(archivo, permiso));
+        }
+
+        return resultado;
+    }
+
     async listarPapelera(usuarioId: string): Promise<IArchivo[]> {
         return this.archivoRepository.listarPapelera(usuarioId);
     }
@@ -150,6 +175,19 @@ export class ArchivoService {
         return this.conPermiso(
             archivo,
             permisos.get(archivo._id.toString()) ?? null,
+        );
+    }
+
+    /** Registra que el usuario abrió el archivo desde el visor. */
+    async registrarApertura(id: string, usuarioId: string): Promise<void> {
+        const archivo = await this.permisosService.obtenerConAcceso(
+            id,
+            usuarioId,
+        );
+        await this.registrarActividad(
+            usuarioId,
+            AccionActividad.Abrir,
+            archivo,
         );
     }
 
@@ -183,6 +221,22 @@ export class ArchivoService {
         );
 
         return actualizado;
+    }
+
+    async destacar(
+        id: string,
+        dto: DestacarArchivoDTO,
+        usuarioId: string,
+    ): Promise<{ destacado: boolean }> {
+        await this.permisosService.obtenerConAcceso(id, usuarioId);
+        const actualizado = await this.archivoRepository.actualizarDestacado(
+            id,
+            usuarioId,
+            dto.destacado,
+        );
+        if (!actualizado) throw HttpError.notFound('Archivo no encontrado');
+
+        return { destacado: dto.destacado };
     }
 
     async renombrar(

@@ -251,8 +251,8 @@ Solo el propietario de un archivo o carpeta puede compartirlo.
 
 *Figura 7. Diálogo para compartir una carpeta.*
 
-Si el recurso ya estaba compartido con esa persona, el diálogo muestra su permiso
-actual y, al confirmar, lo actualiza.
+El buscador solo muestra usuarios que aún no tengan acceso directo al recurso. Para
+cambiar el permiso de alguien que ya aparece en la lista, usa **Ver detalles**.
 
 ## 9.2 Niveles de permiso
 
@@ -276,6 +276,10 @@ Aclaraciones importantes:
 En **Ver detalles** se muestra la lista de personas con acceso, su permiso y, cuando
 corresponde, el origen del permiso (por ejemplo, herencia desde una carpeta).
 
+Si eres el propietario, cada acceso directo incluye un selector para cambiar el nivel
+de permiso sin salir de los detalles y un botón para retirarlo. Los accesos heredados
+se cambian desde la carpeta de origen.
+
 # 10. Renombrar y ver detalles
 
 ## 10.1 Renombrar
@@ -298,7 +302,8 @@ La opción **Ver detalles** muestra:
 - ubicación;
 - cantidad de archivos y subcarpetas (en carpetas);
 - fecha de creación y de última modificación;
-- personas con acceso y su nivel de permiso.
+- personas con acceso y su nivel de permiso;
+- actividad reciente del recurso, con usuario, acción y fecha.
 
 # 11. Buscar en el sistema
 

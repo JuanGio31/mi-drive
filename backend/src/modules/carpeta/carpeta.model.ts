@@ -16,6 +16,7 @@ export interface ICarpeta extends Document {
     creadoPor: Types.ObjectId;
     carpetaPadre: Types.ObjectId | null;
     compartidoCon: ICompartidoCon[];
+    destacadoPor: Types.ObjectId[];
     enPapelera: boolean;
     fechaEnvioPapelera: Date | null;
     papeleraRaiz: Types.ObjectId | null;
@@ -74,6 +75,10 @@ const CarpetaSchema = new Schema<ICarpeta>(
         },
         compartidoCon: {
             type: [CompartidoConSchema],
+            default: [],
+        },
+        destacadoPor: {
+            type: [{ type: Schema.Types.ObjectId, ref: 'Usuario' }],
             default: [],
         },
         enPapelera: {

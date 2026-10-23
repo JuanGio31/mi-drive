@@ -93,4 +93,46 @@ export class CarpetaPapeleraService {
 
         return restaurada;
     }
+
+    /**
+     * Elimina definitivamente la carpeta y todo su subárbol. Solo se permite
+     * desde la raíz del envío a papelera, igual que la restauración.
+     */
+    async eliminarPermanente(id: string, usuarioId: string): Promise<void> {
+        const carpeta = await this.permisosService.obtenerComoPropietario(
+            id,
+            usuarioId,
+            true,
+        );
+
+        if (!carpeta.enPapelera) {
+            throw HttpError.badRequest('La carpeta no está en la papelera');
+        }
+        if ((carpeta.papeleraRaiz?.toString() ?? id) !== id) {
+            throw HttpError.badRequest(
+                'La carpeta se eliminó junto con otra; elimine la carpeta superior',
+            );
+        }
+
+        const descendientes =
+            await this.carpetaRepository.obtenerDescendientesIds(id);
+        const ids = [id, ...descendientes];
+
+        const archivos =
+            await this.archivoRepository.eliminarPermanentePorCarpetas(
+                ids,
+                id,
+            );
+        const carpetas =
+            await this.carpetaRepository.eliminarPermanenteCascada(ids);
+
+        await this.actividadService.registrar({
+            usuarioId,
+            accion: AccionActividad.EliminarPermanente,
+            recursoTipo: TipoRecurso.Carpeta,
+            recursoId: id,
+            recursoNombre: carpeta.nombre,
+            metadata: { carpetas, archivos },
+        });
+    }
 }

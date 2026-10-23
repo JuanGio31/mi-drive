@@ -1,3 +1,5 @@
+@use '../../shared/styles/form-fields' as campos;
+
 .titulo {
   display: flex;
   align-items: center;
@@ -47,6 +49,12 @@
   margin: 2px 0 0;
   font-size: 0.9rem;
   color: #1e293b;
+}
+
+.nota {
+  margin: -4px 0 8px;
+  color: #94a3b8;
+  font-size: 0.75rem;
 }
 
 .accesos {
@@ -116,6 +124,76 @@
 .origen {
   font-size: 0.72rem;
   color: #94a3b8;
+}
+
+.permiso-editable {
+  flex-shrink: 0;
+}
+
+.permiso-select {
+  width: 132px;
+  font-size: 0.82rem;
+  @include campos.campo-compacto;
+}
+
+.quitar {
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+.actividades {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.actividad {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 10px;
+}
+
+.actividad:hover {
+  background: #f8fafc;
+}
+
+.accion-icono {
+  flex-shrink: 0;
+  color: #64748b;
+}
+
+.accion-icono.azul {
+  color: #2563eb;
+}
+
+.accion-icono.violeta {
+  color: #7c3aed;
+}
+
+.accion-icono.verde {
+  color: #059669;
+}
+
+.accion-icono.rojo {
+  color: #dc2626;
+}
+
+.detalle {
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.vacio {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.82rem;
 }
 
 .estado {

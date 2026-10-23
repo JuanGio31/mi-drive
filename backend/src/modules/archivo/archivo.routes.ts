@@ -11,6 +11,7 @@ import {
     RenombrarArchivoSchema,
     MoverArchivoSchema,
     CompartirArchivoSchema,
+    DestacarArchivoSchema,
     ArchivoIdParamSchema,
     ArchivoUsuarioParamSchema,
     ListarArchivosQuerySchema,
@@ -33,6 +34,9 @@ router.get(
 
 router.get('/compartidos', archivoController.listarCompartidos);
 
+// GET /destacados → archivos marcados por el usuario actual.
+router.get('/destacados', archivoController.listarDestacados);
+
 // GET /papelera → archivos propios que están en la papelera.
 router.get('/papelera', archivoController.listarPapelera);
 
@@ -46,6 +50,13 @@ router.get(
     '/:id/descargar',
     validateParams(ArchivoIdParamSchema),
     archivoController.descargar,
+);
+
+// POST /:id/abrir → registra la apertura del archivo en el visor.
+router.post(
+    '/:id/abrir',
+    validateParams(ArchivoIdParamSchema),
+    archivoController.abrir,
 );
 
 router.put(
@@ -67,6 +78,19 @@ router.patch(
     validateParams(ArchivoIdParamSchema),
     validateBody(MoverArchivoSchema),
     archivoController.mover,
+);
+
+router.patch(
+    '/:id/destacar',
+    validateParams(ArchivoIdParamSchema),
+    validateBody(DestacarArchivoSchema),
+    archivoController.destacar,
+);
+
+router.delete(
+    '/:id/permanente',
+    validateParams(ArchivoIdParamSchema),
+    archivoController.eliminarPermanente,
 );
 
 router.delete(

@@ -10,6 +10,7 @@ import {
     CrearCarpetaDTO,
     RenombrarCarpetaDTO,
     MoverCarpetaDTO,
+    DestacarCarpetaDTO,
     ListarCarpetasQuery,
 } from './carpeta.dto';
 import { HttpError } from '../../shared/errors/http-error';
@@ -104,19 +105,13 @@ export class CarpetaService {
                 propias: propias.map((carpeta) =>
                     this.conPermiso(
                         carpeta,
-                        this.permisosService.obtenerPermiso(
-                            carpeta,
-                            usuarioId,
-                        ),
+                        this.permisosService.obtenerPermiso(carpeta, usuarioId),
                     ),
                 ),
                 compartidas: compartidas.map((carpeta) =>
                     this.conPermiso(
                         carpeta,
-                        this.permisosService.obtenerPermiso(
-                            carpeta,
-                            usuarioId,
-                        ),
+                        this.permisosService.obtenerPermiso(carpeta, usuarioId),
                     ),
                 ),
             };
@@ -147,6 +142,32 @@ export class CarpetaService {
         };
     }
 
+    /**
+     * Lista las carpetas destacadas por el usuario y descarta las que ya no
+     * tiene permiso efectivo de ver, incluyendo permisos heredados.
+     */
+    async listarDestacadas(usuarioId: string): Promise<CarpetaConPermiso[]> {
+        const carpetas = await this.carpetaRepository.listarDestacadas(
+            usuarioId,
+        );
+        if (carpetas.length === 0) return [];
+
+        const cache: CachePermisos = new Map();
+        const permisos = await this.permisosService.resolverPermisos(
+            carpetas,
+            usuarioId,
+            cache,
+        );
+        const resultado: CarpetaConPermiso[] = [];
+
+        for (const carpeta of carpetas) {
+            const permiso = permisos.get(carpeta._id.toString()) ?? null;
+            if (permiso) resultado.push(this.conPermiso(carpeta, permiso));
+        }
+
+        return resultado;
+    }
+
     /** Lista las carpetas propias que están en la papelera. */
     async listarPapelera(usuarioId: string): Promise<ICarpeta[]> {
         return this.carpetaRepository.listarPapelera(usuarioId);
@@ -173,6 +194,22 @@ export class CarpetaService {
         );
 
         return this.conPermiso(carpeta, permiso);
+    }
+
+    async destacar(
+        id: string,
+        dto: DestacarCarpetaDTO,
+        usuarioId: string,
+    ): Promise<{ destacado: boolean }> {
+        await this.permisosService.obtenerConAcceso(id, usuarioId);
+        const actualizada = await this.carpetaRepository.actualizarDestacado(
+            id,
+            usuarioId,
+            dto.destacado,
+        );
+        if (!actualizada) throw HttpError.notFound('Carpeta no encontrada');
+
+        return { destacado: dto.destacado };
     }
 
     async renombrar(

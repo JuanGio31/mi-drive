@@ -42,7 +42,7 @@ export class AuthService {
 
         if (!usuario) throw HttpError.unauthorized('Credenciales inválidas');
         if (!usuario.activo) {
-            throw HttpError.forbidden(
+            throw HttpError.unauthorized(
                 'El usuario se encuentra desactivado, contactar con el administrador',
             );
         }
@@ -88,10 +88,7 @@ export class AuthService {
 
         if (existente) throw HttpError.conflict('El correo ya está en uso');
 
-        const passwordHash = await bcrypt.hash(
-            dto.password,
-            env.BCRYPT_ROUNDS,
-        );
+        const passwordHash = await bcrypt.hash(dto.password, env.BCRYPT_ROUNDS);
 
         const usuario = await this.usuarioService.crear({
             ...dto,

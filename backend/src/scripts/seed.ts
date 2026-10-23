@@ -161,58 +161,60 @@ const seed = async (): Promise<void> => {
     console.log('\n📁 Creando carpetas...');
 
     // Carpetas raíz de cada usuario
-    const raices = await CarpetaModel.insertMany([
-        {
-            nombre: 'Documentos',
-            propietario: ana._id,
-            carpetaPadre: null,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(85),
-            updatedAt: fechaAleatoria(20),
-        },
-        {
-            nombre: 'Proyectos',
-            propietario: ana._id,
-            carpetaPadre: null,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(80),
-            updatedAt: fechaAleatoria(15),
-        },
-        {
-            nombre: 'Personal',
-            propietario: carlos._id,
-            carpetaPadre: null,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(55),
-            updatedAt: fechaAleatoria(10),
-        },
-        {
-            nombre: 'Trabajo',
-            propietario: carlos._id,
-            carpetaPadre: null,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(50),
-            updatedAt: fechaAleatoria(5),
-        },
-        {
-            nombre: 'Apuntes',
-            propietario: lucia._id,
-            carpetaPadre: null,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(40),
-            updatedAt: fechaAleatoria(8),
-        },
-    ].map((c) => ({ ...c, creadoPor: c.propietario })));
+    const raices = await CarpetaModel.insertMany(
+        [
+            {
+                nombre: 'Documentos',
+                propietario: ana._id,
+                carpetaPadre: null,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(85),
+                updatedAt: fechaAleatoria(20),
+            },
+            {
+                nombre: 'Proyectos',
+                propietario: ana._id,
+                carpetaPadre: null,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(80),
+                updatedAt: fechaAleatoria(15),
+            },
+            {
+                nombre: 'Personal',
+                propietario: carlos._id,
+                carpetaPadre: null,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(55),
+                updatedAt: fechaAleatoria(10),
+            },
+            {
+                nombre: 'Trabajo',
+                propietario: carlos._id,
+                carpetaPadre: null,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(50),
+                updatedAt: fechaAleatoria(5),
+            },
+            {
+                nombre: 'Apuntes',
+                propietario: lucia._id,
+                carpetaPadre: null,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(40),
+                updatedAt: fechaAleatoria(8),
+            },
+        ].map((c) => ({ ...c, creadoPor: c.propietario })),
+    );
 
     const [docsAna, proyAna, persCarlos, trabCarlos, apuntesLucia] = raices;
     if (!docsAna || !proyAna || !persCarlos || !trabCarlos || !apuntesLucia) {
@@ -220,68 +222,70 @@ const seed = async (): Promise<void> => {
     }
 
     // Subcarpetas nivel 2
-    const nivel2 = await CarpetaModel.insertMany([
-        {
-            nombre: 'Contratos',
-            propietario: ana._id,
-            carpetaPadre: docsAna._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(70),
-            updatedAt: fechaAleatoria(20),
-        },
-        {
-            nombre: 'Facturas',
-            propietario: ana._id,
-            carpetaPadre: docsAna._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(70),
-            updatedAt: fechaAleatoria(20),
-        },
-        {
-            nombre: 'DMS',
-            propietario: ana._id,
-            carpetaPadre: proyAna._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(65),
-            updatedAt: fechaAleatoria(3),
-        },
-        {
-            nombre: 'Recibos',
-            propietario: carlos._id,
-            carpetaPadre: persCarlos._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(45),
-            updatedAt: fechaAleatoria(10),
-        },
-        {
-            nombre: 'Reportes',
-            propietario: carlos._id,
-            carpetaPadre: trabCarlos._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(40),
-            updatedAt: fechaAleatoria(6),
-        },
-        {
-            nombre: 'Universidad',
-            propietario: lucia._id,
-            carpetaPadre: apuntesLucia._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(35),
-            updatedAt: fechaAleatoria(2),
-        },
-    ].map((c) => ({ ...c, creadoPor: c.propietario })));
+    const nivel2 = await CarpetaModel.insertMany(
+        [
+            {
+                nombre: 'Contratos',
+                propietario: ana._id,
+                carpetaPadre: docsAna._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(70),
+                updatedAt: fechaAleatoria(20),
+            },
+            {
+                nombre: 'Facturas',
+                propietario: ana._id,
+                carpetaPadre: docsAna._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(70),
+                updatedAt: fechaAleatoria(20),
+            },
+            {
+                nombre: 'DMS',
+                propietario: ana._id,
+                carpetaPadre: proyAna._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(65),
+                updatedAt: fechaAleatoria(3),
+            },
+            {
+                nombre: 'Recibos',
+                propietario: carlos._id,
+                carpetaPadre: persCarlos._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(45),
+                updatedAt: fechaAleatoria(10),
+            },
+            {
+                nombre: 'Reportes',
+                propietario: carlos._id,
+                carpetaPadre: trabCarlos._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(40),
+                updatedAt: fechaAleatoria(6),
+            },
+            {
+                nombre: 'Universidad',
+                propietario: lucia._id,
+                carpetaPadre: apuntesLucia._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(35),
+                updatedAt: fechaAleatoria(2),
+            },
+        ].map((c) => ({ ...c, creadoPor: c.propietario })),
+    );
 
     const [contratos, facturas, dms, recibos, reportes, universidad] = nivel2;
     if (
@@ -296,58 +300,60 @@ const seed = async (): Promise<void> => {
     }
 
     // Subcarpetas nivel 3
-    const nivel3 = await CarpetaModel.insertMany([
-        {
-            nombre: '2026',
-            propietario: ana._id,
-            carpetaPadre: contratos._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(60),
-            updatedAt: fechaAleatoria(10),
-        },
-        {
-            nombre: 'Backend',
-            propietario: ana._id,
-            carpetaPadre: dms._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(60),
-            updatedAt: fechaAleatoria(2),
-        },
-        {
-            nombre: 'Frontend',
-            propietario: ana._id,
-            carpetaPadre: dms._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(60),
-            updatedAt: fechaAleatoria(2),
-        },
-        {
-            nombre: 'Semestre-1',
-            propietario: lucia._id,
-            carpetaPadre: universidad._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(30),
-            updatedAt: fechaAleatoria(5),
-        },
-        {
-            nombre: 'Semestre-2',
-            propietario: lucia._id,
-            carpetaPadre: universidad._id,
-            compartidoCon: [],
-            enPapelera: false,
-            fechaEnvioPapelera: null,
-            createdAt: fechaAleatoria(20),
-            updatedAt: fechaAleatoria(3),
-        },
-    ].map((c) => ({ ...c, creadoPor: c.propietario })));
+    const nivel3 = await CarpetaModel.insertMany(
+        [
+            {
+                nombre: '2026',
+                propietario: ana._id,
+                carpetaPadre: contratos._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(60),
+                updatedAt: fechaAleatoria(10),
+            },
+            {
+                nombre: 'Backend',
+                propietario: ana._id,
+                carpetaPadre: dms._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(60),
+                updatedAt: fechaAleatoria(2),
+            },
+            {
+                nombre: 'Frontend',
+                propietario: ana._id,
+                carpetaPadre: dms._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(60),
+                updatedAt: fechaAleatoria(2),
+            },
+            {
+                nombre: 'Semestre-1',
+                propietario: lucia._id,
+                carpetaPadre: universidad._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(30),
+                updatedAt: fechaAleatoria(5),
+            },
+            {
+                nombre: 'Semestre-2',
+                propietario: lucia._id,
+                carpetaPadre: universidad._id,
+                compartidoCon: [],
+                enPapelera: false,
+                fechaEnvioPapelera: null,
+                createdAt: fechaAleatoria(20),
+                updatedAt: fechaAleatoria(3),
+            },
+        ].map((c) => ({ ...c, creadoPor: c.propietario })),
+    );
 
     const [contratos2026, backend, frontend, sem1, sem2] = nivel3;
     if (!contratos2026 || !backend || !frontend || !sem1 || !sem2) {
@@ -455,10 +461,7 @@ const seed = async (): Promise<void> => {
         dms,
         backend,
     ]) {
-        const posiblesDestinos = [carlos, lucia].filter(
-            () => Math.random() < 0.7,
-        );
-        for (const destino of posiblesDestinos) {
+        for (const destino of [carlos, lucia]) {
             const permiso = aleatorio([
                 NivelPermiso.Lectura,
                 NivelPermiso.Escritura,

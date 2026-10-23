@@ -14,7 +14,9 @@
   padding: 12px 16px;
   background: white;
   border-radius: 12px;
-  transition: box-shadow 0.15s, background 0.15s;
+  transition:
+    box-shadow 0.15s,
+    background 0.15s;
 }
 .fila-carpeta,
 .fila-archivo {
@@ -35,8 +37,36 @@
   color: #64748b;
   flex-shrink: 0;
 }
+.icono-carpeta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+.icono-carpeta .icono {
+  display: block;
+}
 .fila-carpeta .icono {
   color: #f59e0b;
+}
+.icono-carpeta.compartida .icono {
+  color: #2563eb;
+}
+.badge-compartida {
+  position: absolute;
+  right: -5px;
+  bottom: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  color: #2563eb;
+  box-shadow: 0 0 0 1px #dbeafe;
+  font-size: 14px;
+  line-height: 14px;
 }
 
 .nombre {
@@ -89,6 +119,20 @@
   height: 44px;
 }
 
+.lista.cuadricula .icono-carpeta {
+  width: 44px;
+  height: 44px;
+}
+
+.lista.cuadricula .badge-compartida {
+  right: -4px;
+  bottom: -2px;
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+  line-height: 18px;
+}
+
 .lista.cuadricula .nombre {
   flex: none;
   width: 100%;
@@ -125,6 +169,11 @@
 
   .lista.cuadricula .icono {
     font-size: 38px;
+    width: 38px;
+    height: 38px;
+  }
+
+  .lista.cuadricula .icono-carpeta {
     width: 38px;
     height: 38px;
   }

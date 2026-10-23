@@ -1,8 +1,4 @@
-<aside
-  class="sidebar"
-  [class.collapsed]="collapsed()"
-  [class.sin-admin]="!esAdmin()"
->
+<aside class="sidebar" [class.collapsed]="collapsed()" [class.sin-admin]="!esAdmin()">
   <div
     class="brand"
     (click)="toggleCollapse()"
@@ -15,12 +11,7 @@
     }
   </div>
 
-  <button
-    class="new-btn"
-    matRipple
-    aria-label="Nuevo"
-    [matMenuTriggerFor]="menuNuevo"
-  >
+  <button class="new-btn" matRipple aria-label="Nuevo" [matMenuTriggerFor]="menuNuevo">
     <mat-icon>add</mat-icon>
     @if (!collapsed()) {
       <span>Nuevo</span>
@@ -42,6 +33,13 @@
     <button mat-menu-item (click)="crearMarkdown()">
       <mat-icon>code</mat-icon>
       <span>Nuevo archivo de markdown</span>
+    </button>
+
+    <mat-divider />
+
+    <button mat-menu-item (click)="subirArchivo()">
+      <mat-icon>upload_file</mat-icon>
+      <span>Subir archivo</span>
     </button>
   </mat-menu>
 

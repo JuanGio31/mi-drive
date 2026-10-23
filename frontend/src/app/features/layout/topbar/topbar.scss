@@ -79,6 +79,9 @@ mat-autocomplete {
   margin-right: 10px;
   vertical-align: middle;
 }
+.icono-carpeta.compartida {
+  color: #2563eb;
+}
 .icono-archivo {
   color: #64748b;
   margin-right: 10px;
@@ -102,9 +105,6 @@ mat-autocomplete {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-.icon-btn {
-  color: #475569;
 }
 .avatar-btn {
   background: none;

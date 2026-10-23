@@ -1,0 +1,6 @@
+/** Tokens compartidos para campos compactos con el mismo estilo en toda la app. */
+@mixin campo-compacto {
+  --mat-form-field-outlined-container-shape: 10px;
+  --mat-form-field-container-height: 40px;
+  --mat-form-field-container-vertical-padding: 8px;
+}

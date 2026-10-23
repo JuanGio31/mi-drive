@@ -1,22 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose';
 import { AccionActividad, TipoRecurso } from '../../shared/types/enums';
 
-// export type AccionActividad =
-//     | 'crear'
-//     | 'renombrar'
-//     | 'mover'
-//     | 'actualizar_contenido'
-//     | 'compartir'
-//     | 'quitar_compartido'
-//     | 'enviar_papelera'
-//     | 'restaurar'
-//     | 'eliminar_permanente'
-//     | 'login'
-//     | 'desactivar_usuario'
-//     | 'reactivar_usuario';
-
-// export type TipoRecurso = 'archivo' | 'carpeta' | 'usuario' | 'sistema';
-
 export interface IActividad extends Document {
     _id: Types.ObjectId;
     usuario: Types.ObjectId;
@@ -71,6 +55,7 @@ const ActividadSchema = new Schema<IActividad>(
     {
         timestamps: { createdAt: true, updatedAt: false },
         versionKey: false,
+        collection: 'actividades',
     },
 );
 

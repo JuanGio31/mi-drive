@@ -17,13 +17,11 @@
 
 .encabezado {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 26px 28px;
-  border: 1px solid #dbeafe;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #eff6ff 0%, #ffffff 68%);
+  padding: 0 0 22px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .etiqueta {
@@ -48,20 +46,16 @@
 }
 
 .dato {
-  display: grid;
-  grid-template-columns: auto auto;
+  display: flex;
   align-items: center;
-  gap: 2px 7px;
-  min-width: 104px;
-  padding: 12px 14px;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.8);
+  gap: 7px;
 }
 
 .dato mat-icon {
-  grid-row: span 2;
+  width: 20px;
+  height: 20px;
   color: #2563eb;
+  font-size: 20px;
 }
 
 .dato strong {
@@ -72,7 +66,7 @@
 
 .dato span {
   color: #64748b;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
 }
 
 .barra {
@@ -165,13 +159,10 @@
   flex-shrink: 0;
   width: 38px;
   height: 38px;
-  border-radius: 10px;
-  background: #eff6ff;
   color: #2563eb;
 }
 
 .icono.carpeta {
-  background: #fffbeb;
   color: #f59e0b;
 }
 
@@ -323,7 +314,7 @@
   .encabezado {
     align-items: flex-start;
     flex-direction: column;
-    padding: 20px;
+    padding: 0 0 16px;
   }
 
   .fila {

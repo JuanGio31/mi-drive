@@ -17,6 +17,7 @@ export interface IArchivo extends Document {
     creadoPor: Types.ObjectId;
     carpetaPadre: Types.ObjectId | null;
     compartidoCon: ICompartidoArchivo[];
+    destacadoPor: Types.ObjectId[];
     enPapelera: boolean;
     fechaEnvioPapelera: Date | null;
     papeleraRaiz: Types.ObjectId | null;
@@ -90,6 +91,10 @@ const ArchivoSchema = new Schema<IArchivo>(
         },
         compartidoCon: {
             type: [CompartidoArchivoSchema],
+            default: [],
+        },
+        destacadoPor: {
+            type: [{ type: Schema.Types.ObjectId, ref: 'Usuario' }],
             default: [],
         },
         enPapelera: {

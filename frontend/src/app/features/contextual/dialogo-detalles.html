@@ -51,6 +51,12 @@
 
     <section class="bloque">
       <h3>Quién tiene acceso ({{ accesos().length }})</h3>
+      @if (esPropietario()) {
+        <p class="nota">
+          Puedes cambiar el permiso o quitar accesos directos desde esta lista. Los accesos
+          heredados se administran desde la carpeta de origen.
+        </p>
+      }
       <ul class="accesos">
         @for (acceso of accesos(); track acceso.usuarioId) {
           <li class="acceso">
@@ -64,15 +70,81 @@
               </span>
               <span class="correo">{{ acceso.correo }}</span>
             </div>
-            <div class="permiso">
-              <span class="nivel">{{ etiquetaPermiso(acceso.permiso) }}</span>
-              @if (acceso.origen) {
-                <span class="origen">{{ acceso.origen }}</span>
-              }
-            </div>
+            @if (puedeCambiarPermiso(acceso)) {
+              <div class="permiso-editable">
+                <mat-form-field
+                  appearance="outline"
+                  subscriptSizing="dynamic"
+                  class="permiso-select"
+                >
+                  <mat-select
+                    [value]="acceso.permiso"
+                    [disabled]="
+                      cambiandoPermiso() === acceso.usuarioId || quitando() === acceso.usuarioId
+                    "
+                    [attr.aria-label]="'Permiso de ' + acceso.nombre"
+                    (selectionChange)="cambiarPermiso(acceso, $event)"
+                  >
+                    @for (permiso of nivelesPermiso; track permiso) {
+                      <mat-option [value]="permiso">{{ etiquetaPermiso(permiso) }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            } @else {
+              <div class="permiso">
+                <span class="nivel">{{ etiquetaPermiso(acceso.permiso) }}</span>
+                @if (acceso.origen) {
+                  <span class="origen">{{ acceso.origen }}</span>
+                }
+              </div>
+            }
+            @if (puedeQuitar(acceso)) {
+              <button
+                mat-icon-button
+                type="button"
+                class="quitar"
+                [disabled]="quitando() === acceso.usuarioId"
+                [attr.aria-label]="'Quitar acceso a ' + acceso.nombre"
+                [title]="'Quitar acceso a ' + acceso.nombre"
+                (click)="quitarAcceso(acceso)"
+              >
+                <mat-icon>person_remove</mat-icon>
+              </button>
+            }
           </li>
         }
       </ul>
+    </section>
+
+    <section class="bloque">
+      <h3>Actividad reciente</h3>
+      @if (cargandoActividad()) {
+        <div class="estado">
+          <mat-spinner diameter="28"></mat-spinner>
+        </div>
+      } @else if (errorActividad()) {
+        <p class="estado error">{{ errorActividad() }}</p>
+      } @else if (actividades().length === 0) {
+        <p class="vacio">Todavía no hay actividad registrada para este recurso.</p>
+      } @else {
+        <ul class="actividades">
+          @for (actividad of actividades(); track actividad._id) {
+            <li class="actividad">
+              <mat-icon [class]="'accion-icono ' + claseAccion(actividad.accion)">
+                {{ iconoAccion(actividad.accion) }}
+              </mat-icon>
+              <div class="quien">
+                <span class="persona">{{ actividad.usuarioNombre }}</span>
+                <span class="detalle">
+                  {{ etiquetaAccion(actividad.accion) }} ·
+                  {{ formatearFechaHora(actividad.createdAt) }}
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
     </section>
   }
 </mat-dialog-content>

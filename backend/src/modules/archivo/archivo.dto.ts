@@ -41,11 +41,15 @@ export const CompartirArchivoSchema = z.object({
     permiso: PermisoArchivoSchema,
 });
 
+export const DestacarArchivoSchema = z.object({
+    destacado: z.boolean(),
+});
+
 export const ArchivoIdParamSchema = z.object({ id: ObjectIdSchema });
 
 export const ArchivoUsuarioParamSchema = z.object({
     id: ObjectIdSchema,
-    usuario: ObjectIdSchema,
+    usuarioId: ObjectIdSchema,
 });
 
 export const ListarArchivosQuerySchema = z.object({
@@ -80,6 +84,7 @@ export type ActualizarContenidoDTO = z.infer<typeof ActualizarContenidoSchema>;
 export type RenombrarArchivoDTO = z.infer<typeof RenombrarArchivoSchema>;
 export type MoverArchivoDTO = z.infer<typeof MoverArchivoSchema>;
 export type CompartirArchivoDTO = z.infer<typeof CompartirArchivoSchema>;
+export type DestacarArchivoDTO = z.infer<typeof DestacarArchivoSchema>;
 export type ArchivoIdParamDTO = z.infer<typeof ArchivoIdParamSchema>;
 export type ArchivoUsuarioParamDTO = z.infer<typeof ArchivoUsuarioParamSchema>;
 export type ListarArchivosQueryDTO = z.infer<typeof ListarArchivosQuerySchema>;

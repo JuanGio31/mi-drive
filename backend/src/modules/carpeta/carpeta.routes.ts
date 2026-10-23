@@ -11,6 +11,7 @@ import {
     CarpetaIdParamSchema,
     CompartirCarpetaSchema,
     CrearCarpetaSchema,
+    DestacarCarpetaSchema,
     ListarCarpetasQuerySchema,
     MoverCarpetaSchema,
     RenombrarCarpetaSchema,
@@ -42,6 +43,9 @@ router.get(
 // GET /papelera → carpetas propias que están en la papelera.
 router.get('/papelera', carpetaController.listarPapelera);
 
+// GET /destacadas → carpetas marcadas por el usuario actual.
+router.get('/destacadas', carpetaController.listarDestacadas);
+
 // GET /:id → detalle de una carpeta.
 router.get(
     '/:id',
@@ -63,6 +67,21 @@ router.patch(
     validateParams(CarpetaIdParamSchema),
     validateBody(MoverCarpetaSchema),
     carpetaController.mover,
+);
+
+// PATCH /:id/destacar → marca o desmarca la carpeta para el usuario actual.
+router.patch(
+    '/:id/destacar',
+    validateParams(CarpetaIdParamSchema),
+    validateBody(DestacarCarpetaSchema),
+    carpetaController.destacar,
+);
+
+// DELETE /:id/permanente → elimina la carpeta y su subárbol definitivamente.
+router.delete(
+    '/:id/permanente',
+    validateParams(CarpetaIdParamSchema),
+    carpetaController.eliminarPermanente,
 );
 
 // DELETE /:id → envía la carpeta a la papelera.

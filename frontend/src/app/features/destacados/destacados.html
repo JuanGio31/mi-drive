@@ -1,0 +1,132 @@
+<div class="destacados">
+  <header class="cabecera">
+    <div class="titulo">
+      <h1>Destacados</h1>
+      <p class="descripcion">
+        Accesos rápidos a las carpetas y archivos que marcaste como importantes.
+      </p>
+    </div>
+
+    <div class="resumen" aria-label="Resumen de destacados">
+      <div class="dato">
+        <mat-icon>folder</mat-icon>
+        <strong>{{ totalCarpetas() }}</strong>
+        <span>{{ totalCarpetas() === 1 ? 'carpeta' : 'carpetas' }}</span>
+      </div>
+      <div class="dato">
+        <mat-icon>description</mat-icon>
+        <strong>{{ totalArchivos() }}</strong>
+        <span>{{ totalArchivos() === 1 ? 'archivo' : 'archivos' }}</span>
+      </div>
+    </div>
+  </header>
+
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36"></mat-spinner>
+      <p>Cargando destacados…</p>
+    </div>
+  } @else if (error()) {
+    <div class="estado error">
+      <mat-icon>error_outline</mat-icon>
+      <p>{{ error() }}</p>
+      <button type="button" class="reintentar" (click)="recargar()">Reintentar</button>
+    </div>
+  } @else if (total() === 0) {
+    <div class="estado vacio">
+      <mat-icon>star_border</mat-icon>
+      <h2>Todavía no tienes destacados</h2>
+      <p>Abre el menú contextual de una carpeta o archivo y elige “Destacar”.</p>
+      <a routerLink="/mi-unidad">Ir a Mi Unidad</a>
+    </div>
+  } @else {
+    @if (carpetas().length > 0) {
+      <section class="seccion">
+        <div class="seccion-cabecera">
+          <div>
+            <h2>Carpetas</h2>
+            <p>Las carpetas que marcaste para tenerlas a mano.</p>
+          </div>
+          <span class="contador">{{ totalCarpetas() }}</span>
+        </div>
+
+        <ul class="lista">
+          @for (carpeta of carpetas(); track carpeta._id) {
+            <li>
+              <app-menu-contextual
+                class="fila"
+                tabindex="0"
+                [items]="menuCarpeta(carpeta)"
+                (click)="abrirCarpeta(carpeta)"
+                (keydown.enter)="abrirCarpeta(carpeta)"
+                (seleccionar)="onAccionCarpeta($event, carpeta)"
+              >
+                <span class="icono carpeta">
+                  <mat-icon>{{ esPropia(carpeta) ? 'folder' : 'folder_shared' }}</mat-icon>
+                </span>
+                <span class="info">
+                  <span class="nombre">{{ carpeta.nombre }}</span>
+                  <span class="meta">
+                    {{ esPropia(carpeta) ? 'Carpeta propia' : 'Compartida contigo' }}
+                  </span>
+                </span>
+                @if (!esPropia(carpeta)) {
+                  <span class="chip compartido">
+                    <mat-icon>share</mat-icon>
+                    Compartida
+                  </span>
+                }
+                <span class="fecha">{{ formatearFecha(carpeta.updatedAt) }}</span>
+              </app-menu-contextual>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (archivos().length > 0) {
+      <section class="seccion">
+        <div class="seccion-cabecera">
+          <div>
+            <h2>Archivos</h2>
+            <p>Los archivos que marcaste para retomarlos rápido.</p>
+          </div>
+          <span class="contador">{{ totalArchivos() }}</span>
+        </div>
+
+        <ul class="lista">
+          @for (archivo of archivos(); track archivo._id) {
+            <li>
+              <app-menu-contextual
+                class="fila"
+                tabindex="0"
+                [items]="menuArchivo(archivo)"
+                (click)="abrirArchivo(archivo)"
+                (keydown.enter)="abrirArchivo(archivo)"
+                (seleccionar)="onAccionArchivo($event, archivo)"
+              >
+                <span class="icono archivo">
+                  <mat-icon>{{ iconoArchivo(archivo.tipo) }}</mat-icon>
+                </span>
+                <span class="info">
+                  <span class="nombre">{{ archivo.nombre }}</span>
+                  <span class="meta">
+                    {{ archivo.tipo }} · {{ formatearTamanio(archivo.tamanio) }} ·
+                    {{ esPropioArchivo(archivo) ? 'Archivo propio' : 'Compartido contigo' }}
+                  </span>
+                </span>
+                @if (!esPropioArchivo(archivo)) {
+                  <span class="chip compartido">
+                    <mat-icon>share</mat-icon>
+                    Compartido
+                  </span>
+                }
+                <span class="fecha">{{ formatearFecha(archivo.updatedAt) }}</span>
+              </app-menu-contextual>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+  }
+</div>

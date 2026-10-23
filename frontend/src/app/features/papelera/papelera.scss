@@ -23,15 +23,23 @@
   display: inline-flex;
   align-items: center;
   gap: 2px;
+  height: 40px;
+  box-sizing: border-box;
   padding: 2px;
   border-radius: 10px;
   background: #e2e8f0;
 }
 
 .selector-vista button {
+  --mat-icon-button-container-shape: 8px;
+  --mat-icon-button-state-layer-size: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 36px;
   height: 36px;
   padding: 0;
+  border-radius: 8px;
   color: #64748b;
 }
 
@@ -39,6 +47,16 @@
   background: #fff;
   color: #0369a1;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.selector-vista mat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  line-height: 20px;
 }
 
 .titulo h1 {

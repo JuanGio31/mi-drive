@@ -38,10 +38,28 @@
       <div class="grid-carpetas">
         @for (carpeta of carpetas(); track carpeta._id) {
           <a class="tarjeta-carpeta" [routerLink]="['/mi-unidad', carpeta._id]">
-            <span class="icono-carpeta">
-              <mat-icon>folder</mat-icon>
+            <span class="icono-carpeta" [class.compartida]="esCompartida(carpeta)">
+              <mat-icon>
+                {{ esCompartida(carpeta) ? 'folder_shared' : 'folder' }}
+              </mat-icon>
+              @if (compartidaConOtros(carpeta)) {
+                <mat-icon
+                  class="badge-compartida"
+                  title="Compartida con otros usuarios"
+                  aria-label="Compartida con otros usuarios"
+                >
+                  share
+                </mat-icon>
+              }
             </span>
-            <span class="carpeta-nombre">{{ carpeta.nombre }}</span>
+            <span class="carpeta-nombre">
+              @if (esDestacado(carpeta)) {
+                <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                  star
+                </mat-icon>
+              }
+              {{ carpeta.nombre }}
+            </span>
             <span class="carpeta-meta">
               @if (esCompartida(carpeta)) {
                 Compartida {{ formatearFecha(fechaCompartida(carpeta)) }}
@@ -58,8 +76,8 @@
   <section class="seccion">
     <div class="seccion-cabecera">
       <div>
-        <h2>Archivos recientes</h2>
-        <p>Últimos archivos creados, editados o compartidos por ti.</p>
+        <h2>Vistos recientemente</h2>
+        <p>Tus últimas aperturas o actividad reciente en archivos.</p>
       </div>
       <a class="enlace" routerLink="/mi-unidad">
         Explorar
@@ -75,8 +93,8 @@
       <div class="estado error">{{ errorArchivos() }}</div>
     } @else if (archivos().length === 0) {
       <div class="vacio">
-        <mat-icon>draft</mat-icon>
-        <p>Aún no hay archivos recientes. Crea o edita uno para verlo aquí.</p>
+        <mat-icon>visibility_off</mat-icon>
+        <p>Aún no has abierto archivos. Abre uno desde el visor para verlo aquí.</p>
       </div>
     } @else {
       <ul class="lista-archivos">

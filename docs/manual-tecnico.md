@@ -453,6 +453,7 @@ Códigos usados:
 | GET | `/api/archivos/compartidos` | Archivos compartidos con el usuario |
 | GET | `/api/archivos/papelera` | Raíces propias en papelera |
 | GET | `/api/archivos/:id` | Detalle con contenido y `miPermiso` |
+| POST | `/api/archivos/:id/abrir` | Registra la apertura en el visor |
 | GET | `/api/archivos/:id/descargar` | Descarga como `text/plain` |
 | PUT | `/api/archivos/:id/contenido` | Actualiza contenido y tamaño |
 | PATCH | `/api/archivos/:id/renombrar` | Renombra |
@@ -460,7 +461,7 @@ Códigos usados:
 | DELETE | `/api/archivos/:id` | Envía a papelera |
 | POST | `/api/archivos/:id/restaurar` | Restaura |
 | POST | `/api/archivos/:id/compartir` | Comparte o actualiza permiso |
-| DELETE | `/api/archivos/:id/compartir/:usuario` | Quita compartido |
+| DELETE | `/api/archivos/:id/compartir/:usuarioId` | Quita compartido |
 
 ### Actividad
 
@@ -514,11 +515,12 @@ Acciones registradas por el enum `AccionActividad`:
 | `renombrar` | Cambio de nombre |
 | `mover` | Cambio de ubicación |
 | `actualizar_Contenido` | Edición del contenido de un archivo |
+| `abrir` | Apertura de un archivo desde el visor |
 | `compartir` | Alta o cambio de permiso |
 | `quitar_compartido` | Retiro de un permiso |
 | `enviar_papelera` | Eliminación lógica |
 | `restaurar` | Recuperación desde papelera |
-| `eliminar_permanente` | Reservado; sin flujo activo |
+| `eliminar_permanente` | Borrado definitivo desde la papelera |
 | `login` | Inicio de sesión |
 | `registro` | Registro público |
 | `desactivar` | Desactivación de usuario |

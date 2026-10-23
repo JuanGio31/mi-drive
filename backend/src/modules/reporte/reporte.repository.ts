@@ -30,41 +30,42 @@ export class MongoReporteRepository implements IReporteRepository {
 
     /** Totales globales para las tarjetas KPI del administrador. */
     async resumen(): Promise<ResumenAdmin> {
-        const [archivos, carpetas, usuarios, archivosCompartidos, carpetasCompartidas] =
-            await Promise.all([
-                ArchivoModel.aggregate([
-                    { $match: { enPapelera: false } },
-                    {
-                        $group: {
-                            _id: null,
-                            total: { $sum: 1 },
-                            tamañoTotal: { $sum: '$tamanio' },
-                        },
+        const [
+            archivos,
+            carpetas,
+            usuarios,
+            archivosCompartidos,
+            carpetasCompartidas,
+        ] = await Promise.all([
+            ArchivoModel.aggregate([
+                { $match: { enPapelera: false } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        tamañoTotal: { $sum: '$tamanio' },
                     },
-                ]).exec() as Promise<
-                    { total: number; tamañoTotal: number }[]
-                >,
-                CarpetaModel.countDocuments({ enPapelera: false }).exec(),
-                UsuarioModel.aggregate([
-                    {
-                        $group: {
-                            _id: null,
-                            total: { $sum: 1 },
-                            activos: { $sum: { $cond: ['$activo', 1, 0] } },
-                        },
+                },
+            ]).exec() as Promise<{ total: number; tamañoTotal: number }[]>,
+            CarpetaModel.countDocuments({ enPapelera: false }).exec(),
+            UsuarioModel.aggregate([
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        activos: { $sum: { $cond: ['$activo', 1, 0] } },
                     },
-                ]).exec() as Promise<
-                    { total: number; activos: number }[]
-                >,
-                ArchivoModel.countDocuments({
-                    enPapelera: false,
-                    'compartidoCon.0': { $exists: true },
-                }).exec(),
-                CarpetaModel.countDocuments({
-                    enPapelera: false,
-                    'compartidoCon.0': { $exists: true },
-                }).exec(),
-            ]);
+                },
+            ]).exec() as Promise<{ total: number; activos: number }[]>,
+            ArchivoModel.countDocuments({
+                enPapelera: false,
+                'compartidoCon.0': { $exists: true },
+            }).exec(),
+            CarpetaModel.countDocuments({
+                enPapelera: false,
+                'compartidoCon.0': { $exists: true },
+            }).exec(),
+        ]);
 
         const archivosTotales = archivos[0] ?? {
             total: 0,
@@ -222,7 +223,12 @@ export class MongoReporteRepository implements IReporteRepository {
 
     async usuariosConMasCompartidos(limite: number) {
         return ArchivoModel.aggregate([
-            { $match: { 'compartidoCon.0': { $exists: true } } },
+            {
+                $match: {
+                    'compartidoCon.0': { $exists: true },
+                    enPapelera: false,
+                },
+            },
             {
                 $project: {
                     propietario: 1,
@@ -235,7 +241,12 @@ export class MongoReporteRepository implements IReporteRepository {
                 $unionWith: {
                     coll: 'carpetas',
                     pipeline: [
-                        { $match: { 'compartidoCon.0': { $exists: true } } },
+                        {
+                            $match: {
+                                'compartidoCon.0': { $exists: true },
+                                enPapelera: false,
+                            },
+                        },
                         {
                             $project: {
                                 propietario: 1,
@@ -344,6 +355,7 @@ export class MongoReporteRepository implements IReporteRepository {
                     $match: {
                         propietario: objId,
                         'compartidoCon.0': { $exists: true },
+                        enPapelera: false,
                     },
                 },
                 {
@@ -361,6 +373,7 @@ export class MongoReporteRepository implements IReporteRepository {
                     $match: {
                         propietario: objId,
                         'compartidoCon.0': { $exists: true },
+                        enPapelera: false,
                     },
                 },
                 {

@@ -1,0 +1,60 @@
+<h2 mat-dialog-title>Mover “{{ nombre }}”</h2>
+
+<mat-dialog-content>
+  @if (cargando()) {
+    <div class="estado">
+      <mat-spinner diameter="36" />
+      <span>Cargando carpetas…</span>
+    </div>
+  } @else if (error()) {
+    <p class="error">{{ error() }}</p>
+  } @else {
+    <p class="ayuda">
+      Elige la carpeta destino. Si eliges una carpeta compartida por otra persona, el recurso pasará
+      a su unidad.
+    </p>
+
+    <mat-radio-group class="lista" [value]="seleccion()" (change)="seleccion.set($event.value)">
+      @for (opcion of opciones(); track opcion.ruta) {
+        <mat-radio-button
+          class="opcion"
+          [value]="opcion.id ?? ''"
+          [disabled]="opcion.bloqueada"
+          [style.paddingLeft.px]="12 + opcion.profundidad * 20"
+        >
+          <span class="contenido">
+            <span class="nombre">
+              <mat-icon>{{ opcion.id ? 'folder' : 'home' }}</mat-icon>
+              {{ opcion.nombre }}
+            </span>
+            @if (opcion.profundidad > 0) {
+              <small>{{ opcion.ruta }}</small>
+            }
+            @if (opcion.motivo) {
+              <small class="motivo">{{ opcion.motivo }}</small>
+            }
+          </span>
+        </mat-radio-button>
+      }
+    </mat-radio-group>
+
+    @if (esCarpeta) {
+      <p class="aviso">
+        La carpeta se moverá con todo su contenido. No puedes elegirla a ella misma ni una de sus
+        subcarpetas.
+      </p>
+    }
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+  <button
+    mat-flat-button
+    type="button"
+    [disabled]="cargando() || !!error() || !seleccionValida"
+    (click)="confirmar()"
+  >
+    Mover
+  </button>
+</mat-dialog-actions>

@@ -1,4 +1,4 @@
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
@@ -6,16 +6,18 @@ import { firstValueFrom } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Archivo, Carpeta, ItemRecurso } from '../../core/models';
+import { MatSelectModule } from '@angular/material/select';
+import { Archivo, Carpeta, ExtensionArchivo, ItemRecurso } from '../../core/models';
+import { AuthService } from '../../core/services/auth-service';
 import { CarpetaService } from '../../core/services/carpeta-service';
+import { esCarpetaCompartida } from '../../core/utils/carpetas';
 import {
   ExploradorCarpetaComponent,
+  TipoFiltro,
   VistaRecursos,
 } from '../explorador/explorador-carpeta';
-import {
-  AccionesRecursosService,
-  AccionRecurso,
-} from '../contextual/acciones-recursos.service';
+import { AccionesRecursosService, AccionRecurso } from '../contextual/acciones-recursos.service';
+import { NuevoRecursoService } from '../contextual/nuevo-recurso.service';
 
 const CLAVE_VISTA = 'dms_vista_mi_unidad';
 
@@ -30,6 +32,7 @@ const CLAVE_VISTA = 'dms_vista_mi_unidad';
     MatIconModule,
     MatButtonModule,
     MatTooltipModule,
+    MatSelectModule,
     ExploradorCarpetaComponent,
   ],
   templateUrl: './mi-unidad.html',
@@ -38,8 +41,10 @@ const CLAVE_VISTA = 'dms_vista_mi_unidad';
 export class MiUnidadComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   private readonly carpetaService = inject(CarpetaService);
   private readonly acciones = inject(AccionesRecursosService);
+  private readonly nuevos = inject(NuevoRecursoService);
 
   /** Se incrementa para pedir al explorador que recargue su contenido. */
   readonly recarga = signal(0);
@@ -47,14 +52,24 @@ export class MiUnidadComponent {
   /** Vista elegida por el usuario; se conserva entre visitas. */
   readonly vista = signal<VistaRecursos>(this.vistaGuardada());
 
+  /** Filtro de archivos por extensión. */
+  readonly tipo = signal<TipoFiltro>('todos');
+
+  readonly tipos = ExtensionArchivo;
+
   /** id de la carpeta actual desde la URL; null = raíz. */
-  readonly carpetaId = toSignal(
-    this.route.paramMap.pipe(map((p) => p.get('id'))),
-    { initialValue: null },
-  );
+  readonly carpetaId = toSignal(this.route.paramMap.pipe(map((p) => p.get('id'))), {
+    initialValue: null,
+  });
 
   /** Metadatos de la carpeta actual (para el breadcrumb), null en la raíz. */
   readonly carpeta = signal<Carpeta | null>(null);
+
+  /** Indica si la carpeta abierta fue compartida con el usuario actual. */
+  readonly carpetaCompartida = computed(() => {
+    const carpeta = this.carpeta();
+    return carpeta ? esCarpetaCompartida(carpeta, this.auth.usuario()?.id) : false;
+  });
 
   constructor() {
     effect(() => {
@@ -77,6 +92,11 @@ export class MiUnidadComponent {
     }
   }
 
+  /** Abre el selector para subir un archivo a la carpeta actual. */
+  subirArchivo(): void {
+    this.nuevos.abrirSelectorArchivo();
+  }
+
   /** Navega al interior de una subcarpeta. */
   irACarpeta(carpeta: Carpeta): void {
     this.router.navigate(['/mi-unidad', carpeta._id]);
@@ -88,14 +108,8 @@ export class MiUnidadComponent {
   }
 
   /** Ejecuta una acción del menú contextual y recarga si hubo cambios. */
-  async onAccion(evento: {
-    accion: string;
-    item: ItemRecurso;
-  }): Promise<void> {
-    const cambio = await this.acciones.ejecutar(
-      evento.accion as AccionRecurso,
-      evento.item,
-    );
+  async onAccion(evento: { accion: string; item: ItemRecurso }): Promise<void> {
+    const cambio = await this.acciones.ejecutar(evento.accion as AccionRecurso, evento.item);
     if (cambio) this.recarga.update((n) => n + 1);
   }
 
@@ -108,9 +122,7 @@ export class MiUnidadComponent {
   /** Lee la última vista guardada, usando lista como valor seguro. */
   private vistaGuardada(): VistaRecursos {
     try {
-      return localStorage.getItem(CLAVE_VISTA) === 'cuadricula'
-        ? 'cuadricula'
-        : 'lista';
+      return localStorage.getItem(CLAVE_VISTA) === 'cuadricula' ? 'cuadricula' : 'lista';
     } catch {
       return 'lista';
     }

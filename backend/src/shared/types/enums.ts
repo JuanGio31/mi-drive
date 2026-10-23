@@ -31,6 +31,7 @@ export enum AccionActividad {
     Renombrar = 'renombrar',
     Mover = 'mover',
     ActualizarContenido = 'actualizar_Contenido',
+    Abrir = 'abrir',
     Compartir = 'compartir',
     QuitarCompartido = 'quitar_compartido',
     EnviarPapelera = 'enviar_papelera',

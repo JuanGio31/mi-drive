@@ -63,10 +63,17 @@
                 (seleccionar)="onAccionCarpeta($event, item)"
               >
                 <span class="icono carpeta">
-                  <mat-icon>folder</mat-icon>
+                  <mat-icon>folder_shared</mat-icon>
                 </span>
                 <span class="info">
-                  <span class="nombre">{{ item.carpeta.nombre }}</span>
+                  <span class="nombre">
+                    @if (esDestacado(item.carpeta)) {
+                      <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                        star
+                      </mat-icon>
+                    }
+                    {{ item.carpeta.nombre }}
+                  </span>
                   <span class="meta"> Compartida por {{ item.propietarioNombre }} </span>
                 </span>
                 <span [class]="'chip ' + clasePermiso(item.permiso)">
@@ -108,7 +115,14 @@
                   <mat-icon>{{ iconoArchivo(item.archivo.tipo) }}</mat-icon>
                 </span>
                 <span class="info">
-                  <span class="nombre">{{ item.archivo.nombre }}</span>
+                  <span class="nombre">
+                    @if (esDestacado(item.archivo)) {
+                      <mat-icon class="icono-destacado" title="Destacado" aria-label="Destacado">
+                        star
+                      </mat-icon>
+                    }
+                    {{ item.archivo.nombre }}
+                  </span>
                   <span class="meta">
                     {{ item.archivo.tipo }} · {{ formatearTamanio(item.archivo.tamanio) }} ·
                     Compartido por

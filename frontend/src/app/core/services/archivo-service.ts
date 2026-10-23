@@ -9,6 +9,7 @@ import {
   Archivo,
   CompartirArchivoDto,
   CrearArchivoDto,
+  DestacarArchivoDto,
   ListarArchivosQuery,
   MoverArchivoDto,
   RenombrarArchivoDto,
@@ -32,6 +33,11 @@ export class ArchivoService {
     return this.api.get<Archivo[]>('archivos/compartidos');
   }
 
+  /** GET /archivos/destacados. */
+  listarDestacados(): Observable<Archivo[]> {
+    return this.api.get<Archivo[]>('archivos/destacados');
+  }
+
   /** GET /archivos/papelera. */
   listarPapelera(): Observable<Archivo[]> {
     return this.api.get<Archivo[]>('archivos/papelera');
@@ -45,6 +51,11 @@ export class ArchivoService {
   /** POST /archivos. */
   crear(dto: CrearArchivoDto): Observable<Archivo> {
     return this.api.post<Archivo>('archivos', dto);
+  }
+
+  /** POST /archivos/:id/abrir → registra la apertura en el visor. */
+  registrarApertura(id: string): Observable<void> {
+    return this.api.post<void>(`archivos/${id}/abrir`, {});
   }
 
   /** PUT /archivos/:id/contenido. */
@@ -62,6 +73,11 @@ export class ArchivoService {
     return this.api.patch<Archivo>(`archivos/${id}/mover`, dto);
   }
 
+  /** PATCH /archivos/:id/destacar. */
+  destacar(id: string, dto: DestacarArchivoDto): Observable<{ destacado: boolean }> {
+    return this.api.patch<{ destacado: boolean }>(`archivos/${id}/destacar`, dto);
+  }
+
   /** DELETE /archivos/:id → a la papelera. Respuesta 204 sin cuerpo. */
   enviarAPapelera(id: string): Observable<void> {
     return this.api.delete<void>(`archivos/${id}`);
@@ -70,6 +86,11 @@ export class ArchivoService {
   /** POST /archivos/:id/restaurar. */
   restaurar(id: string): Observable<Archivo> {
     return this.api.post<Archivo>(`archivos/${id}/restaurar`, {});
+  }
+
+  /** DELETE /archivos/:id/permanente. */
+  eliminarPermanente(id: string): Observable<void> {
+    return this.api.delete<void>(`archivos/${id}/permanente`);
   }
 
   /** POST /archivos/:id/compartir. */

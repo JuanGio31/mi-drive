@@ -8,7 +8,6 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import {
   AccionActividad,
   Actividad,
@@ -39,7 +38,6 @@ import { formatearFechaHora } from '../../../core/utils/formato';
     MatProgressBarModule,
     MatSelectModule,
     MatTableModule,
-    MatTooltipModule,
   ],
   templateUrl: './actividad.html',
   styleUrl: './actividad.scss',
@@ -48,7 +46,7 @@ export class AdminActividadComponent {
   private readonly actividadService = inject(ActividadService);
   private readonly usuarioService = inject(UsuarioService);
 
-  readonly columnas = ['fecha', 'usuario', 'accion', 'recurso', 'metadata'];
+  readonly columnas = ['fecha', 'usuario', 'accion', 'recurso'];
   readonly acciones = OPCIONES_ACCION;
   readonly tiposRecurso = Object.values(TipoRecurso);
   readonly etiquetaAccion = etiquetaAccion;
@@ -93,13 +91,9 @@ export class AdminActividadComponent {
       limit: this.limit(),
       ...(this.usuarioId() ? { usuarioId: this.usuarioId() } : {}),
       ...(this.accion() ? { accion: this.accion() as AccionActividad } : {}),
-      ...(this.recursoTipo()
-        ? { recursoTipo: this.recursoTipo() as TipoRecurso }
-        : {}),
+      ...(this.recursoTipo() ? { recursoTipo: this.recursoTipo() as TipoRecurso } : {}),
       ...(this.desde() ? { desde: fechaLocalAIso(this.desde()) } : {}),
-      ...(this.hasta()
-        ? { hasta: fechaLocalAIso(this.hasta(), true) }
-        : {}),
+      ...(this.hasta() ? { hasta: fechaLocalAIso(this.hasta(), true) } : {}),
     };
 
     this.actividadService.listar(filtros).subscribe({
@@ -139,20 +133,11 @@ export class AdminActividadComponent {
     this.cargar();
   }
 
-  /** Serializa la metadata para mostrarla en el tooltip. */
-  metadataTexto(metadata: Record<string, unknown>): string {
-    const claves = Object.keys(metadata ?? {});
-    return claves.length ? JSON.stringify(metadata) : 'Sin detalles';
-  }
-
   /** Traduce el error HTTP a un mensaje legible. */
   private mensajeError(err: HttpErrorResponse): string {
     if (err.status === 0) {
       return 'No se pudo conectar con el servidor.';
     }
-    return (
-      (err.error as { error?: string })?.error ??
-      'No se pudo cargar la actividad.'
-    );
+    return (err.error as { error?: string })?.error ?? 'No se pudo cargar la actividad.';
   }
 }

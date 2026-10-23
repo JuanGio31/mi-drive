@@ -36,17 +36,16 @@ export class Sidebar {
   collapsed = signal(false);
 
   /** El administrador también es usuario: conserva su menú y ve el bloque admin. */
-  readonly esAdmin = computed(
-    () => this.authService.usuario()?.rol === Rol.Administrador,
-  );
+  readonly esAdmin = computed(() => this.authService.usuario()?.rol === Rol.Administrador);
 
   items: NavItem[] = [
-    { label: 'Pagina principal', icon: 'home', route: '/home' },
+    { label: 'Inicio', icon: 'home', route: '/home' },
     {
       label: 'Mi Unidad',
       icon: 'folder',
       route: '/mi-unidad',
     },
+    { label: 'Destacados', icon: 'star', route: '/destacados' },
     { label: 'Recientes', icon: 'schedule', route: '/recientes' },
     { label: 'Compartidos', icon: 'share', route: '/compartidos' },
     { label: 'Papelera', icon: 'delete', route: '/papelera' },
@@ -73,5 +72,9 @@ export class Sidebar {
 
   crearMarkdown(): void {
     void this.nuevos.crear(ExtensionArchivo.Md);
+  }
+
+  subirArchivo(): void {
+    this.nuevos.abrirSelectorArchivo();
   }
 }

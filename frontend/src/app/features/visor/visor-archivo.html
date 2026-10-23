@@ -7,12 +7,7 @@
     <div class="estado error">{{ error() }}</div>
   } @else if (archivo(); as a) {
     <header class="encabezado">
-      <button
-        mat-icon-button
-        class="volver"
-        (click)="volver()"
-        aria-label="Volver"
-      >
+      <button mat-icon-button class="volver" (click)="volver()" aria-label="Volver">
         <mat-icon>arrow_back</mat-icon>
       </button>
 
@@ -28,6 +23,11 @@
         <mat-icon>{{ esMarkdown() ? 'visibility' : 'subject' }}</mat-icon>
         {{ esMarkdown() ? 'Vista renderizada' : 'Texto plano' }}
       </span>
+
+      <button mat-stroked-button type="button" (click)="descargar()">
+        <mat-icon>download</mat-icon>
+        Descargar
+      </button>
 
       @if (puedeEditar()) {
         <button mat-stroked-button type="button" (click)="editar()">

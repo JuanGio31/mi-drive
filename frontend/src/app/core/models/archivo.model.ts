@@ -19,6 +19,7 @@ export interface Archivo {
   miPermiso?: NivelPermiso | null;
   carpetaPadre: string | null;
   compartidoCon: CompartidoArchivo[];
+  destacadoPor: string[];
   enPapelera: boolean;
   fechaEnvioPapelera: string | null;
   createdAt: string;
@@ -52,6 +53,11 @@ export interface MoverArchivoDto {
 export interface CompartirArchivoDto {
   usuarioId: string;
   permiso: NivelPermiso;
+}
+
+/** Body de PATCH /archivos/:id/destacar. */
+export interface DestacarArchivoDto {
+  destacado: boolean;
 }
 
 /** Query de GET /archivos. */

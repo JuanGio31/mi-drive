@@ -79,4 +79,35 @@ export class ArchivoPapeleraService {
 
         return restaurado;
     }
+
+    /**
+     * Elimina definitivamente un archivo que está en la papelera. Igual que la
+     * restauración, solo se permite si es la raíz de su envío.
+     */
+    async eliminarPermanente(id: string, usuarioId: string): Promise<void> {
+        const archivo = await this.permisosService.obtenerComoPropietario(
+            id,
+            usuarioId,
+            true,
+        );
+
+        if (!archivo.enPapelera) {
+            throw HttpError.badRequest('El archivo no está en la papelera');
+        }
+        if ((archivo.papeleraRaiz?.toString() ?? id) !== id) {
+            throw HttpError.badRequest(
+                'El archivo se eliminó junto con su carpeta; elimine la carpeta',
+            );
+        }
+
+        await this.archivoRepository.eliminarPermanente(id);
+
+        await this.actividadService.registrar({
+            usuarioId,
+            accion: AccionActividad.EliminarPermanente,
+            recursoTipo: TipoRecurso.Archivo,
+            recursoId: id,
+            recursoNombre: archivo.nombre,
+        });
+    }
 }

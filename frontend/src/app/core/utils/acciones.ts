@@ -24,6 +24,11 @@ export const ACCIONES: Record<AccionActividad, AccionVisual> = {
     icono: 'edit_note',
     clase: 'azul',
   },
+  [AccionActividad.Abrir]: {
+    etiqueta: 'Abrir',
+    icono: 'visibility',
+    clase: 'azul',
+  },
   [AccionActividad.Compartir]: {
     etiqueta: 'Compartir',
     icono: 'share',
