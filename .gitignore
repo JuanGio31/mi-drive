@@ -1,0 +1,11 @@
+# Contexto local
+/AGENTS.md
+/prompts/
+
+# Referencias locales
+/docs/Manual.odt
+/docs/crud_informe.pdf
+
+# UML: solo se versiona el drawio y los SVG usados por el manual
+/docs/uml/*.md
+/docs/uml/*.bkp

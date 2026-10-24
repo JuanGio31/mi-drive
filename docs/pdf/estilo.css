@@ -20,47 +20,189 @@ body {
   line-height: 1.55;
 }
 
+@page portada {
+  size: A4;
+  margin: 0;
+}
+
 .portada {
-  min-height: 245mm;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  page: portada;
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
   page-break-after: always;
   break-after: page;
 }
 
-.portada-etiqueta {
-  margin: 0 0 10mm;
-  color: #2563eb;
-  font-size: 12pt;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.portada-fondo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  object-fit: cover;
 }
 
-.portada h1 {
+.portada-contenido {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.portada-universidad {
+  position: absolute;
+  top: 21mm;
+  left: 20mm;
+  margin: 0;
+  color: #111827;
+  font-size: 10.3pt;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.portada-logo {
+  position: absolute;
+  top: 58mm;
+  left: 50%;
+  width: 45mm;
+  height: 45mm;
   margin: 0;
   padding: 0;
   border: 0;
+  border-radius: 0;
+  background: transparent;
+  transform: translateX(-50%);
+}
+
+.portada-titulo {
+  position: absolute;
+  top: 123mm;
+  right: 22mm;
+  left: 22mm;
+  text-align: center;
+}
+
+.portada-sistema {
+  display: block;
+  margin-bottom: 3mm;
   color: #1e3a8a;
-  font-size: 34pt;
+  font-size: 18pt;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.portada-manual {
+  display: block;
+  color: #111827;
+  font-size: 31pt;
   line-height: 1.1;
 }
 
 .portada-subtitulo {
-  max-width: 135mm;
-  margin: 8mm auto 0;
+  display: block;
+  max-width: 140mm;
+  margin: 5mm auto 0;
   color: #475569;
-  font-size: 14pt;
+  font-size: 11.5pt;
+  line-height: 1.4;
 }
 
-.portada-meta {
-  margin: 20mm 0 0;
-  color: #64748b;
-  font-size: 10pt;
-  line-height: 1.7;
+.portada-autor {
+  position: absolute;
+  top: 203mm;
+  left: 20mm;
+  margin: 0;
+  color: #111827;
+  font-size: 12pt;
+  line-height: 1.55;
+}
+
+.portada-autor span {
+  text-decoration: underline;
+  text-underline-offset: 1.2mm;
+}
+
+.portada-fecha {
+  position: absolute;
+  right: 20mm;
+  bottom: 18mm;
+  left: 20mm;
+  margin: 0;
+  color: #111827;
+  font-size: 11pt;
+  text-align: center;
+}
+
+.indice {
+  position: relative;
+  page-break-after: always;
+  break-after: page;
+}
+
+.marca-fin-indice {
+  display: block;
+  color: #ffffff;
+  font-size: 1pt;
+  line-height: 1pt;
+}
+
+.indice-titulo {
+  margin: 0 0 8mm;
+  padding-bottom: 2.5mm;
+  border-bottom: 2px solid #bfdbfe;
+  color: #1d4ed8;
+  font-size: 20pt;
+  line-height: 1.2;
+}
+
+.indice-linea {
+  display: grid;
+  grid-template-columns: auto minmax(8mm, 1fr) 9mm;
+  align-items: baseline;
+  column-gap: 2mm;
+  margin: 0 0 1.6mm;
+  font-size: 9.6pt;
+  line-height: 1.35;
+  break-inside: avoid;
+}
+
+.indice-linea.nivel-1 {
+  margin-top: 2.2mm;
+  color: #1e3a8a;
+  font-size: 10.2pt;
+  font-weight: 700;
+}
+
+.indice-linea.nivel-2 {
+  padding-left: 8mm;
+  color: #334155;
+  font-size: 9.2pt;
+}
+
+.indice-texto {
+  color: inherit;
+  text-decoration: none;
+}
+
+.indice-puntos {
+  min-width: 8mm;
+  flex: 1;
+  border-bottom: 1px dotted #94a3b8;
+  transform: translateY(-0.8mm);
+}
+
+.indice-pagina {
+  min-width: 9mm;
+  color: #1e3a8a;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .page-break {
@@ -193,6 +335,29 @@ img {
   margin: 3mm auto 1.5mm;
   border: 1px solid #cbd5e1;
   border-radius: 2mm;
+}
+
+figure.diagrama {
+  margin: 4mm 0 6mm;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+figure.diagrama img {
+  width: auto;
+  max-width: 100%;
+  max-height: 220mm;
+  margin: 0 auto 2mm;
+  border: 1px solid #dbeafe;
+  border-radius: 2mm;
+  background: #ffffff;
+}
+
+figure.diagrama figcaption {
+  color: #64748b;
+  font-size: 8.7pt;
+  line-height: 1.35;
+  text-align: center;
 }
 
 em {

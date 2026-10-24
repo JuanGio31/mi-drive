@@ -1,9 +1,82 @@
 <div class="portada">
-  <p class="portada-etiqueta">Sistema de Gestión Documental</p>
-  <h1>Manual técnico</h1>
-  <p class="portada-subtitulo">Arquitectura, modelo documental, API REST y operación</p>
-  <p class="portada-meta">Versión 1.0 · Octubre de 2026<br>Proyecto académico · CUNOC</p>
+  <img class="portada-fondo" src="portada.jpg" alt="">
+  <div class="portada-contenido">
+    <p class="portada-universidad">
+      Universidad de San Carlos de Guatemala<br>
+      Centro Universitario de Occidente<br>
+      División de Ciencias de la Ingeniería<br>
+      Ingeniería en Ciencias y Sistemas<br>
+      Manejo e Implementación de Archivos
+    </p>
+    <img class="portada-logo" src="assets/logo-usac.png" alt="Escudo de la Universidad de San Carlos de Guatemala">
+    <div class="portada-titulo">
+      <span class="portada-sistema">Sistema de Gestión Documental</span>
+      <strong class="portada-manual">Manual técnico</strong>
+      <span class="portada-subtitulo">Arquitectura, modelo documental, API REST y operación</span>
+    </div>
+    <p class="portada-autor">Juan Giovani Casiá Pérez<br><span>201930457</span></p>
+    <p class="portada-fecha">sábado, 24 de octubre de 2026</p>
+  </div>
 </div>
+
+# Índice
+
+1. [Introducción](#1-introducción)
+2. [Arquitectura general](#2-arquitectura-general)
+   - [2.1 Vista de alto nivel](#21-vista-de-alto-nivel)
+   - [2.2 Capas del backend](#22-capas-del-backend)
+   - [2.3 Capas del frontend](#23-capas-del-frontend)
+   - [2.4 Casos de uso](#24-casos-de-uso)
+3. [Tecnologías y requisitos](#3-tecnologías-y-requisitos)
+   - [3.1 Stack tecnológico](#31-stack-tecnológico)
+   - [3.2 Módulos de Node usados en el backend](#32-módulos-de-node-usados-en-el-backend)
+   - [3.3 Módulos internos del backend](#33-módulos-internos-del-backend)
+4. [Estructura del repositorio](#4-estructura-del-repositorio)
+5. [Modelo documental](#5-modelo-documental)
+   - [5.1 Colección usuarios](#51-colección-usuarios)
+   - [5.2 Colección carpetas](#52-colección-carpetas)
+   - [5.3 Colección archivos](#53-colección-archivos)
+   - [5.4 Colección actividades](#54-colección-actividades)
+   - [5.5 Relaciones e invariantes](#55-relaciones-e-invariantes)
+   - [5.6 Índices relevantes](#56-índices-relevantes)
+   - [5.7 Diagrama del modelo](#57-diagrama-del-modelo)
+6. [Seguridad y control de acceso](#6-seguridad-y-control-de-acceso)
+    - [6.1 Autenticación](#61-autenticación)
+    - [6.2 Contraseñas](#62-contraseñas)
+    - [6.3 Roles](#63-roles)
+    - [6.4 Permisos sobre recursos](#64-permisos-sobre-recursos)
+    - [6.5 Otras medidas](#65-otras-medidas)
+7. [Reglas de negocio](#7-reglas-de-negocio)
+   - [7.1 Carpetas y archivos](#71-carpetas-y-archivos)
+   - [7.2 Papelera](#72-papelera)
+   - [7.3 Usuarios](#73-usuarios)
+   - [7.4 Búsqueda](#74-búsqueda)
+   - [7.5 Destacados](#75-destacados)
+   - [7.6 Diagramas de secuencia](#76-diagramas-de-secuencia)
+8. [API REST](#8-api-rest)
+    - [8.1 Convenciones](#81-convenciones)
+    - [8.2 Endpoints](#82-endpoints)
+9. [Actividad y auditoría](#9-actividad-y-auditoría)
+    - [9.1 Actividad de negocio](#91-actividad-de-negocio)
+    - [9.2 Logs técnicos](#92-logs-técnicos)
+10. [Decisiones de diseño y rendimiento](#10-decisiones-de-diseño-y-rendimiento)
+    - [10.1 Decisiones estructurales](#101-decisiones-estructurales)
+    - [10.2 Resolución de permisos en lote](#102-resolución-de-permisos-en-lote)
+    - [10.3 Operaciones masivas en papelera](#103-operaciones-masivas-en-papelera)
+    - [10.4 Índices y agregaciones](#104-índices-y-agregaciones)
+    - [10.5 Limitaciones conocidas](#105-limitaciones-conocidas)
+11. [Instalación y operación](#11-instalación-y-operación)
+    - [11.1 Backend](#111-backend)
+    - [11.2 Frontend](#112-frontend)
+    - [11.3 Verificación mínima](#113-verificación-mínima)
+    - [11.4 Datos de demostración](#114-datos-de-demostración)
+    - [11.5 Generación de los manuales PDF](#115-generación-de-los-manuales-pdf)
+12. [Guía de mantenimiento](#12-guía-de-mantenimiento)
+    - [12.1 Añadir o modificar un endpoint](#121-añadir-o-modificar-un-endpoint)
+    - [12.2 Añadir una vista Angular](#122-añadir-una-vista-angular)
+    - [12.3 Gotchas del proyecto](#123-gotchas-del-proyecto)
+13. [Verificación realizada](#13-verificación-realizada)
+14. [Glosario](#14-glosario)
 
 # 1. Introducción
 
@@ -14,8 +87,9 @@ Este manual describe la implementación técnica del **Sistema de Gestión Docum
 El documento está dirigido a quienes necesitan instalar, mantener, evaluar o extender
 el sistema: desarrolladores, administradores de base de datos, docentes y revisores
 técnicos. Se explican la arquitectura, el modelo documental, las reglas de negocio,
-la API, los mecanismos de seguridad, las decisiones de rendimiento y los
-procedimientos de operación.
+la API, los mecanismos de seguridad, los módulos de Node usados, las decisiones de
+diseño con sus ventajas y costos, y los procedimientos de operación. Los diagramas
+exportados se incluyen como figuras.
 
 El repositorio se divide en dos aplicaciones independientes:
 
@@ -45,6 +119,11 @@ Ambas se comunican por HTTP/JSON. En desarrollo, el servidor de Angular redirige
 
 El cliente no accede directamente a MongoDB. Toda operación pasa por la API, que
 valida el token, comprueba permisos y registra la actividad correspondiente.
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-despliegue.svg" alt="Diagrama de despliegue del sistema">
+  <figcaption>Figura 1. Despliegue local: SPA Angular, API Express, MongoDB y logs Pino.</figcaption>
+</figure>
 
 ## 2.2 Capas del backend
 
@@ -76,9 +155,13 @@ La inyección de dependencias es manual y centralizada en
 ```text
 app.routes.ts
   └── Layout protegido (sidebar + topbar)
+        ├── Inicio → carpetas y archivos recientes
         ├── Mi Unidad → Explorador reutilizable → Menú contextual
-        ├── Visor / Editor
+        ├── Destacados
+        ├── Recientes
+        ├── Compartidos
         ├── Papelera
+        ├── Visor / Editor
         ├── Perfil
         └── Administración (dashboard, usuarios, reportes, actividad)
 ```
@@ -89,29 +172,109 @@ app.routes.ts
 - `authGuard`, `guestGuard` y `adminGuard` protegen la navegación.
 - `authInterceptor` añade `Authorization: Bearer <token>` y cierra sesión ante `401`.
 - Servicios de `core/services` encapsulan la API; los modelos viven en `core/models`.
+- `ExploradorCarpetaComponent` se usa en Mi Unidad; `MenuContextualComponent` y
+  `AccionesRecursosService` se reutilizan en Mi Unidad, Papelera, Destacados y
+  Compartidos.
+- La vista lista/cuadrícula se persiste en `localStorage`; la búsqueda global es un
+  autocompletado de la barra superior.
+
+## 2.4 Casos de uso
+
+El diagrama agrupa los casos por autenticación, documentos, compartición, búsqueda,
+actividad, papelera, perfil y administración. El administrador hereda los casos del
+usuario y conserva el menú normal.
+
+<figure class="diagrama">
+  <img src="uml/svg/diagrama-casos.svg" alt="Diagrama de casos de uso">
+  <figcaption>Figura 2. Casos de uso actuales, incluidos destacados y borrado permanente.</figcaption>
+</figure>
 
 # 3. Tecnologías y requisitos
 
+## 3.1 Stack tecnológico
+
 | Capa | Tecnología | Uso |
 |---|---|---|
-| Frontend | Angular 21 | SPA, rutas, formularios, signals |
-| UI | Angular Material 21 | Tablas, diálogos, menús, formularios |
+| Frontend | Angular 21.2 | SPA, rutas, formularios y signals |
+| UI | Angular Material 21 | Tablas, diálogos, menús y formularios |
+| Reactividad | RxJS 7.8 | Observables en servicios HTTP |
+| Markdown | `marked` 18 | Renderizado del visor y la vista previa |
 | Backend | Node.js 20+ | Entorno de ejecución |
-| Servidor | Express 5 | API REST y middlewares |
-| Lenguaje | TypeScript | Tipado estricto en backend y frontend |
-| Validación | Zod 3 | DTO y variables de entorno |
+| Servidor | Express 5.2 | API REST y middlewares |
+| Lenguaje | TypeScript 7 (backend) y 5.9 (frontend) | Tipado estricto |
+| Validación | Zod 4 con `zod/v3` | DTO, query, params y entorno |
 | Base de datos | MongoDB 7+ | Persistencia documental |
-| ODM | Mongoose | Esquemas, índices y agregaciones |
-| Autenticación | JWT + bcrypt | Sesión y hash de contraseñas |
-| Logs | Pino + `pino-roll` | Diagnóstico técnico y rotación de archivos |
-| Markdown | `marked` | Renderizado en visor y editor |
+| ODM | Mongoose 9 | Esquemas, índices y agregaciones |
+| Autenticación | JWT 9 + bcrypt 6 | Sesión y hash de contraseñas |
+| Logs | Pino 10, `pino-http` 11 y `pino-roll` 4 | Diagnóstico y rotación |
+| Pruebas frontend | Vitest 4 + jsdom | Pruebas unitarias de utilidades |
 
 Requisitos prácticos:
 
-- Node.js 20.19+ o 22.12+ (el entorno validado usa Node 22).
+- Node.js 20.19+ o 22.12+; el entorno validado usa Node 22.
 - npm 10+; el frontend declara npm 11.6+.
 - MongoDB local o remoto.
 - Puerto `3000` para la API y `4200` para el frontend en desarrollo.
+- Google Chrome para regenerar los PDF de `docs/pdf/` con `generar.mjs`.
+
+## 3.2 Módulos de Node usados en el backend
+
+Dependencias de ejecución declaradas en `backend/package.json`:
+
+| Paquete | Versión | Función real |
+|---|---:|---|
+| `express` | 5.2.1 | Framework HTTP, routers, middlewares y controladores. Express 5 reenvía rechazos de promesas al error handler. |
+| `mongoose` | 9.11.1 | ODM: conexión, esquemas, índices, `$graphLookup`, `$lookup`, `$unionWith` y agregaciones. |
+| `zod` | 4.6.5 | Validación de entorno, body, query y params. El código usa la ruta de compatibilidad `zod/v3`. |
+| `jsonwebtoken` | 9.0.3 | Firma y verificación del JWT. |
+| `bcrypt` | 6.0.0 | Hash y comparación de contraseñas con `BCRYPT_ROUNDS`. |
+| `cors` | 2.8.6 | Allowlist de orígenes, credenciales y cabeceras expuestas. |
+| `dotenv` | 18.0.6 | Carga de `.env` antes de validar la configuración. |
+| `pino` | 10.4.0 | Logger estructurado, niveles, `redact` y serializadores. |
+| `pino-http` | 11.0.0 | Registro de una entrada por petición HTTP. |
+| `pino-roll` | 4.0.0 | Transport de archivo con rotación diaria o por tamaño y retención. |
+
+Dependencias de desarrollo:
+
+| Paquete | Versión | Función |
+|---|---:|---|
+| `typescript` | 7.0.2 | Compilación con `npm run build` y verificación con `tsc --noEmit`. |
+| `tsx` | 4.23.15 | Ejecución directa de `seed.ts` y `server.ts` en desarrollo. |
+| `pino-pretty` | 13.2.0 | Salida legible en `NODE_ENV=dev`. |
+| `@types/node`, `@types/express`, `@types/cors`, `@types/jsonwebtoken`, `@types/bcrypt` | — | Tipos para TypeScript. |
+
+No se usan `helmet`, `multer`, `express-session`, `passport` ni un framework de
+inyección de dependencias. La carga de archivos viaja como string JSON, no como
+`multipart/form-data`.
+
+Módulos built-in de Node:
+
+| Módulo | Uso |
+|---|---|
+| `node:fs` | Crea el directorio de logs con `mkdirSync`. |
+| `node:path` | Resuelve `LOG_DIR` y construye rutas de archivos. |
+| `node:crypto` | Genera el `requestId` con `randomUUID`. |
+| `Buffer` (global) | Calcula `tamanio` con `Buffer.byteLength(contenido, 'utf8')`. |
+| `process` (global) | Variables de entorno, apagado y `process.exit` ante configuración inválida. |
+
+## 3.3 Módulos internos del backend
+
+| Módulo | Responsabilidad |
+|---|---|
+| `auth` | Login, registro, emisión de JWT y `/me`. |
+| `usuario` | Cuentas, roles, estado, perfil, contraseña y directorio para compartir. |
+| `carpeta` | Árbol, permisos, compartición, destacados y papelera de carpetas. |
+| `archivo` | Contenido, metadatos, permisos, compartición, destacados, descarga y papelera. |
+| `actividad` | Auditoría funcional, historial propio, global y por recurso. |
+| `reporte` | Agregaciones de dashboard, archivos, usuarios, compartición y actividad. |
+| `busqueda` | Búsqueda global por nombre en recursos propios y compartidos. |
+| `shared/config` | Validación de entorno y conexión a MongoDB. |
+| `shared/container` | Composition root con inyección manual de dependencias. |
+| `shared/middlewares` | Autenticación, roles, validación, request ID, logs, 404 y errores. |
+| `shared/logger` | Configuración de Pino y rotación de archivos. |
+| `shared/errors` | `HttpError` y factorías de errores controlados. |
+| `shared/utils` | Escape de expresiones regulares. |
+| `scripts/seed.ts` | Datos de demostración; es destructivo. |
 
 # 4. Estructura del repositorio
 
@@ -121,22 +284,28 @@ mi-drive/
 │   ├── src/
 │   │   ├── modules/          # auth, usuario, carpeta, archivo,
 │   │   │                     # actividad, reporte, busqueda
-│   │   ├── shared/           # config, container, middlewares, errors, utils
-│   │   ├── scripts/seed.ts   # datos de demostración
+│   │   ├── shared/           # config, container, middlewares, errors,
+│   │   │                     # logger, utils
+│   │   ├── scripts/seed.ts   # datos de demostración (destructivo)
 │   │   ├── app.ts            # composición de Express
 │   │   └── server.ts         # arranque y conexión a MongoDB
 │   └── README.md
 ├── frontend/
 │   ├── src/app/
 │   │   ├── core/             # modelos, servicios, guards, interceptor, utils
-│   │   ├── features/         # layout, mi-unidad, explorador, contextual,
-│   │   │                     # editor, visor, papelera, perfil, admin, auth
+│   │   ├── features/         # layout, inicio, mi-unidad, explorador,
+│   │   │                     # contextual, editor, visor, papelera, perfil,
+│   │   │                     # destacados, recientes, compartidos, busqueda,
+│   │   │                     # auth, admin
 │   │   ├── app.routes.ts
 │   │   └── app.config.ts
 │   └── README.md
 ├── docs/
-│   ├── assets/               # capturas para los manuales
-│   ├── pdf/                  # PDF generados
+│   ├── assets/               # capturas y logo para los manuales
+│   ├── pdf/                  # generar.mjs, estilo.css y PDF generados
+│   ├── uml/                  # fuentes .md/.drawio
+│   │   └── svg/              # diagramas exportados usados en el manual
+│   ├── portada.jpg
 │   ├── manual-tecnico.md
 │   └── manual-usuario.md
 ├── AGENTS.md                 # contexto local, no versionado
@@ -171,7 +340,8 @@ tiene índice único.
 | `propietario` | ObjectId → usuario | Dueño del árbol |
 | `creadoPor` | ObjectId → usuario | Atribución de autoría |
 | `carpetaPadre` | ObjectId → carpeta o `null` | Jerarquía; `null` = raíz |
-| `compartidoCon` | arreglo | `{ usuario, permiso, fechaCompartido }` |
+| `compartidoCon` | arreglo | `{ usuario, permiso, fechaCompartido }`; permiso `lectura`, `escritura` o `comentar` |
+| `destacadoPor` | ObjectId[] → usuario | Marca personal; no concede permisos |
 | `enPapelera` | boolean | Eliminación lógica |
 | `fechaEnvioPapelera` | Date o `null` | Momento del envío |
 | `papeleraRaiz` | ObjectId o `null` | Raíz del envío a papelera |
@@ -187,17 +357,20 @@ mismo `propietario`, `carpetaPadre` y `nombre`.
 | `nombre` | string | 1–300 caracteres |
 | `tipo` | enum | `txt` o `md` |
 | `contenido` | string | Hasta 10 000 000 de caracteres |
-| `tamanio` | number | Bytes UTF-8 del contenido |
+| `tamanio` | number | Bytes UTF-8; se recalcula al crear o editar |
 | `propietario` | ObjectId → usuario | Dueño del árbol |
 | `creadoPor` | ObjectId → usuario | Autor de la creación |
 | `carpetaPadre` | ObjectId → carpeta o `null` | Ubicación |
 | `compartidoCon` | arreglo | Permiso directo por usuario |
+| `destacadoPor` | ObjectId[] → usuario | Marca personal; no concede permisos |
 | `enPapelera`, `fechaEnvioPapelera`, `papeleraRaiz` | — | Igual que carpetas |
 | `createdAt`, `updatedAt` | Date | Timestamps |
 
 El contenido se almacena embebido en el documento. Es una decisión adecuada para el
 alcance académico y para archivos de texto pequeños o medianos: evita un sistema de
-archivos externo y simplifica la edición y la búsqueda.
+archivos externo y simplifica la edición y la búsqueda. El frontend limita la subida a
+10 MB; el body HTTP a 16 MB y el DTO a 10 millones de caracteres. Al crear o editar
+por API, el límite efectivo es el del DTO.
 
 > **Importante:** el campo persistido es `tamanio` (sin ñ). La API expone alias como
 > `tamaño` y `tamañoTotal`; en agregaciones siempre se usa `$tamanio`.
@@ -225,6 +398,7 @@ Usuario 1 ─── N Carpeta        (propietario / creadoPor)
 Carpeta 1 ─── N Carpeta        (carpetaPadre)
 Carpeta 1 ─── N Archivo        (carpetaPadre)
 Usuario N ─── N Carpeta/Archivo (compartidoCon)
+Usuario N ─── N Carpeta/Archivo (destacadoPor)
 Usuario 1 ─── N Actividad      (usuario)
 ```
 
@@ -236,16 +410,43 @@ Invariantes principales:
   todo su subárbol.
 - La jerarquía se limita a una profundidad de seguridad de 20 niveles en las
   agregaciones de ancestros y descendientes.
+- `destacadoPor` es una relación many-to-many personal: marcar un recurso no cambia
+  `propietario`, `compartidoCon` ni la visibilidad para otros.
+- Una carpeta activa no puede repetir nombre con otra activa del mismo propietario y
+  misma carpeta padre; lo garantiza un índice único parcial (`enPapelera: false`). En
+  archivos, la unicidad se valida en `ArchivoValidator`, porque el esquema no declara
+  un índice único para esa combinación.
+- Un envío a papelera marca la raíz y todos sus descendientes. Solo la raíz aparece en
+  la papelera y es la única que se puede restaurar o eliminar permanentemente.
+- Restaurar devuelve la raíz a su ubicación original y reactiva el subárbol. Si el padre
+  sigue en papelera, la restauración se rechaza.
+- Eliminar permanentemente borra la raíz y todo su subárbol; la acción es irreversible.
 
 ## 5.6 Índices relevantes
 
 - `usuarios.correo` único; índices por `rol` y `activo`.
 - `carpetas`: `(propietario, carpetaPadre, enPapelera)`,
-  `(carpetaPadre, enPapelera, nombre)`, `(compartidoCon.usuario, enPapelera)`.
+  `(carpetaPadre, enPapelera, nombre)`, `(compartidoCon.usuario, enPapelera)`,
+  `propietario`, `creadoPor`, `carpetaPadre`, `enPapelera`, `papeleraRaiz` y el índice
+  único parcial `(propietario, carpetaPadre, nombre)` para recursos activos.
 - `archivos`: `(propietario, carpetaPadre, enPapelera)`,
-  `(carpetaPadre, enPapelera)`, `(compartidoCon.usuario, enPapelera)`, `tipo`.
+  `(carpetaPadre, enPapelera)`, `(compartidoCon.usuario, enPapelera)`, `tipo`,
+  `propietario`, `creadoPor`, `carpetaPadre`, `enPapelera`, `papeleraRaiz` y un índice
+  de texto sobre `nombre`.
 - `actividades`: `(usuario, createdAt)`, `(accion, createdAt)`,
-  `(recursoTipo, recursoId, createdAt)` y `createdAt`.
+  `(recursoTipo, recursoId, createdAt)` y `(createdAt)`.
+
+El índice de texto de `archivos.nombre` existe, pero la búsqueda actual usa una
+expresión regular escapada e insensible a mayúsculas para permitir coincidencias
+parciales desde el primer carácter. Por eso el índice de texto no se aprovecha en ese
+endpoint.
+
+## 5.7 Diagrama del modelo
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-modelo-doc.svg" alt="Diagrama del modelo documental">
+  <figcaption>Figura 3. Colecciones, referencias, compartición, destacados y papelera.</figcaption>
+</figure>
 
 # 6. Seguridad y control de acceso
 
@@ -253,7 +454,8 @@ Invariantes principales:
 
 1. El usuario envía correo y contraseña a `POST /api/auth/sign-in`.
 2. El backend busca la cuenta, verifica que esté activa y compara con bcrypt.
-3. Si es válida, firma un JWT con `id`, `nombre`, `correo` y `rol`.
+3. Si es válida, firma un JWT con `id`, `nombre`, `correo` y `rol`, con expiración
+   configurable (`JWT_EXPIRES_IN`, 7 días por defecto).
 4. El frontend guarda el token y el usuario en `localStorage`
    (`dms_token` y `dms_user`).
 5. El interceptor añade `Authorization: Bearer <token>` a cada petición.
@@ -289,12 +491,12 @@ menú normal y además ve el bloque de administración.
 
 Niveles admitidos: `lectura`, `escritura` y `comentar`.
 
-| Nivel | Lectura / descarga | Editar contenido | Renombrar | Compartir / papelera |
-|---|---:|---:|---:|---:|
-| Propietario | Sí | Sí | Sí | Sí |
-| `escritura` | Sí | Sí | Sí | No |
-| `lectura` | Sí | No | No | No |
-| `comentar` | Sí | No | No | No |
+| Nivel | Lectura / descarga | Editar contenido | Renombrar | Destacar | Compartir / papelera |
+|---|---:|---:|---:|---:|---:|
+| Propietario | Sí | Sí | Sí | Sí | Sí |
+| `escritura` | Sí | Sí | Sí | Sí | No |
+| `lectura` | Sí | No | No | Sí | No |
+| `comentar` | Sí | No | No | Sí | No |
 
 > En esta versión, `comentar` se comporta como acceso de lectura. No existe todavía un
 > módulo de comentarios; el nivel queda reservado para una extensión futura.
@@ -306,7 +508,9 @@ Reglas de resolución:
 - Si no hay permiso directo, se hereda el del **ancestro más cercano** que tenga uno.
 - Sin acceso al recurso se responde `404` para no revelar su existencia.
 - Con acceso pero sin permiso para la acción se responde `403`.
-- Solo el propietario puede compartir, mover o enviar a la papelera.
+- Solo el propietario puede compartir, mover, enviar a la papelera, restaurar o
+  eliminar permanentemente.
+- `destacadoPor` no otorga acceso: solo se puede destacar un recurso ya visible.
 - No se puede compartir con uno mismo ni con usuarios inactivos.
 - Compartir de nuevo con el mismo usuario actualiza su permiso.
 
@@ -342,9 +546,12 @@ Reglas de resolución:
 - En la papelera solo se muestran las raíces enviadas explícitamente, no cada hijo.
 - Restaurar una carpeta restaura su subárbol completo.
 - Un hijo eliminado por cascada no se restaura por separado; debe restaurarse la raíz.
-- Solo el propietario puede enviar o restaurar.
-- El repositorio incluye `eliminarPermanente`, pero **no hay ruta ni flujo de UI** para
-  el borrado definitivo en esta entrega. La papelera es, por tanto, recuperable.
+- Solo el propietario puede enviar, restaurar o eliminar permanentemente.
+- `DELETE /api/carpetas/:id/permanente` y `DELETE /api/archivos/:id/permanente`
+  eliminan la raíz y su subárbol de MongoDB; la operación es irreversible.
+- Solo se puede eliminar permanentemente un elemento raíz de la papelera; los hijos
+  enviados en cascada no se borran por separado.
+- No existe "vaciar papelera" ni selección múltiple.
 
 ## 7.3 Usuarios
 
@@ -368,6 +575,53 @@ mayúsculas, entre:
 
 El límite por grupo es configurable y se acota a 20 en el servicio. El frontend usa la
 búsqueda de la barra superior y muestra carpetas y archivos agrupados.
+
+## 7.5 Destacados
+
+- `PATCH /api/archivos/:id/destacar` y `PATCH /api/carpetas/:id/destacar` reciben
+  `{ "destacado": true | false }`.
+- El usuario se agrega o quita de `destacadoPor`; la operación es idempotente.
+- Marcar o desmarcar no actualiza `updatedAt`, para no alterar el orden por actividad.
+- Exige que el recurso sea visible para el usuario, pero no exige ser propietario.
+- `GET /api/archivos/destacados` y `GET /api/carpetas/destacadas` listan solo los
+  recursos del usuario autenticado.
+- Al listar Mi Unidad, Inicio, búsqueda y compartidos se calcula `destacado` para el
+  usuario actual.
+- Si un recurso compartido deja de ser accesible, se filtra de la lista. El
+  identificador puede permanecer en `destacadoPor`, pero no se expone a otros usuarios
+  ni concede acceso.
+
+## 7.6 Diagramas de secuencia
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-secuencia-inicio-sesion.svg" alt="Secuencia de inicio de sesión">
+  <figcaption>Figura 4. Inicio de sesión, emisión del JWT y carga del usuario.</figcaption>
+</figure>
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-sec-crear-editar-archivo.svg" alt="Secuencia de creación y edición de archivo">
+  <figcaption>Figura 5. Creación y edición de un archivo con validación de permisos.</figcaption>
+</figure>
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-sec-compartir.svg" alt="Secuencia de compartición">
+  <figcaption>Figura 6. Compartición directa y herencia de permisos.</figcaption>
+</figure>
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-sec-acceso-req-compartido.svg" alt="Secuencia de acceso a un recurso compartido">
+  <figcaption>Figura 7. Resolución de acceso a un recurso compartido.</figcaption>
+</figure>
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-sec-papelera.svg" alt="Secuencia de papelera">
+  <figcaption>Figura 8. Envío a papelera, restauración y eliminación permanente.</figcaption>
+</figure>
+
+<figure class="diagrama">
+  <img src="uml/svg/diagramas-sec-busqueda.svg" alt="Secuencia de búsqueda">
+  <figcaption>Figura 9. Búsqueda global de carpetas y archivos.</figcaption>
+</figure>
 
 # 8. API REST
 
@@ -436,9 +690,12 @@ Códigos usados:
 | POST | `/api/carpetas` | Crea carpeta |
 | GET | `/api/carpetas` | Lista propias y compartidas |
 | GET | `/api/carpetas/papelera` | Raíces propias en papelera |
+| GET | `/api/carpetas/destacadas` | Carpetas destacadas por el usuario |
 | GET | `/api/carpetas/:id` | Detalle con `miPermiso` |
 | PATCH | `/api/carpetas/:id/renombrar` | Renombra |
 | PATCH | `/api/carpetas/:id/mover` | Mueve a otro padre o raíz |
+| PATCH | `/api/carpetas/:id/destacar` | Marca o desmarca como destacada |
+| DELETE | `/api/carpetas/:id/permanente` | Elimina la raíz y su subárbol |
 | DELETE | `/api/carpetas/:id` | Envía a papelera en cascada |
 | POST | `/api/carpetas/:id/restaurar` | Restaura subárbol |
 | POST | `/api/carpetas/:id/compartir` | Comparte o actualiza permiso |
@@ -452,12 +709,15 @@ Códigos usados:
 | GET | `/api/archivos` | Lista por carpeta, tipo, búsqueda y paginación |
 | GET | `/api/archivos/compartidos` | Archivos compartidos con el usuario |
 | GET | `/api/archivos/papelera` | Raíces propias en papelera |
+| GET | `/api/archivos/destacados` | Archivos destacados por el usuario |
 | GET | `/api/archivos/:id` | Detalle con contenido y `miPermiso` |
 | POST | `/api/archivos/:id/abrir` | Registra la apertura en el visor |
 | GET | `/api/archivos/:id/descargar` | Descarga como `text/plain` |
 | PUT | `/api/archivos/:id/contenido` | Actualiza contenido y tamaño |
 | PATCH | `/api/archivos/:id/renombrar` | Renombra |
 | PATCH | `/api/archivos/:id/mover` | Mueve a otra carpeta o raíz |
+| PATCH | `/api/archivos/:id/destacar` | Marca o desmarca como destacado |
+| DELETE | `/api/archivos/:id/permanente` | Elimina definitivamente |
 | DELETE | `/api/archivos/:id` | Envía a papelera |
 | POST | `/api/archivos/:id/restaurar` | Restaura |
 | POST | `/api/archivos/:id/compartir` | Comparte o actualiza permiso |
@@ -479,8 +739,10 @@ Filtros disponibles: `usuarioId`, `accion`, `recursoTipo`, `recursoId`, `desde`,
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
 | GET | `/api/reportes/archivos/por-tipo` | Admin | Totales y tamaño por extensión |
-| GET | `/api/reportes/archivos/por-rango` | Admin | Archivos creados en un rango |
+| GET | `/api/reportes/archivos/por-rango` | Admin | Archivos creados en un rango, paginado |
+| GET | `/api/reportes/archivos/nunca-compartidos` | Admin | Archivos activos sin compartición |
 | GET | `/api/reportes/archivos/mas-operaciones` | Admin | Archivos con más actividad |
+| GET | `/api/reportes/carpetas/mas-archivos` | Admin | Carpetas con más archivos en su subárbol |
 | GET | `/api/reportes/usuarios/top-archivos` | Admin | Top de usuarios por archivos |
 | GET | `/api/reportes/usuarios/mas-compartidos` | Admin | Usuarios que más comparten |
 | GET | `/api/reportes/compartidos/mas-compartidos` | Admin | Archivos más compartidos |
@@ -554,9 +816,26 @@ Su objetivo es diagnosticar fallos operativos.
 - Nunca se registran bodies, contraseñas, tokens, cookies ni contenido de archivos.
 - La carpeta `logs/` está excluida de Git y no se expone mediante la API.
 
-# 10. Rendimiento y decisiones técnicas
+# 10. Decisiones de diseño y rendimiento
 
-## 10.1 Resolución de permisos en lote
+## 10.1 Decisiones estructurales
+
+| Decisión | Alternativa descartada | Motivo | Costo asumido |
+|---|---|---|---|
+| MongoDB con Mongoose | Base relacional | El dominio es jerárquico y documental; los archivos son texto y el esquema puede evolucionar sin migraciones pesadas | Sin claves foráneas ni transacciones entre colecciones; las invariantes se refuerzan en servicios y validadores |
+| Contenido embebido en `archivos` | GridFS o almacenamiento externo | Simplifica la creación, edición, descarga y búsqueda; el alcance son archivos de texto | Límite de 16 MB por documento y body; no apto para binarios o archivos grandes |
+| Lista de adyacencia (`carpetaPadre`) | Ruta materializada, nested sets | Mover una carpeta solo cambia un campo; el modelo es fácil de entender | Consultas de ancestros y descendientes con `$graphLookup` y límite de profundidad |
+| `compartidoCon` embebido | Colección ACL separada | El permiso se lee junto con el recurso y se resuelve con una sola consulta | Duplicación de la relación y necesidad de mantener consistencia al mover o borrar |
+| `destacadoPor` embebido | Colección de favoritos | Marcar o desmarcar es un `$addToSet`/`$pull` atómico | El arreglo crece con la cantidad de usuarios que destacan el recurso |
+| Acceso efectivo calculado | Permisos efectivos persistidos | Evita ACL obsoletas cuando cambia una carpeta ancestro | Más trabajo en listados y reportes; se mitiga con resolución en lote |
+| Repositorio + servicio + controlador | Active Record o lógica en rutas | Separa persistencia, reglas y HTTP; facilita pruebas y cambios | Más archivos y algo de boilerplate |
+| Inyección manual en `container` | Framework de DI | Sin dependencia adicional y con wiring explícito | El contenedor debe actualizarse al agregar módulos |
+| Zod en la frontera HTTP | Validación solo con TypeScript | Valida datos reales en runtime y genera errores homogéneos | Duplicación parcial entre tipos y esquemas |
+| JWT + recarga del usuario | Sesiones en servidor | API sin estado y aplicación inmediata de desactivaciones o cambios de rol | El token vive en `localStorage`; no hay lista de revocación ni refresh token |
+| Pino estructurado | `console.log` | Niveles, `requestId`, redacción y rotación de archivos | Un archivo de log más que operar |
+| Angular standalone + signals | `NgModule` y estado con RxJS | Menos ceremonia, rutas lazy y reactividad local simple | Dependencia de APIs recientes de Angular |
+
+## 10.2 Resolución de permisos en lote
 
 El principal riesgo de un modelo jerárquico es consultar los ancestros una vez por
 archivo. Para evitarlo:
@@ -567,30 +846,36 @@ archivo. Para evitarlo:
 - Se busca en memoria el ancestro más cercano con permiso.
 - Existe una caché por operación (`Map`) para no repetir la resolución.
 
-## 10.2 Operaciones masivas en papelera
+## 10.3 Operaciones masivas en papelera
 
 Enviar una carpeta a la papelera no recorre los hijos uno por uno. Se obtienen los IDs
 del subárbol y se ejecutan dos actualizaciones masivas: una para carpetas y otra para
-archivos. La restauración usa el mismo enfoque.
+archivos. La restauración usa el mismo enfoque. La eliminación permanente reutiliza la
+misma resolución de subárbol y borra en bloque.
 
-## 10.3 Índices y agregaciones
+## 10.4 Índices y agregaciones
 
 - Las consultas por ubicación, propietario y papelera usan índices compuestos.
 - Los reportes usan `$group`, `$lookup`, `$unionWith` y `$graphLookup` según el caso.
 - La búsqueda usa expresiones regulares escapadas para evitar inyección de patrones.
 - Los listados de archivos excluyen `contenido` salvo que se solicite explícitamente.
+- El índice de texto de `archivos.nombre` no se usa en la búsqueda actual por la
+  decisión de permitir coincidencias parciales con regex.
 
-## 10.4 Limitaciones conocidas
+## 10.5 Limitaciones conocidas
 
 - No hay paginación uniforme en todos los listados de carpetas y archivos; algunos
   devuelven el conjunto completo de la carpeta.
 - El contenido embebido no es adecuado para archivos binarios o muy grandes.
-- No existe borrado permanente expuesto ni módulo de comentarios.
-- Las rutas `/recientes` y `/compartidos` aparecen en el menú, pero aún no tienen
-  vista propia; `/home` es una página mínima.
+- No existe módulo de comentarios; el permiso `comentar` equivale a lectura.
+- No hay control de versiones ni edición concurrente; la última escritura prevalece.
+- No hay cuotas por usuario, análisis antivirus ni validación de contenido más allá de
+  extensión y tamaño.
+- No hay rate limiting ni bloqueo por intentos fallidos de inicio de sesión.
 - Los scripts de regresión y E2E usados durante el desarrollo son locales y no están
   versionados.
-- No se incluye configuración de despliegue, respaldo automático ni observabilidad.
+- No se incluye configuración de despliegue, respaldo automático ni observabilidad
+  externa.
 
 # 11. Instalación y operación
 
@@ -656,6 +941,29 @@ Respuesta esperada:
 El seed crea 3 usuarios, 15 carpetas y 50 archivos (algunos en papelera), además de
 compartidos y actividad. Es **destructivo** y cambia los IDs en cada ejecución.
 
+## 11.5 Generación de los manuales PDF
+
+Requisitos: Google Chrome en `/usr/bin/google-chrome`, `pdftotext` y las dependencias
+del frontend instaladas.
+
+```bash
+node docs/pdf/generar.mjs
+```
+
+El script:
+
+1. convierte el Markdown a HTML con `marked`;
+2. incrusta las imágenes locales como data URI;
+3. elimina el índice escrito en Markdown y genera uno nuevo;
+4. imprime un borrador con Chrome;
+5. extrae el texto por página con `pdftotext` para resolver los números de página;
+6. imprime el PDF final en `docs/pdf/manual-tecnico.pdf` y
+   `docs/pdf/manual-usuario.pdf`.
+
+La portada usa `docs/portada.jpg` y `docs/assets/logo-usac.png`. El estilo está en
+`docs/pdf/estilo.css`. El índice se genera con dos pasadas porque Chrome no expone
+directamente el número de página de cada título al imprimir HTML.
+
 # 12. Guía de mantenimiento
 
 ## 12.1 Añadir o modificar un endpoint
@@ -690,18 +998,21 @@ compartidos y actividad. Es **destructivo** y cambia los IDs en cada ejecución.
 
 # 13. Verificación realizada
 
-Durante la implementación se comprobó:
+Comprobaciones de esta entrega:
 
-- `npx ng build` sin errores ni advertencias.
-- `npx tsc --noEmit` sin errores.
-- Regresión de API: 54/54, 59/59 y 19/19 casos.
-- E2E de administración: 38/38.
-- E2E de vista lista/cuadrícula: 15/15.
-- Navegación sin excepciones JavaScript en las vistas principales.
+- `npx tsc --noEmit` en `backend/` terminó sin errores.
+- `npx ng build` en `frontend/` terminó correctamente (build de producción).
+- `npx ng test --watch=false` en `frontend/` pasó 24 pruebas en 9 archivos.
+- `node docs/pdf/generar.mjs` generó ambos PDF con portada, índice y figuras.
+- Los índices se validaron contra el texto extraído con `pdftotext`; todas las
+  entradas resueltas coinciden con la página donde aparece su título.
+- Las imágenes locales de ambos manuales existen y se incrustan como data URI.
+- `git diff --check` no reporta errores de espacios.
+- La portada, el índice y los diagramas se revisaron renderizados a 80 y 150 dpi.
 
-Estas verificaciones fueron manuales o con scripts locales, por lo que no forman parte
-del repositorio versionado. Para una entrega reproducible se recomienda incorporarlas
-como pruebas automatizadas del proyecto.
+No se ejecutaron las suites de regresión de API ni los E2E en esta pasada. Esos
+scripts son locales, no están versionados y deben incorporarse como pruebas
+automatizadas para una entrega reproducible.
 
 # 14. Glosario
 

@@ -1,26 +1,66 @@
 <div class="portada">
-  <p class="portada-etiqueta">Sistema de Gestión Documental</p>
-  <h1>Manual de usuario</h1>
-  <p class="portada-subtitulo">Guía para organizar, editar, compartir y administrar documentos</p>
-  <p class="portada-meta">Versión 1.0 · Octubre de 2026<br>Proyecto académico · CUNOC</p>
+  <img class="portada-fondo" src="portada.jpg" alt="">
+  <div class="portada-contenido">
+    <p class="portada-universidad">
+      Universidad de San Carlos de Guatemala<br>
+      Centro Universitario de Occidente<br>
+      División de Ciencias de la Ingeniería<br>
+      Ingeniería en Ciencias y Sistemas<br>
+      Manejo e Implementación de Archivos
+    </p>
+    <img class="portada-logo" src="assets/logo-usac.png" alt="Escudo de la Universidad de San Carlos de Guatemala">
+    <div class="portada-titulo">
+      <span class="portada-sistema">Sistema de Gestión Documental</span>
+      <strong class="portada-manual">Manual de usuario</strong>
+      <span class="portada-subtitulo">Guía para organizar, editar, compartir y administrar documentos</span>
+    </div>
+    <p class="portada-autor">Juan Giovani Casiá Pérez<br><span>201930457</span></p>
+    <p class="portada-fecha">sábado, 24 de octubre de 2026</p>
+  </div>
 </div>
 
-# Contenido
+# Índice
 
 1. [Introducción](#1-introducción)
 2. [Requisitos y acceso](#2-requisitos-y-acceso)
 3. [Inicio de sesión](#3-inicio-de-sesión)
 4. [Conocer la interfaz](#4-conocer-la-interfaz)
+   - [4.1 Barra lateral](#41-barra-lateral)
+   - [4.2 Barra superior](#42-barra-superior)
+   - [4.3 Menú contextual](#43-menú-contextual-de-cada-recurso)
+   - [4.4 Inicio, Recientes y Compartidos](#44-inicio-recientes-y-compartidos)
 5. [Mi Unidad](#5-mi-unidad)
+   - [5.1 Navegar por carpetas](#51-navegar-por-carpetas)
+   - [5.2 Cambiar entre lista y cuadrícula](#52-cambiar-entre-lista-y-cuadrícula)
+   - [5.3 Contenido de una carpeta](#53-contenido-de-una-carpeta)
+   - [5.4 Filtrar por tipo](#54-filtrar-por-tipo)
 6. [Crear carpetas y archivos](#6-crear-carpetas-y-archivos)
+   - [6.1 Crear una carpeta](#61-crear-una-carpeta)
+   - [6.2 Crear un archivo de texto o Markdown](#62-crear-un-archivo-de-texto-o-markdown)
+   - [6.3 Subir un archivo](#63-subir-un-archivo)
 7. [Abrir y leer un archivo](#7-abrir-y-leer-un-archivo)
 8. [Editar un archivo](#8-editar-un-archivo)
 9. [Compartir y permisos](#9-compartir-y-permisos)
+   - [9.1 Compartir un recurso](#91-compartir-un-recurso)
+   - [9.2 Niveles de permiso](#92-niveles-de-permiso)
+   - [9.3 Consultar quién tiene acceso](#93-consultar-quién-tiene-acceso)
+   - [9.4 Destacar un recurso](#94-destacar-un-recurso)
 10. [Renombrar y ver detalles](#10-renombrar-y-ver-detalles)
+    - [10.1 Renombrar](#101-renombrar)
+    - [10.2 Ver detalles](#102-ver-detalles)
+    - [10.3 Mover un recurso](#103-mover-un-recurso)
 11. [Buscar en el sistema](#11-buscar-en-el-sistema)
 12. [Papelera](#12-papelera)
+    - [12.1 Enviar a la papelera](#121-enviar-a-la-papelera)
+    - [12.2 Restaurar](#122-restaurar)
+    - [12.3 Eliminar permanentemente](#123-eliminar-permanentemente)
+    - [12.4 Limitaciones](#124-limitaciones)
 13. [Mi perfil](#13-mi-perfil)
 14. [Panel de administración](#14-panel-de-administración)
+    - [14.1 Dashboard](#141-dashboard)
+    - [14.2 Usuarios](#142-usuarios)
+    - [14.3 Reportes](#143-reportes)
+    - [14.4 Actividad del sistema](#144-actividad-del-sistema)
 15. [Preguntas frecuentes](#15-preguntas-frecuentes)
 16. [Glosario](#16-glosario)
 
@@ -33,11 +73,13 @@ organización y mantener un historial de lo que ocurre con cada recurso.
 Con este sistema puedes:
 
 - crear carpetas y subcarpetas;
-- crear archivos `.txt` y `.md`;
+- crear o subir archivos `.txt` y `.md`;
 - leer y editar el contenido desde el navegador;
 - compartir archivos y carpetas con permisos de lectura, edición o comentarios;
+- destacar recursos para tenerlos a mano;
+- consultar la actividad reciente y los recursos compartidos contigo;
 - buscar recursos por nombre;
-- recuperar elementos eliminados desde la papelera;
+- recuperar elementos eliminados desde la papelera o borrarlos definitivamente;
 - consultar y actualizar tus datos personales;
 - si eres administrador, gestionar usuarios, revisar reportes y auditar la actividad.
 
@@ -78,13 +120,20 @@ Si estás usando los datos de prueba del proyecto:
 
 *Figura 1. Pantalla de acceso al sistema.*
 
-También puedes crear una cuenta desde **Crear cuenta**. El registro público crea
-siempre una cuenta con rol **Usuario**; los permisos de administrador solo pueden
-asignarse desde el panel de administración.
-
 Si el correo o la contraseña no son correctos, verás un mensaje de error. Si tu cuenta
 está desactivada, el sistema no permitirá el acceso hasta que un administrador la
 reactive.
+
+## 3.1 Crear una cuenta
+
+1. En la pantalla de acceso pulsa **Crear cuenta**.
+2. Completa **Nombre**, **Correo**, **Contraseña** y **Confirmar contraseña**.
+3. Revisa el indicador de seguridad de la contraseña.
+4. Pulsa **Registrarse**.
+
+El registro público siempre crea una cuenta con rol **Usuario**. Los permisos de
+administrador solo se asignan desde el panel de administración. No hay recuperación
+automática de contraseña: si la olvidas, contacta con un administrador.
 
 # 4. Conocer la interfaz
 
@@ -99,18 +148,26 @@ Después de iniciar sesión verás una barra lateral y una barra superior.
 | Elemento | Función |
 |---|---|
 | **Drive** | Colapsa o expande la barra lateral |
-| **Nuevo** | Crea una carpeta, un archivo de texto o un archivo Markdown |
-| **Página principal** | Vista inicial de la aplicación |
+| **Nuevo** | Crea una carpeta, un archivo de texto, un archivo Markdown o sube un archivo |
+| **Inicio** | Página inicial con carpetas y archivos recientes |
 | **Mi Unidad** | Carpetas y archivos propios, además de carpetas compartidas |
-| **Recientes** | Reservado para una versión futura |
-| **Compartidos** | Reservado para una versión futura |
-| **Papelera** | Elementos eliminados que pueden restaurarse |
+| **Destacados** | Recursos que marcaste como importantes |
+| **Recientes** | Últimos recursos sobre los que realizaste alguna acción |
+| **Compartidos** | Recursos que otros usuarios compartieron directamente contigo |
+| **Papelera** | Elementos eliminados que pueden restaurarse o borrarse definitivamente |
 | **Administración** | Visible solo para administradores |
+
+El administrador conserva el menú normal y además ve el bloque **Administración** con
+**Dashboard**, **Usuarios**, **Reportes** y **Actividad**.
 
 ## 4.2 Barra superior
 
-- **Buscar en Drive**: busca archivos y carpetas por nombre.
+- **Buscar en Drive**: busca archivos y carpetas por nombre. Los resultados se agrupan
+  en **Carpetas** y **Archivos**; al elegir uno se abre directamente.
 - **Avatar**: abre el menú con **Mi perfil** y **Cerrar sesión**.
+
+La búsqueda espera unos instantes después de la última pulsación, no distingue
+mayúsculas y muestra una estrella en los recursos destacados.
 
 ## 4.3 Menú contextual de cada recurso
 
@@ -119,11 +176,37 @@ con el botón derecho sobre la fila para abrir el mismo menú.
 
 Las opciones disponibles dependen de tus permisos:
 
-- **Ver detalles**: disponible para cualquiera con acceso.
-- **Renombrar**: disponible para el propietario y para usuarios con permiso de
-  edición.
-- **Compartir**: solo para el propietario.
-- **Enviar a la papelera**: solo para el propietario.
+| Acción | Cuándo aparece |
+|---|---|
+| **Destacar** / **Quitar de destacados** | Siempre que tengas acceso al recurso |
+| **Ver detalles** | Siempre que tengas acceso al recurso |
+| **Renombrar** | Si eres propietario o tienes permiso de edición |
+| **Mover a…** | Solo si eres propietario |
+| **Compartir** | Solo si eres propietario |
+| **Enviar a la papelera** | Solo si eres propietario |
+
+En **Compartidos** nunca se ofrecen acciones de propietario, aunque el permiso recibido
+sea de edición. En **Papelera** el menú solo muestra **Restaurar** y **Eliminar
+permanentemente**.
+
+## 4.4 Inicio, Recientes y Compartidos
+
+**Inicio** es la página que aparece después de iniciar sesión. Muestra un saludo y dos
+secciones:
+
+- **Carpetas recientes**: las últimas carpetas que creaste o recibiste. El enlace
+  **Ver todas** abre Mi Unidad.
+- **Vistos recientemente**: los últimos archivos que abriste o sobre los que realizaste
+  actividad. El enlace **Explorar** abre Mi Unidad.
+
+**Recientes** reúne hasta 50 recursos únicos con su última acción. Puedes filtrar por
+**Todo**, **Archivos** o **Carpetas**. Si un recurso se envió a la papelera o se eliminó
+definitivamente, deja de aparecer.
+
+**Compartidos** muestra los archivos y carpetas que otros usuarios compartieron
+directamente contigo. Indica quién los compartió, el permiso recibido y la fecha. Los
+recursos heredados dentro de una carpeta compartida se ven al entrar a esa carpeta,
+pero no se listan aquí como comparticiones directas.
 
 # 5. Mi Unidad
 
@@ -165,6 +248,22 @@ Las carpetas aparecen primero y los archivos después. Cada archivo muestra:
 - su nombre;
 - su tamaño en bytes, KB o MB.
 
+Una estrella junto al nombre indica que el recurso está en **Destacados**. Las carpetas
+compartidas contigo muestran la etiqueta **Compartida**.
+
+En la cabecera también están el botón **Subir** y el selector de tipo de archivo.
+
+## 5.4 Filtrar por tipo
+
+Usa el selector **Tipo** para mostrar:
+
+- **Todos**;
+- **TXT**;
+- **Markdown**.
+
+El filtro se aplica a los archivos de la carpeta actual; las carpetas se siguen
+mostrando.
+
 # 6. Crear carpetas y archivos
 
 ## 6.1 Crear una carpeta
@@ -193,6 +292,20 @@ eligas Markdown, se guardará como `informe.md`.
 
 > **Consejo:** no escribas `.md` o `.txt` en el campo de nombre, porque se añadiría
 > otra vez y quedaría algo como `informe.md.md`.
+
+## 6.3 Subir un archivo
+
+1. Entra en la carpeta de destino dentro de **Mi Unidad**.
+2. Pulsa **Subir** en la cabecera o elige **Subir archivo** en el menú **Nuevo**.
+3. Selecciona un archivo `.txt` o `.md` de tu equipo.
+4. El sistema crea el archivo con su contenido y muestra el aviso **Archivo subido**.
+
+Reglas y limitaciones:
+
+- solo se admiten archivos `.txt` y `.md`;
+- el tamaño máximo es de 10 MB;
+- no hay arrastrar y soltar, selección múltiple ni barra de progreso;
+- si inicias la subida desde otra vista, el archivo se crea en la raíz de Mi Unidad.
 
 # 7. Abrir y leer un archivo
 
@@ -258,9 +371,9 @@ cambiar el permiso de alguien que ya aparece en la lista, usa **Ver detalles**.
 
 | Permiso | Qué permite |
 |---|---|
-| **Lectura** | Ver el contenido y descargarlo |
-| **Edición** | Ver, descargar y modificar el contenido o el nombre |
-| **Comentarios** | Acceso de lectura; el módulo de comentarios aún no está incluido |
+| **Lectura** | Ver, descargar y destacar el recurso |
+| **Edición** | Ver, descargar, destacar y modificar el contenido o el nombre |
+| **Comentarios** | Acceso de lectura y destacado; el módulo de comentarios aún no está incluido |
 
 Aclaraciones importantes:
 
@@ -279,6 +392,17 @@ corresponde, el origen del permiso (por ejemplo, herencia desde una carpeta).
 Si eres el propietario, cada acceso directo incluye un selector para cambiar el nivel
 de permiso sin salir de los detalles y un botón para retirarlo. Los accesos heredados
 se cambian desde la carpeta de origen.
+
+## 9.4 Destacar un recurso
+
+1. Abre el menú **⋮** del archivo o carpeta.
+2. Elige **Destacar**.
+3. Para quitarlo, abre el mismo menú y elige **Quitar de destacados**.
+
+El destacado es personal: no cambia la propiedad ni los permisos de otras personas.
+Los recursos marcados aparecen en **Destacados** y muestran una estrella en Mi Unidad,
+Inicio y la búsqueda. Si un recurso compartido deja de estar accesible, se descarta de
+tu lista de destacados.
 
 # 10. Renombrar y ver detalles
 
@@ -304,6 +428,21 @@ La opción **Ver detalles** muestra:
 - fecha de creación y de última modificación;
 - personas con acceso y su nivel de permiso;
 - actividad reciente del recurso, con usuario, acción y fecha.
+
+## 10.3 Mover un recurso
+
+1. Abre el menú **⋮**.
+2. Elige **Mover a…**.
+3. Selecciona la carpeta de destino.
+4. Confirma con **Mover**.
+
+Solo el propietario puede mover. Si mueves una carpeta, también se mueve todo su
+contenido. No puedes mover una carpeta dentro de sí misma ni de una de sus
+subcarpetas. Los destinos de solo lectura aparecen bloqueados.
+
+> **Importante:** si mueves un recurso a una carpeta compartida por otra persona, el
+> recurso pasa a la unidad de esa persona. Si no conservas un permiso directo, dejarás
+> de verlo. El diálogo lo advierte antes de confirmar.
 
 # 11. Buscar en el sistema
 
@@ -350,12 +489,24 @@ cada elemento interno.
 La restauración devuelve el recurso a su ubicación original. Si eliminaste una carpeta
 completa, debes restaurar la carpeta; los elementos internos se recuperan con ella.
 
-## 12.3 Limitaciones
+## 12.3 Eliminar permanentemente
 
-- Solo puedes ver y restaurar recursos propios.
+1. Entra en **Papelera**.
+2. Abre el menú **⋮** del recurso.
+3. Elige **Eliminar permanentemente**.
+4. Lee la advertencia y confirma.
+
+La acción no se puede deshacer. Si el recurso es una carpeta, se eliminan también todos
+sus archivos y subcarpetas. Solo puedes eliminar permanentemente la raíz de un envío;
+si un archivo se envió a la papelera junto con su carpeta, primero debes eliminar la
+carpeta.
+
+## 12.4 Limitaciones
+
+- Solo puedes ver, restaurar o eliminar permanentemente recursos propios.
 - No se puede restaurar un recurso si su carpeta contenedora sigue en la papelera.
-- En esta versión no hay una opción de borrado permanente desde la interfaz. Los
-  elementos permanecen en la papelera hasta que se implemente ese flujo.
+- No existe un botón para vaciar toda la papelera ni selección múltiple.
+- Restaurar no pide confirmación; eliminar permanentemente sí.
 
 # 13. Mi perfil
 
@@ -433,20 +584,33 @@ Reglas de seguridad:
 
 ![Reportes globales](assets/12-admin-reportes.png)
 
-*Figura 12. Reportes de archivos y almacenamiento.*
+*Figura 12. Reportes de archivos, usuarios, compartición y actividad.*
 
 Los reportes se organizan en cuatro pestañas:
 
 | Pestaña | Contenido |
 |---|---|
-| **Archivos** | Distribución por tipo, archivos por rango de fechas y archivos con más operaciones |
+| **Archivos** | Distribución por tipo, archivos por rango, archivos con más operaciones, archivos nunca compartidos y carpetas con más archivos |
 | **Usuarios** | Top de usuarios por archivos y usuarios con más recursos compartidos |
-| **Compartición** | Archivos más compartidos y detalle por usuario |
+| **Compartición** | Archivos con más acceso efectivo y detalle por usuario |
 | **Actividad** | Operaciones globales por tipo y por período (día, mes o año) |
 
-En **Archivos por rango** puedes elegir una fecha **Desde** y otra **Hasta**, pulsar
-**Buscar** y limpiar el filtro con **Limpiar**. En **Detalle por usuario** se muestran
-los recursos que esa persona compartió y los que recibió.
+Detalles de la pestaña **Archivos**:
+
+- **Archivos por rango** permite elegir **Desde** y **Hasta**, pulsar **Buscar** y
+  limpiar el filtro con **Limpiar**. La tabla se pagina.
+- **Archivos con más operaciones** es histórico: incluye archivos activos, en papelera
+  y eliminados definitivamente.
+- **Archivos nunca compartidos** muestra archivos activos sin compartición directa ni
+  heredada.
+- **Carpetas con más archivos** muestra el total del subárbol y el conteo directo.
+
+En **Usuarios**, **Personas alcanzadas** cuenta usuarios únicos con acceso directo o
+heredado, sin repetirlos. En **Compartición**, **Archivos con más acceso efectivo**
+también incluye permisos heredados; **Detalle por usuario** muestra solo permisos
+directos vigentes, separados en compartidos y recibidos.
+
+En **Actividad**, **Operaciones por período** permite agrupar por día, mes o año.
 
 ## 14.4 Actividad del sistema
 
@@ -465,8 +629,9 @@ La tabla muestra fecha, usuario, acción, recurso y un icono de información con
 detalles de la operación. Los resultados se pueden paginar.
 
 Las acciones registradas incluyen creación, renombrado, movimiento, edición de
-contenido, compartición, retiro de permisos, envío a papelera, restauración, inicio de
-sesión, registro, desactivación y reactivación.
+contenido, apertura de archivos, compartición, retiro de permisos, envío a papelera,
+restauración, eliminación permanente, inicio de sesión, registro, actualización de
+datos, desactivación y reactivación.
 
 # 15. Preguntas frecuentes
 
@@ -488,10 +653,11 @@ CORS.
 Solo aparece con permiso de **edición** o si eres el propietario. Con permiso de
 **lectura** o **comentarios** el archivo es de solo lectura.
 
-## No puedo compartir ni eliminar
+## No puedo compartir, mover ni eliminar
 
 Esas acciones son exclusivas del propietario. Un permiso de edición permite modificar
-el contenido y el nombre, pero no compartir ni enviar a la papelera.
+el contenido y el nombre, pero no compartir, mover, enviar a la papelera ni eliminar
+permanentemente.
 
 ## Ya existe una carpeta o archivo con ese nombre
 
@@ -500,8 +666,9 @@ Cambia el nombre o mueve el recurso a otra carpeta.
 
 ## El archivo es demasiado grande
 
-El contenido máximo es de 10 millones de caracteres y la petición HTTP tiene un límite
-de 16 MB. Divide el documento o reduce su tamaño.
+Al subir, el límite es de 10 MB por archivo. Al crear o editar contenido, el máximo es
+de 10 millones de caracteres y la petición HTTP tiene un límite de 16 MB. Divide el
+documento o reduce su tamaño.
 
 ## ¿Puedo usar comentarios?
 
@@ -510,18 +677,32 @@ de lectura. Todavía no hay un panel para publicar comentarios.
 
 ## ¿Cómo borro definitivamente un elemento?
 
-En esta versión no hay borrado permanente desde la interfaz. Puedes restaurar el
-elemento o dejarlo en la papelera.
+Abre **Papelera**, usa el menú **⋮** del recurso y elige **Eliminar permanentemente**.
+La acción no se puede deshacer y, si es una carpeta, elimina todo su contenido. Solo se
+puede eliminar la raíz de un envío a la papelera.
 
 ## ¿Dónde están Recientes y Compartidos?
 
-Son entradas reservadas para una versión futura. Por ahora puedes encontrar recursos
-compartidos desde **Mi Unidad**, la búsqueda o los reportes del administrador.
+**Recientes** muestra los últimos recursos sobre los que actuaste. **Compartidos**
+reúne los archivos y carpetas que otros usuarios compartieron directamente contigo.
+Ambas vistas están disponibles en la barra lateral.
 
 ## ¿Puedo mover archivos o carpetas?
 
-La API permite mover recursos, pero la interfaz actual no expone esa acción en el menú
-contextual. Está prevista para una versión posterior.
+Sí. El propietario puede usar **Mover a…** en el menú contextual. Si mueves un recurso
+a una carpeta compartida por otra persona, el recurso pasa a la unidad de esa persona y
+puedes perder el acceso. No puedes mover una carpeta dentro de sí misma ni de una
+subcarpeta.
+
+## ¿Puedo subir varios archivos a la vez?
+
+No. La carga es de un archivo por vez, solo `.txt` o `.md`, con un máximo de 10 MB.
+Tampoco hay arrastrar y soltar ni barra de progreso.
+
+## ¿Cómo quito un recurso de Destacados?
+
+Abre su menú **⋮** y elige **Quitar de destacados**. La marca es personal y no afecta a
+otros usuarios.
 
 # 16. Glosario
 
@@ -533,7 +714,11 @@ contextual. Está prevista para una versión posterior.
 | **Propietario** | Usuario dueño de un archivo o carpeta |
 | **Permiso** | Nivel de acceso concedido a otro usuario |
 | **Herencia** | Permiso de una carpeta que se aplica a su contenido |
+| **Compartido directo** | Recurso compartido explícitamente con un usuario |
+| **Destacado** | Marca personal para tener un recurso a mano |
+| **Reciente** | Última acción registrada sobre un recurso |
 | **Papelera** | Espacio temporal para recursos eliminados |
+| **Raíz de papelera** | Recurso que originó un envío en cascada a la papelera |
 | **Markdown** | Formato de texto con marcas para títulos, listas y código |
 | **JWT** | Mecanismo de sesión usado por la aplicación |
 

@@ -137,7 +137,7 @@ mi-drive/
 │   └── README.md
 ├── frontend/      # Aplicación Angular
 │   └── README.md
-├── docs/          # Manuales en Markdown, capturas y PDF
+├── docs/          # Manuales, capturas, PDF, SVG y fuente drawio
 └── README.md      # Instalación y presentación general
 ```
 
@@ -147,8 +147,14 @@ mi-drive/
   arquitectura, modelo documental, API, seguridad y operación.
 - [Manual de usuario](./docs/manual-usuario.md) ([PDF](./docs/pdf/manual-usuario.pdf)):
   guía de uso con capturas de la interfaz.
+- [Diagramas UML](./docs/uml/diagramas.drawio): fuente editable; los SVG usados por
+  los manuales también se versionan.
 - [Backend](./backend/README.md): estructura, scripts, variables y rutas de la API.
 - [Frontend](./frontend/README.md): estructura, rutas y convenciones de la aplicación.
+
+Los `.md` descriptivos de UML no se versionan; el archivo drawio y los SVG sí. Las
+capturas, la portada, el logo y los diagramas necesarios para regenerar los manuales
+están incluidos en el repositorio.
 
 Para regenerar los PDF después de editar los manuales:
 
@@ -157,7 +163,8 @@ cd docs/pdf
 node generar.mjs
 ```
 
-Requiere Google Chrome o Chromium y las dependencias del frontend instaladas.
+Requiere Google Chrome o Chromium, `pdftotext` y las dependencias del frontend
+instaladas.
 
 ## Estado
 
