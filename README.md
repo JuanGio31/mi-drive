@@ -206,17 +206,6 @@ node generar.mjs
 Requiere Google Chrome o Chromium, `pdftotext` y las dependencias del frontend
 instaladas.
 
-## Estado
-
-| Componente | Estado |
-|---|---|
-| Backend REST | Implementado |
-| Autenticación, permisos y papelera | Implementado |
-| Frontend principal | Implementado |
-| Panel de administración | Implementado |
-| Rutas Recientes, Destacados y Compartidos | Implementado |
-| Manual técnico y de usuario | Implementado |
-
 ## Autor
 
 **Giovani** — [@JuanGio31](https://github.com/JuanGio31)
