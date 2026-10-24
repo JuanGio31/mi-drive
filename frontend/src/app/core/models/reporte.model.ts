@@ -14,6 +14,20 @@ export interface TopLimiteQuery {
   limite?: number;
 }
 
+/** Query de los endpoints paginados. */
+export interface PaginacionQuery {
+  page?: number;
+  limit?: number;
+}
+
+/** Envelope paginado de archivos. */
+export interface PaginaArchivos<T> {
+  archivos: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 /** Query de los reportes por período. */
 export interface PeriodoQuery extends RangoFechasQuery {
   unidad?: UnidadPeriodo;
@@ -50,13 +64,35 @@ export interface ArchivoPorRangoItem {
   };
 }
 
+/** Estado actual de un archivo dentro del histórico de operaciones. */
+export type EstadoArchivoReporte = 'activo' | 'en_papelera' | 'eliminado_definitivamente';
+
 /** GET /reportes/archivos/mas-operaciones */
 export interface ArchivoMasOperacionesItem {
   recursoId: string;
-  recursoNombre: string;
+  recursoNombre: string | null;
   totalOperaciones: number;
   ultimaOperacion: string;
   acciones: AccionActividad[];
+  estado: EstadoArchivoReporte;
+}
+
+/** GET /reportes/archivos/nunca-compartidos */
+export interface ArchivoNuncaCompartidoItem {
+  id: string;
+  nombre: string;
+  tipo: string;
+  tamaño: number;
+  createdAt: string;
+  propietario: {
+    id: string;
+    nombre: string;
+    correo: string;
+  };
+  carpeta: {
+    id: string;
+    nombre: string;
+  } | null;
 }
 
 // ============ Usuarios ============
@@ -95,6 +131,19 @@ export interface ArchivoMasCompartidoItem {
     id: string;
     nombre: string;
   };
+}
+
+/** GET /reportes/carpetas/mas-archivos */
+export interface CarpetaMasArchivosItem {
+  carpetaId: string;
+  nombre: string;
+  propietario: {
+    id: string;
+    nombre: string;
+    correo: string;
+  };
+  archivosDirectos: number;
+  archivosTotales: number;
 }
 
 /** Ítem de recurso compartido por un usuario. */

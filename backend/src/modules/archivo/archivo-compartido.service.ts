@@ -12,6 +12,7 @@ import {
     TipoRecurso,
 } from '../../shared/types/enums';
 
+/** Gestiona las comparticiones directas de archivos y su auditoría. */
 export class ArchivoCompartidosService {
     constructor(
         private readonly archivoRepository: IArchivoRepository,
@@ -75,6 +76,10 @@ export class ArchivoCompartidosService {
         return actualizado;
     }
 
+    /**
+     * Revoca el acceso directo de un usuario. Solo el propietario puede
+     * hacerlo y la acción queda registrada en la actividad.
+     */
     async quitar(
         id: string,
         usuarioDestinoId: string,
@@ -103,6 +108,7 @@ export class ArchivoCompartidosService {
         return actualizado;
     }
 
+    /** Construye la entrada de compartición con usuario, permiso y fecha. */
     private construirCompartido(dto: CompartirArchivoDTO): ICompartidoArchivo {
         return {
             usuario: new Types.ObjectId(dto.usuarioId),

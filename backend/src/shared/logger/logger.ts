@@ -105,6 +105,7 @@ export const flushLogger = (): Promise<void> =>
     new Promise((resolveFlush) => {
         let finalizado = false;
         let temporizador: NodeJS.Timeout;
+        /** Resuelve la promesa una sola vez y cancela el timeout de respaldo. */
         const finalizar = (): void => {
             if (finalizado) return;
             finalizado = true;

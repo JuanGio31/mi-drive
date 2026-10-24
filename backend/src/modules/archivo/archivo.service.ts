@@ -26,6 +26,10 @@ export type ArchivoConPermiso = IArchivo & {
     miPermiso: NivelPermiso | null;
 };
 
+/**
+ * Servicio de archivos. Centraliza creación, consulta, edición y movimiento,
+ * valida permisos efectivos y registra cada operación en la actividad.
+ */
 export class ArchivoService {
     constructor(
         private readonly archivoRepository: IArchivoRepository,
@@ -34,6 +38,11 @@ export class ArchivoService {
         private readonly actividadService: ActividadService,
     ) {}
 
+    /**
+     * Crea un archivo calculando su tamaño en UTF-8. Si se indica carpeta
+     * padre, hereda el propietario del árbol; de lo contrario pertenece al
+     * usuario. Valida nombre único y registra la creación.
+     */
     async crear(dto: CrearArchivoDTO, usuarioId: string): Promise<IArchivo> {
         const carpetaPadre = dto.carpetaPadre ?? null;
 
@@ -120,6 +129,7 @@ export class ArchivoService {
         );
     }
 
+    /** Lista los archivos compartidos directamente con el usuario. */
     async listarCompartidos(usuarioId: string): Promise<IArchivo[]> {
         return this.archivoRepository.listarCompartidosCon(usuarioId);
     }
@@ -129,9 +139,8 @@ export class ArchivoService {
      * tiene permiso de ver (por ejemplo, si le revocaron una compartición).
      */
     async listarDestacados(usuarioId: string): Promise<ArchivoConPermiso[]> {
-        const archivos = await this.archivoRepository.listarDestacados(
-            usuarioId,
-        );
+        const archivos =
+            await this.archivoRepository.listarDestacados(usuarioId);
         if (archivos.length === 0) return [];
 
         const permisos = await this.permisosService.obtenerPermiso(
@@ -148,6 +157,7 @@ export class ArchivoService {
         return resultado;
     }
 
+    /** Lista solo las raíces de archivos enviados a la papelera del usuario. */
     async listarPapelera(usuarioId: string): Promise<IArchivo[]> {
         return this.archivoRepository.listarPapelera(usuarioId);
     }
@@ -191,6 +201,10 @@ export class ArchivoService {
         );
     }
 
+    /**
+     * Actualiza el contenido de un archivo con permiso de edición, recalcula
+     * su tamaño y registra tamaños anterior y nuevo en la actividad.
+     */
     async actualizarContenido(
         id: string,
         dto: ActualizarContenidoDTO,
@@ -223,6 +237,10 @@ export class ArchivoService {
         return actualizado;
     }
 
+    /**
+     * Marca o desmarca un archivo como destacado para el usuario. Basta con
+     * tener acceso de lectura; el destacado es personal por usuario.
+     */
     async destacar(
         id: string,
         dto: DestacarArchivoDTO,
@@ -239,6 +257,10 @@ export class ArchivoService {
         return { destacado: dto.destacado };
     }
 
+    /**
+     * Renombra un archivo con permiso de edición. Valida que el nuevo nombre
+     * no colisione en la misma ubicación y registra el nombre anterior.
+     */
     async renombrar(
         id: string,
         dto: RenombrarArchivoDTO,
@@ -357,6 +379,7 @@ export class ArchivoService {
         } as unknown as ArchivoConPermiso;
     }
 
+    /** Registra una operación sobre el archivo en el historial de actividad. */
     private async registrarActividad(
         usuarioId: string,
         accion: AccionActividad,

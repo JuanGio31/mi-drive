@@ -115,11 +115,43 @@
                 </tbody>
               </table>
             </div>
+            @if (totalArchivosRango() > 0) {
+              <div class="paginacion">
+                <span>
+                  Mostrando {{ rangoInicio() }}–{{ rangoFin() }} de
+                  {{ totalArchivosRango() }}
+                </span>
+                <div class="paginacion-controles">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Página anterior"
+                    [disabled]="paginaRango() <= 1"
+                    (click)="paginaRangoAnterior()"
+                  >
+                    <mat-icon>chevron_left</mat-icon>
+                  </button>
+                  <span>Página {{ paginaRango() }} de {{ totalPaginasRango() }}</span>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Página siguiente"
+                    [disabled]="paginaRango() >= totalPaginasRango()"
+                    (click)="paginaRangoSiguiente()"
+                  >
+                    <mat-icon>chevron_right</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
           }
         </section>
 
         <section class="tarjeta">
           <h2><mat-icon>local_fire_department</mat-icon>Archivos con más operaciones</h2>
+          <p class="nota-tarjeta">
+            Histórico de operaciones; incluye archivos en papelera o eliminados definitivamente.
+          </p>
 
           @if (masOperaciones().length === 0) {
             <p class="vacio-texto">Sin operaciones registradas.</p>
@@ -132,6 +164,7 @@
                     <th>Operaciones</th>
                     <th>Última</th>
                     <th>Acciones</th>
+                    <th>Estado</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -145,6 +178,125 @@
                           <span class="chip-mini">{{ etiquetaAccion(accion) }}</span>
                         }
                       </td>
+                      <td>
+                        <span [class]="'estado estado-' + archivo.estado">
+                          {{ etiquetaEstadoArchivo(archivo.estado) }}
+                        </span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>lock</mat-icon>Archivos nunca compartidos</h2>
+          <p class="nota-tarjeta">
+            Archivos activos sin compartición directa ni en ninguna carpeta contenedora.
+          </p>
+
+          @if (nuncaCompartidos().length === 0) {
+            <p class="vacio-texto">Todos los archivos activos tienen acceso compartido.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Archivo</th>
+                    <th>Tipo</th>
+                    <th>Tamaño</th>
+                    <th>Carpeta</th>
+                    <th>Propietario</th>
+                    <th>Creado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (archivo of nuncaCompartidos(); track archivo.id) {
+                    <tr>
+                      <td>{{ archivo.nombre }}</td>
+                      <td>{{ archivo.tipo }}</td>
+                      <td>{{ formatearTamanio(tamano(archivo)) }}</td>
+                      <td>{{ archivo.carpeta?.nombre ?? 'Raíz' }}</td>
+                      <td>
+                        <span class="doble-linea">
+                          <span>{{ archivo.propietario.nombre }}</span>
+                          <small>{{ archivo.propietario.correo }}</small>
+                        </span>
+                      </td>
+                      <td>{{ formatearFecha(archivo.createdAt) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (totalNuncaCompartidos() > 0) {
+              <div class="paginacion">
+                <span>
+                  Mostrando {{ nuncaCompartidosInicio() }}–{{ nuncaCompartidosFin() }} de
+                  {{ totalNuncaCompartidos() }}
+                </span>
+                <div class="paginacion-controles">
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Página anterior"
+                    [disabled]="paginaNuncaCompartidos() <= 1"
+                    (click)="paginaNuncaCompartidosAnterior()"
+                  >
+                    <mat-icon>chevron_left</mat-icon>
+                  </button>
+                  <span>
+                    Página {{ paginaNuncaCompartidos() }} de
+                    {{ totalPaginasNuncaCompartidos() }}
+                  </span>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    aria-label="Página siguiente"
+                    [disabled]="paginaNuncaCompartidos() >= totalPaginasNuncaCompartidos()"
+                    (click)="paginaNuncaCompartidosSiguiente()"
+                  >
+                    <mat-icon>chevron_right</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          }
+        </section>
+
+        <section class="tarjeta">
+          <h2><mat-icon>folder</mat-icon>Carpetas con más archivos</h2>
+          <p class="nota-tarjeta">
+            El total incluye archivos de subcarpetas; se muestra también el conteo directo.
+          </p>
+
+          @if (carpetasMasArchivos().length === 0) {
+            <p class="vacio-texto">Sin carpetas registradas.</p>
+          } @else {
+            <div class="tabla-scroll">
+              <table class="tabla-simple">
+                <thead>
+                  <tr>
+                    <th>Carpeta</th>
+                    <th>Propietario</th>
+                    <th>Archivos directos</th>
+                    <th>Archivos totales</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (carpeta of carpetasMasArchivos(); track carpeta.carpetaId) {
+                    <tr>
+                      <td>{{ carpeta.nombre }}</td>
+                      <td>
+                        <span class="doble-linea">
+                          <span>{{ carpeta.propietario.nombre }}</span>
+                          <small>{{ carpeta.propietario.correo }}</small>
+                        </span>
+                      </td>
+                      <td>{{ carpeta.archivosDirectos }}</td>
+                      <td>{{ carpeta.archivosTotales }}</td>
                     </tr>
                   }
                 </tbody>
@@ -196,6 +348,9 @@
 
         <section class="tarjeta">
           <h2><mat-icon>share</mat-icon>Usuarios con más compartidos</h2>
+          <p class="nota-tarjeta">
+            Solo comparticiones directas y permisos vigentes; las personas alcanzadas no se repiten.
+          </p>
 
           @if (usuariosCompartidos().length === 0) {
             <p class="vacio-texto">Sin comparticiones registradas.</p>
@@ -238,7 +393,11 @@
     <mat-tab label="Compartición">
       <div class="contenido-tab">
         <section class="tarjeta">
-          <h2><mat-icon>trending_up</mat-icon>Archivos más compartidos</h2>
+          <h2><mat-icon>trending_up</mat-icon>Archivos con más acceso efectivo</h2>
+          <p class="nota-tarjeta">
+            Incluye comparticiones directas y heredadas de carpetas; cada usuario cuenta una vez y
+            se excluye al propietario.
+          </p>
 
           @if (archivosCompartidos().length === 0) {
             <p class="vacio-texto">Sin archivos compartidos.</p>
@@ -270,6 +429,9 @@
 
         <section class="tarjeta">
           <h2><mat-icon>person_search</mat-icon>Detalle por usuario</h2>
+          <p class="nota-tarjeta">
+            Compartidos y recibidos muestran solo permisos directos vigentes.
+          </p>
 
           <mat-form-field appearance="outline" class="selector-usuario">
             <mat-label>Usuario</mat-label>
@@ -291,7 +453,7 @@
           } @else {
             <div class="columnas-reporte">
               <div>
-                <h3>Compartidos</h3>
+                <h3>Compartidos directamente</h3>
                 @if (compartidosUsuario().length === 0) {
                   <p class="vacio-texto">No ha compartido recursos.</p>
                 } @else {
@@ -317,9 +479,9 @@
               </div>
 
               <div>
-                <h3>Recibidos</h3>
+                <h3>Recibidos directamente</h3>
                 @if (recibidosUsuario().length === 0) {
-                  <p class="vacio-texto">No ha recibido recursos.</p>
+                  <p class="vacio-texto">No ha recibido recursos directamente.</p>
                 } @else {
                   <table class="tabla-simple">
                     <thead>
@@ -379,10 +541,7 @@
 
           <mat-form-field appearance="outline" class="selector-unidad">
             <mat-label>Agrupar por</mat-label>
-            <mat-select
-              [value]="unidad()"
-              (selectionChange)="cambiarUnidad($event.value)"
-            >
+            <mat-select [value]="unidad()" (selectionChange)="cambiarUnidad($event.value)">
               <mat-option value="dia">Día</mat-option>
               <mat-option value="mes">Mes</mat-option>
               <mat-option value="año">Año</mat-option>

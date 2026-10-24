@@ -78,6 +78,46 @@ LOG_MAX_DAYS=14
 LOG_TO_FILE=true
 ```
 
+#### Autenticación de MongoDB (opcional)
+
+La aplicación pasa `MONGO_URI` directamente a Mongoose, por lo que no requiere
+cambios de código para conectarse a una instancia con autenticación. Si MongoDB ya
+tiene un usuario con contraseña, usa un URI como:
+
+```env
+MONGO_URI=mongodb://dms_app:TU_CLAVE@localhost:27017/dms?authSource=admin
+```
+
+Para habilitar la autenticación en una instancia local, crea primero el usuario
+mientras MongoDB aún no exige autorización:
+
+```javascript
+use admin
+db.createUser({
+  user: "dms_app",
+  pwd: passwordPrompt(),
+  roles: [{ role: "readWrite", db: "dms" }]
+})
+```
+
+Después activa la autorización en `mongod.conf` y reinicia el servicio:
+
+```yaml
+security:
+  authorization: enabled
+```
+
+Notas:
+
+- Usa `authSource=admin` si el usuario se creó en `admin`; si se creó dentro de
+  `dms`, usa `authSource=dms` o elimina el parámetro.
+- Codifica los caracteres especiales de la contraseña para URL: `@` → `%40`,
+  `:` → `%3A`, `/` → `%2F`, etc.
+- `npm run seed` usa el mismo `MONGO_URI`, así que funciona con las mismas
+  credenciales.
+- Para MongoDB Atlas, usa el URI `mongodb+srv://...` que proporciona la plataforma.
+- Las credenciales reales solo deben ir en `backend/.env`, que está excluido de Git.
+
 Inicializa la base de datos y arranca la API:
 
 ```bash
@@ -179,7 +219,7 @@ instaladas.
 
 ## Autor
 
-**Giovan** — [@JuanGio31](https://github.com/JuanGio31)
+**Giovani** — [@JuanGio31](https://github.com/JuanGio31)
 
 Proyecto académico — Manejo e Implementación de Archivos — CUNOC — 2026.
 

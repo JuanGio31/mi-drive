@@ -72,11 +72,14 @@ export interface IArchivoRepository {
     ): Promise<number>;
 }
 
+/** Implementación en MongoDB del repositorio de archivos. */
 export class MongoArchivoRepository implements IArchivoRepository {
+    /** Inserta un nuevo archivo en la colección. */
     async crear(data: Partial<IArchivo>): Promise<IArchivo> {
         return ArchivoModel.create(data);
     }
 
+    /** Busca un archivo por su ID sin validar permisos ni excluir papelera. */
     async buscarPorId(id: string): Promise<IArchivo | null> {
         return ArchivoModel.findById(id).exec();
     }
@@ -144,6 +147,10 @@ export class MongoArchivoRepository implements IArchivoRepository {
             .exec();
     }
 
+    /**
+     * Lista los archivos activos compartidos directamente con el usuario,
+     * ordenados por última actualización y sin cargar el contenido.
+     */
     async listarCompartidosCon(usuarioId: string): Promise<IArchivo[]> {
         return ArchivoModel.find({
             'compartidoCon.usuario': new Types.ObjectId(usuarioId),
@@ -219,6 +226,7 @@ export class MongoArchivoRepository implements IArchivoRepository {
             .exec();
     }
 
+    /** Actualiza parcialmente un archivo y devuelve el documento resultante. */
     async actualizar(
         id: string,
         data: Partial<IArchivo>,
@@ -229,6 +237,10 @@ export class MongoArchivoRepository implements IArchivoRepository {
         }).exec();
     }
 
+    /**
+     * Agrega o quita al usuario de `destacadoPor` sin modificar `updatedAt`,
+     * para que marcar un archivo no altere su orden por actividad.
+     */
     async actualizarDestacado(
         id: string,
         usuarioId: string,
@@ -245,6 +257,10 @@ export class MongoArchivoRepository implements IArchivoRepository {
         }).exec();
     }
 
+    /**
+     * Comprueba si ya existe un archivo activo con el mismo nombre en la
+     * ubicación. `excluirId` permite ignorar el propio archivo al renombrar.
+     */
     async existeArchivoConNombre(
         propietarioId: string,
         carpetaPadre: string | null,
@@ -268,6 +284,7 @@ export class MongoArchivoRepository implements IArchivoRepository {
         return existe !== null;
     }
 
+    /** Agrega un usuario a la lista de compartidos del archivo. */
     async agregarCompartido(
         archivoId: string,
         compartido: ICompartidoArchivo,
@@ -281,6 +298,7 @@ export class MongoArchivoRepository implements IArchivoRepository {
         ).exec();
     }
 
+    /** Quita a un usuario de la lista de compartidos del archivo. */
     async quitarCompartido(
         archivoId: string,
         usuarioId: string,
@@ -296,6 +314,7 @@ export class MongoArchivoRepository implements IArchivoRepository {
         ).exec();
     }
 
+    /** Cambia el permiso de un usuario ya presente en `compartidoCon`. */
     async actualizarPermiso(
         archivoId: string,
         usuarioId: string,
@@ -397,6 +416,7 @@ export class MongoArchivoRepository implements IArchivoRepository {
         ).exec();
     }
 
+    /** Elimina definitivamente un archivo de la base de datos. */
     async eliminarPermanente(archivoId: string): Promise<void> {
         await ArchivoModel.findByIdAndDelete(archivoId).exec();
     }

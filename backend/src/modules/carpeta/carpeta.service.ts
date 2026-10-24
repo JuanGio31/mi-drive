@@ -27,6 +27,10 @@ export type CarpetaConPermiso = ICarpeta & {
     miPermiso: NivelPermiso | null;
 };
 
+/**
+ * Servicio de carpetas. Administra el árbol, resuelve permisos heredados y
+ * mantiene actualizado en bloque el propietario de los subárboles movidos.
+ */
 export class CarpetaService {
     constructor(
         private readonly carpetaRepository: ICarpetaRepository,
@@ -147,9 +151,8 @@ export class CarpetaService {
      * tiene permiso efectivo de ver, incluyendo permisos heredados.
      */
     async listarDestacadas(usuarioId: string): Promise<CarpetaConPermiso[]> {
-        const carpetas = await this.carpetaRepository.listarDestacadas(
-            usuarioId,
-        );
+        const carpetas =
+            await this.carpetaRepository.listarDestacadas(usuarioId);
         if (carpetas.length === 0) return [];
 
         const cache: CachePermisos = new Map();
@@ -196,6 +199,10 @@ export class CarpetaService {
         return this.conPermiso(carpeta, permiso);
     }
 
+    /**
+     * Marca o desmarca una carpeta como destacada para el usuario. Requiere
+     * acceso de lectura; el destacado es personal por usuario.
+     */
     async destacar(
         id: string,
         dto: DestacarCarpetaDTO,
@@ -212,6 +219,10 @@ export class CarpetaService {
         return { destacado: dto.destacado };
     }
 
+    /**
+     * Renombra una carpeta con permiso de edición. Mantiene la unicidad del
+     * nombre dentro de su ubicación y registra el nombre anterior.
+     */
     async renombrar(
         id: string,
         dto: RenombrarCarpetaDTO,
@@ -328,6 +339,7 @@ export class CarpetaService {
         } as unknown as CarpetaConPermiso;
     }
 
+    /** Registra una operación sobre la carpeta en el historial de actividad. */
     private async registrarActividad(
         usuarioId: string,
         accion: AccionActividad,

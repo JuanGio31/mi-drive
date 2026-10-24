@@ -1,30 +1,38 @@
 import { IReporteRepository } from './reporte.repository';
-import { IUsuarioRepository } from '../usuario/usuario.repository';
 import { HttpError } from '../../shared/errors/http-error';
 import { ActividadService } from '../actividad/actividad.service';
-import { RangoFechasDTO, TopLimiteDTO } from './reporte.dto';
+import { PaginacionDTO, RangoPaginadoDTO, TopLimiteDTO } from './reporte.dto';
 
+/**
+ * Capa de aplicación de los reportes. Valida rangos y delega las consultas de
+ * solo lectura al repositorio; los reportes de actividad se resuelven con el
+ * servicio de actividad para reutilizar sus filtros.
+ */
 export class ReporteService {
     constructor(
         private readonly reporteRepository: IReporteRepository,
-        private readonly usuarioRepository: IUsuarioRepository,
         private readonly actividadService: ActividadService,
     ) {}
 
-    // ============ Dashboard ============
+    // Dashboard
 
-    /** Totales globales del sistema para el dashboard del administrador. */
+    /** Totales globales de archivos, carpetas, usuarios y comparticiones. */
     async resumen() {
         return this.reporteRepository.resumen();
     }
 
-    // ============ Archivos ============
+    // Archivos
 
+    /** Distribución de archivos activos por extensión. */
     async archivosPorTipo() {
         return this.reporteRepository.archivosPorTipo();
     }
 
-    async archivosPorRango(dto: RangoFechasDTO) {
+    /**
+     * Convierte el rango ISO a fechas y rechaza rangos invertidos antes de
+     * consultar. Devuelve el listado paginado de archivos creados.
+     */
+    async archivosPorRango(dto: RangoPaginadoDTO) {
         const desde = dto.desde ? new Date(dto.desde) : undefined;
         const hasta = dto.hasta ? new Date(dto.hasta) : undefined;
 
@@ -34,34 +42,57 @@ export class ReporteService {
             );
         }
 
-        return this.reporteRepository.archivosPorRango(desde, hasta);
+        return this.reporteRepository.archivosPorRango(
+            desde,
+            hasta,
+            dto.page,
+            dto.limit,
+        );
     }
 
+    /** Archivos activos sin permisos directos ni heredados. */
+    async archivosNuncaCompartidos(dto: PaginacionDTO) {
+        return this.reporteRepository.archivosNuncaCompartidos(
+            dto.page,
+            dto.limit,
+        );
+    }
+
+    /** Carpetas con más archivos directos y totales del subárbol. */
+    async carpetasConMasArchivos(dto: TopLimiteDTO) {
+        return this.reporteRepository.carpetasConMasArchivos(dto.limite);
+    }
+
+    /** Ranking histórico de archivos por cantidad de operaciones registradas. */
     async archivosConMasOperaciones(dto: TopLimiteDTO) {
         return this.reporteRepository.archivosConMasOperaciones(dto.limite);
     }
 
-    // ============ Usuarios ============
+    // Usuarios
 
+    /** Usuarios con más archivos activos en propiedad. */
     async topUsuariosConMasArchivos(dto: TopLimiteDTO) {
         return this.reporteRepository.topUsuariosConMasArchivos(dto.limite);
     }
 
+    /** Usuarios con más recursos compartidos directamente. */
     async usuariosConMasCompartidos(dto: TopLimiteDTO) {
         return this.reporteRepository.usuariosConMasCompartidos(dto.limite);
     }
 
-    // ============ Compartición ============
+    // Compartición
 
+    /** Archivos con más usuarios con acceso efectivo (directo o heredado). */
     async archivosMasCompartidos(dto: TopLimiteDTO) {
         return this.reporteRepository.archivosMasCompartidos(dto.limite);
     }
 
+    /** Recursos compartidos directamente por el usuario indicado. */
     async recursosCompartidosPorUsuario(usuarioId: string) {
         const recursos =
-            (await this.reporteRepository.recursosCompartidosPorUsuario(
+            await this.reporteRepository.recursosCompartidosPorUsuario(
                 usuarioId,
-            )) as { archivos: unknown[]; carpetas: unknown[] };
+            );
 
         return {
             usuarioId,
@@ -69,11 +100,10 @@ export class ReporteService {
         };
     }
 
+    /** Recursos recibidos directamente por el usuario, sin herencia. */
     async recursosRecibidosPorUsuario(usuarioId: string) {
         const recursos =
-            (await this.reporteRepository.recursosRecibidosPorUsuario(
-                usuarioId,
-            )) as { archivos: unknown[]; carpetas: unknown[] };
+            await this.reporteRepository.recursosRecibidosPorUsuario(usuarioId);
 
         return {
             usuarioId,
@@ -81,8 +111,9 @@ export class ReporteService {
         };
     }
 
-    // ============ Actividad (delegado) ============
+    // Actividad (delegado)
 
+    /** Historial del usuario en un rango, limitado a las 200 actividades recientes. */
     async actividadPorUsuarioYRango(
         usuarioId: string,
         desde?: string,
@@ -96,6 +127,7 @@ export class ReporteService {
         });
     }
 
+    /** Conteo de operaciones agrupadas por acción para el usuario o rango dado. */
     async operacionesPorTipo(
         usuarioId?: string,
         desde?: string,
@@ -108,6 +140,7 @@ export class ReporteService {
         });
     }
 
+    /** Conteo de operaciones agrupadas por día, mes o año. */
     async operacionesPorPeriodo(
         unidad: 'dia' | 'mes' | 'año',
         usuarioId?: string,

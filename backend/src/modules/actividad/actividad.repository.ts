@@ -19,16 +19,19 @@ export interface IActividadRepository {
         filtros: FiltrosActividad,
         unidad: 'dia' | 'mes' | 'año',
     ): Promise<{ periodo: string; total: number }[]>;
-    archivosConMasOperaciones(
-        limite: number,
-    ): Promise<{ recursoId: string; recursoNombre: string; total: number }[]>;
 }
 
+/** Implementación en MongoDB del historial de actividad. */
 export class MongoActividadRepository implements IActividadRepository {
+    /** Inserta un registro de actividad en la colección. */
     async crear(data: Partial<IActividad>): Promise<IActividad> {
         return ActividadModel.create(data);
     }
 
+    /**
+     * Lista actividades con filtros y paginación. Ordena de la más reciente a
+     * la más antigua y usa `limit` 50 y `page` 1 por defecto.
+     */
     async listar(filtros: FiltrosActividad): Promise<IActividad[]> {
         const query = this.construirQuery(filtros);
 
@@ -42,15 +45,17 @@ export class MongoActividadRepository implements IActividadRepository {
             .exec();
     }
 
+    /** Cuenta actividades con los mismos filtros que `listar`. */
+    async contar(filtros: FiltrosActividad): Promise<number> {
+        return ActividadModel.countDocuments(
+            this.construirQuery(filtros),
+        ).exec();
+    }
+
     /**
      * Busca las últimas 200 actividades de un recurso. Tipar `recursoTipo`
      * como el enum del modelo evita el desajuste de overloads de Mongoose.
      */
-    /** Cuenta actividades con los mismos filtros que `listar`. */
-    async contar(filtros: FiltrosActividad): Promise<number> {
-        return ActividadModel.countDocuments(this.construirQuery(filtros)).exec();
-    }
-
     async listarPorRecurso(
         recursoTipo: TipoRecurso,
         recursoId: string,
@@ -64,6 +69,7 @@ export class MongoActividadRepository implements IActividadRepository {
             .exec();
     }
 
+    /** Agrupa las actividades filtradas por acción y ordena por total. */
     async contarPorAccion(
         filtros: FiltrosActividad,
     ): Promise<{ accion: string; total: number }[]> {
@@ -77,6 +83,10 @@ export class MongoActividadRepository implements IActividadRepository {
         ]).exec();
     }
 
+    /**
+     * Agrupa las actividades filtradas por día, mes o año (en UTC, según el
+     * formato de MongoDB) y las devuelve ordenadas cronológicamente.
+     */
     async contarPorPeriodo(
         filtros: FiltrosActividad,
         unidad: 'dia' | 'mes' | 'año',
@@ -107,33 +117,9 @@ export class MongoActividadRepository implements IActividadRepository {
         ]).exec();
     }
 
-    async archivosConMasOperaciones(
-        limite: number,
-    ): Promise<{ recursoId: string; recursoNombre: string; total: number }[]> {
-        return ActividadModel.aggregate([
-            { $match: { recursoTipo: 'archivo', recursoId: { $ne: null } } },
-            {
-                $group: {
-                    _id: '$recursoId',
-                    recursoNombre: { $last: '$recursoNombre' },
-                    total: { $sum: 1 },
-                },
-            },
-            { $sort: { total: -1 } },
-            { $limit: limite },
-            {
-                $project: {
-                    _id: 0,
-                    recursoId: { $toString: '$_id' },
-                    recursoNombre: 1,
-                    total: 1,
-                },
-            },
-        ]).exec();
-    }
-
     // metodos privados
 
+    /** Traduce los filtros de la API a un query de MongoDB con ObjectIds. */
     private construirQuery(filtros: FiltrosActividad): Record<string, unknown> {
         const query: Record<string, unknown> = {};
 

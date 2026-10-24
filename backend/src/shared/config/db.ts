@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 import { logger } from '../logger/logger';
 
+/**
+ * Abre la conexión con MongoDB y registra los eventos de error/desconexión.
+ * Si la conexión inicial falla, loguea y propaga el error.
+ */
 export const connectDB = async (uri: string): Promise<void> => {
     try {
         await mongoose.connect(uri);
@@ -19,6 +23,7 @@ export const connectDB = async (uri: string): Promise<void> => {
     }
 };
 
+/** Cierra la conexión activa con MongoDB. */
 export const disconnectDB = async (): Promise<void> => {
     await mongoose.disconnect();
 };

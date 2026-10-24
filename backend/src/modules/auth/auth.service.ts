@@ -8,6 +8,7 @@ import { LoginDTO, RegistroDTO } from './auth.dto';
 import { AccionActividad, Rol, TipoRecurso } from '../../shared/types/enums';
 import { ActividadService } from '../actividad/actividad.service';
 
+/** Resultado de autenticación: token JWT y datos públicos del usuario. */
 export interface LoginResult {
     token: string;
     usuario: {
@@ -18,6 +19,7 @@ export interface LoginResult {
     };
 }
 
+/** Servicio de registro e inicio de sesión con validación de credenciales. */
 export class AuthService {
     constructor(
         private readonly usuarioService: IUsuarioRepository,
@@ -113,6 +115,7 @@ export class AuthService {
         };
     }
 
+    /** Firma un JWT con los datos públicos del usuario y su expiración. */
     private generarToken(usuario: IUsuario): string {
         const payload = {
             id: usuario._id.toString(),
@@ -126,6 +129,7 @@ export class AuthService {
         } as SignOptions);
     }
 
+    /** Registra la acción de autenticación en el historial de actividad. */
     private async registrarActividad(
         usuario: IUsuario,
         accion: AccionActividad,

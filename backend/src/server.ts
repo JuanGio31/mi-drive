@@ -12,6 +12,10 @@ const terminar = async (codigo: number): Promise<void> => {
     process.exit(codigo);
 };
 
+/**
+ * Conecta a MongoDB, levanta el servidor HTTP y registra el apagado graceful
+ * ante SIGINT/SIGTERM. Los errores fatales terminan el proceso.
+ */
 const iniciarServidor = async (): Promise<void> => {
     await connectDB(env.MONGO_URI);
 
@@ -27,6 +31,7 @@ const iniciarServidor = async (): Promise<void> => {
     });
 
     // Apagado graceful (ctrl + c)
+    /** Cierra el servidor y la conexión a Mongo una sola vez por señal. */
     const shutdown = async (signal: string) => {
         if (cerrando) return;
         cerrando = true;

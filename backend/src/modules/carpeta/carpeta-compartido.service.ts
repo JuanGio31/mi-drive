@@ -13,6 +13,7 @@ import {
 } from '../../shared/types/enums';
 import { ActividadService } from '../actividad/actividad.service';
 
+/** Gestiona las comparticiones directas de carpetas y su auditoría. */
 export class CarpetaCompartidosService {
     constructor(
         private readonly carpetaRepository: ICarpetaRepository,
@@ -73,6 +74,10 @@ export class CarpetaCompartidosService {
         return actualizada;
     }
 
+    /**
+     * Revoca el acceso directo de un usuario. Solo el propietario puede
+     * hacerlo y la acción queda registrada en la actividad.
+     */
     async quitar(
         id: string,
         usuarioDestinoId: string,
@@ -101,6 +106,7 @@ export class CarpetaCompartidosService {
         return actualizada;
     }
 
+    /** Construye la entrada de compartición con usuario, permiso y fecha. */
     private construirCompartido(dto: CompartirCarpetaDTO): ICompartidoCon {
         return {
             usuario: new Types.ObjectId(dto.usuarioId),

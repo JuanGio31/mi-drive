@@ -12,10 +12,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import {
   ArchivoMasCompartidoItem,
   ArchivoMasOperacionesItem,
+  ArchivoNuncaCompartidoItem,
   ArchivoPorRangoItem,
   ArchivosPorTipoItem,
+  CarpetaMasArchivosItem,
   ConteoPorAccion,
   ConteoPorPeriodo,
+  EstadoArchivoReporte,
   RecursoCompartidoItem,
   RecursoRecibidoItem,
   TopUsuarioItem,
@@ -27,10 +30,7 @@ import { ReporteService } from '../../../core/services/reporte-service';
 import { UsuarioService } from '../../../core/services/usuario-service';
 import { etiquetaAccion } from '../../../core/utils/acciones';
 import { fechaLocalAIso } from '../../../core/utils/fecha';
-import {
-  formatearFecha,
-  formatearTamanio,
-} from '../../../core/utils/formato';
+import { formatearFecha, formatearTamanio } from '../../../core/utils/formato';
 
 /** Reportes globales del sistema. Ruta: /admin/reportes. */
 @Component({
@@ -58,6 +58,9 @@ export class AdminReportesComponent {
 
   readonly archivosPorTipo = signal<ArchivosPorTipoItem[]>([]);
   readonly archivosRango = signal<ArchivoPorRangoItem[]>([]);
+  readonly totalArchivosRango = signal(0);
+  readonly paginaRango = signal(1);
+  readonly limiteRango = 20;
   readonly masOperaciones = signal<ArchivoMasOperacionesItem[]>([]);
   readonly topUsuarios = signal<TopUsuarioItem[]>([]);
   readonly usuariosCompartidos = signal<UsuarioMasCompartidosItem[]>([]);
@@ -65,6 +68,11 @@ export class AdminReportesComponent {
   readonly usuarios = signal<Usuario[]>([]);
   readonly compartidosUsuario = signal<RecursoCompartidoItem[]>([]);
   readonly recibidosUsuario = signal<RecursoRecibidoItem[]>([]);
+  readonly nuncaCompartidos = signal<ArchivoNuncaCompartidoItem[]>([]);
+  readonly totalNuncaCompartidos = signal(0);
+  readonly paginaNuncaCompartidos = signal(1);
+  readonly limiteNuncaCompartidos = 20;
+  readonly carpetasMasArchivos = signal<CarpetaMasArchivosItem[]>([]);
   readonly actividadPorTipo = signal<ConteoPorAccion[]>([]);
   readonly actividadPorPeriodo = signal<ConteoPorPeriodo[]>([]);
 
@@ -83,10 +91,7 @@ export class AdminReportesComponent {
   );
 
   readonly totalAlmacenamiento = computed(() =>
-    this.archivosPorTipo().reduce(
-      (total, item) => total + item.tamañoTotal,
-      0,
-    ),
+    this.archivosPorTipo().reduce((total, item) => total + item.tamañoTotal, 0),
   );
 
   readonly totalOperacionesTipo = computed(() =>
@@ -97,6 +102,35 @@ export class AdminReportesComponent {
     this.actividadPorPeriodo().reduce((total, item) => total + item.total, 0),
   );
 
+  readonly totalPaginasRango = computed(() =>
+    Math.max(1, Math.ceil(this.totalArchivosRango() / this.limiteRango)),
+  );
+
+  readonly rangoInicio = computed(() =>
+    this.totalArchivosRango() === 0 ? 0 : (this.paginaRango() - 1) * this.limiteRango + 1,
+  );
+
+  readonly rangoFin = computed(() =>
+    Math.min(this.paginaRango() * this.limiteRango, this.totalArchivosRango()),
+  );
+
+  readonly totalPaginasNuncaCompartidos = computed(() =>
+    Math.max(1, Math.ceil(this.totalNuncaCompartidos() / this.limiteNuncaCompartidos)),
+  );
+
+  readonly nuncaCompartidosInicio = computed(() =>
+    this.totalNuncaCompartidos() === 0
+      ? 0
+      : (this.paginaNuncaCompartidos() - 1) * this.limiteNuncaCompartidos + 1,
+  );
+
+  readonly nuncaCompartidosFin = computed(() =>
+    Math.min(
+      this.paginaNuncaCompartidos() * this.limiteNuncaCompartidos,
+      this.totalNuncaCompartidos(),
+    ),
+  );
+
   constructor() {
     this.cargarTodo();
     this.cargarUsuarios();
@@ -104,30 +138,26 @@ export class AdminReportesComponent {
 
   /** Lanza las consultas principales de todas las pestañas. */
   private cargarTodo(): void {
-    this.consultar(
-      this.reporteService.archivosPorTipo(),
-      (datos) => this.archivosPorTipo.set(datos),
+    this.consultar(this.reporteService.archivosPorTipo(), (datos) =>
+      this.archivosPorTipo.set(datos),
     );
-    this.consultar(
-      this.reporteService.archivosPorRango(),
-      (datos) => this.archivosRango.set(datos),
+    this.cargarRango(1);
+    this.consultar(this.reporteService.archivosConMasOperaciones({ limite: 10 }), (datos) =>
+      this.masOperaciones.set(datos),
     );
-    this.consultar(
-      this.reporteService.archivosConMasOperaciones({ limite: 10 }),
-      (datos) => this.masOperaciones.set(datos),
+    this.consultar(this.reporteService.topUsuarios({ limite: 10 }), (datos) =>
+      this.topUsuarios.set(datos),
     );
-    this.consultar(
-      this.reporteService.topUsuarios({ limite: 10 }),
-      (datos) => this.topUsuarios.set(datos),
+    this.consultar(this.reporteService.usuariosMasCompartidos({ limite: 10 }), (datos) =>
+      this.usuariosCompartidos.set(datos),
     );
-    this.consultar(
-      this.reporteService.usuariosMasCompartidos({ limite: 10 }),
-      (datos) => this.usuariosCompartidos.set(datos),
+    this.consultar(this.reporteService.archivosMasCompartidos({ limite: 10 }), (datos) =>
+      this.archivosCompartidos.set(datos),
     );
-    this.consultar(
-      this.reporteService.archivosMasCompartidos({ limite: 10 }),
-      (datos) => this.archivosCompartidos.set(datos),
+    this.consultar(this.reporteService.carpetasMasArchivos({ limite: 10 }), (datos) =>
+      this.carpetasMasArchivos.set(datos),
     );
+    this.cargarNuncaCompartidos(1);
     this.cargarActividad();
   }
 
@@ -139,22 +169,74 @@ export class AdminReportesComponent {
     });
   }
 
-  /** Aplica el rango de fechas al reporte de archivos. */
-  buscarRango(): void {
+  /** Carga una página del reporte de archivos por rango. */
+  private cargarRango(page: number): void {
     this.consultar(
       this.reporteService.archivosPorRango({
         desde: fechaLocalAIso(this.desde()),
         hasta: fechaLocalAIso(this.hasta(), true),
+        page,
+        limit: this.limiteRango,
       }),
-      (datos) => this.archivosRango.set(datos),
+      (datos) => {
+        this.archivosRango.set(datos.archivos);
+        this.totalArchivosRango.set(datos.total);
+        this.paginaRango.set(datos.page);
+      },
     );
+  }
+
+  /** Aplica el rango de fechas al reporte de archivos. */
+  buscarRango(): void {
+    this.cargarRango(1);
   }
 
   /** Limpia el rango de fechas y vuelve a los últimos archivos. */
   limpiarRango(): void {
     this.desde.set('');
     this.hasta.set('');
-    this.buscarRango();
+    this.cargarRango(1);
+  }
+
+  /** Navega a la página anterior del reporte por rango. */
+  paginaRangoAnterior(): void {
+    if (this.paginaRango() > 1) this.cargarRango(this.paginaRango() - 1);
+  }
+
+  /** Navega a la página siguiente del reporte por rango. */
+  paginaRangoSiguiente(): void {
+    if (this.paginaRango() < this.totalPaginasRango()) {
+      this.cargarRango(this.paginaRango() + 1);
+    }
+  }
+
+  /** Carga una página del reporte de archivos nunca compartidos. */
+  private cargarNuncaCompartidos(page: number): void {
+    this.consultar(
+      this.reporteService.archivosNuncaCompartidos({
+        page,
+        limit: this.limiteNuncaCompartidos,
+      }),
+      (datos) => {
+        this.nuncaCompartidos.set(datos.archivos);
+        this.totalNuncaCompartidos.set(datos.total);
+        this.paginaNuncaCompartidos.set(datos.page);
+      },
+    );
+  }
+
+  /** Navega a la página anterior de nunca compartidos. */
+  paginaNuncaCompartidosAnterior(): void {
+    if (this.paginaNuncaCompartidos() > 1) {
+      this.cargarNuncaCompartidos(this.paginaNuncaCompartidos() - 1);
+    }
+  }
+
+  /** Navega a la página siguiente de nunca compartidos. */
+  paginaNuncaCompartidosSiguiente(): void {
+    if (this.paginaNuncaCompartidos() < this.totalPaginasNuncaCompartidos()) {
+      this.cargarNuncaCompartidos(this.paginaNuncaCompartidos() + 1);
+    }
   }
 
   /** Carga los recursos compartidos y recibidos del usuario elegido. */
@@ -165,21 +247,12 @@ export class AdminReportesComponent {
 
     if (!usuarioId) return;
 
-    this.consultar(
-      this.reporteService.recursosCompartidosPorUsuario(usuarioId),
-      (datos) => {
-        this.compartidosUsuario.set([
-          ...datos.archivos,
-          ...datos.carpetas,
-        ]);
-      },
-    );
-    this.consultar(
-      this.reporteService.recursosRecibidosPorUsuario(usuarioId),
-      (datos) => {
-        this.recibidosUsuario.set([...datos.archivos, ...datos.carpetas]);
-      },
-    );
+    this.consultar(this.reporteService.recursosCompartidosPorUsuario(usuarioId), (datos) => {
+      this.compartidosUsuario.set([...datos.archivos, ...datos.carpetas]);
+    });
+    this.consultar(this.reporteService.recursosRecibidosPorUsuario(usuarioId), (datos) => {
+      this.recibidosUsuario.set([...datos.archivos, ...datos.carpetas]);
+    });
   }
 
   /** Cambia la unidad de agrupación y recarga los conteos globales. */
@@ -190,9 +263,8 @@ export class AdminReportesComponent {
 
   /** Carga los conteos globales por acción y por período. */
   private cargarActividad(): void {
-    this.consultar(
-      this.reporteService.operacionesPorTipoGlobal(),
-      (datos) => this.actividadPorTipo.set(datos),
+    this.consultar(this.reporteService.operacionesPorTipoGlobal(), (datos) =>
+      this.actividadPorTipo.set(datos),
     );
     this.consultar(
       this.reporteService.operacionesPorPeriodoGlobal({
@@ -203,10 +275,7 @@ export class AdminReportesComponent {
   }
 
   /** Ejecuta una consulta con contador de carga y manejo de error común. */
-  private consultar<T>(
-    peticion: Observable<T>,
-    aplicar: (datos: T) => void,
-  ): void {
+  private consultar<T>(peticion: Observable<T>, aplicar: (datos: T) => void): void {
     this.solicitudes++;
     this.cargando.set(true);
     this.error.set(null);
@@ -245,14 +314,23 @@ export class AdminReportesComponent {
     return Math.max(2, Math.round((valor / total) * 100));
   }
 
+  /** Etiqueta legible del estado histórico de un archivo. */
+  etiquetaEstadoArchivo(estado: EstadoArchivoReporte): string {
+    switch (estado) {
+      case 'en_papelera':
+        return 'En papelera';
+      case 'eliminado_definitivamente':
+        return 'Eliminado definitivamente';
+      default:
+        return 'Activo';
+    }
+  }
+
   /** Traduce el error HTTP a un mensaje legible. */
   private mensajeError(err: HttpErrorResponse): string {
     if (err.status === 0) {
       return 'No se pudo conectar con el servidor.';
     }
-    return (
-      (err.error as { error?: string })?.error ??
-      'No se pudo cargar el reporte.'
-    );
+    return (err.error as { error?: string })?.error ?? 'No se pudo cargar el reporte.';
   }
 }

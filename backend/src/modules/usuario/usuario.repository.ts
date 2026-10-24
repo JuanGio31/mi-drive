@@ -12,7 +12,9 @@ export interface IUsuarioRepository {
     buscarPorIdConPassword(id: string): Promise<IUsuario | null>;
     listar(filtros: ListarUsuarioQueryDTO): Promise<IUsuario[]>;
     contar(filtros: ListarUsuarioQueryDTO): Promise<number>;
-    directorio(): Promise<Pick<IUsuario, '_id' | 'nombre' | 'correo' | 'rol'>[]>;
+    directorio(): Promise<
+        Pick<IUsuario, '_id' | 'nombre' | 'correo' | 'rol'>[]
+    >;
     actualizar(id: string, data: Partial<IUsuario>): Promise<IUsuario | null>;
     actualizarPassword(
         id: string,
@@ -26,18 +28,25 @@ export interface IUsuarioRepository {
  * Implementacion del repositorio de usuarios
  */
 export class MongoUsuarioRepository implements IUsuarioRepository {
+    /** Inserta un nuevo usuario en la colección. */
     async crear(data: Partial<IUsuario>): Promise<IUsuario> {
         return UsuarioModel.create(data);
     }
 
+    /** Busca un usuario por ID sin cargar el hash de contraseña. */
     async buscarPorId(id: string): Promise<IUsuario | null> {
         return UsuarioModel.findById(id).exec();
     }
 
+    /** Busca un usuario por correo exacto (sin contraseña). */
     async buscarPorCorreo(correo: string): Promise<IUsuario | null> {
         return UsuarioModel.findOne({ correo }).exec();
     }
 
+    /**
+     * Busca por correo normalizado a minúsculas e incluye `passwordHash` para
+     * validar credenciales en el login.
+     */
     async buscarPorCorreoConPassword(correo: string): Promise<IUsuario | null> {
         return UsuarioModel.findOne({ correo: correo.toLowerCase() })
             .select('+passwordHash')
@@ -76,6 +85,7 @@ export class MongoUsuarioRepository implements IUsuarioRepository {
             .exec();
     }
 
+    /** Actualiza parcialmente un usuario y devuelve el documento resultante. */
     async actualizar(
         id: string,
         data: Partial<IUsuario>,
@@ -98,6 +108,7 @@ export class MongoUsuarioRepository implements IUsuarioRepository {
         ).exec();
     }
 
+    /** Desactiva una cuenta (soft delete) manteniendo el documento. */
     async desactivar(id: string): Promise<IUsuario | null> {
         return UsuarioModel.findByIdAndUpdate(
             id,
@@ -110,6 +121,7 @@ export class MongoUsuarioRepository implements IUsuarioRepository {
         ).exec();
     }
 
+    /** Reactiva una cuenta previamente desactivada. */
     async reactivar(id: string): Promise<IUsuario | null> {
         return UsuarioModel.findByIdAndUpdate(
             id,

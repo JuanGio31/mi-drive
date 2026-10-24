@@ -16,9 +16,7 @@ import {
     TipoRecurso,
 } from '../shared/types/enums';
 
-// ============================================================
 // Utilidades
-// ============================================================
 
 /** Genera una fecha aleatoria entre hace N días y ahora */
 const fechaAleatoria = (diasAtras: number): Date => {
@@ -40,9 +38,7 @@ const aleatorio = <T>(arr: readonly T[] | T[]): T => {
 const enteroAleatorio = (min: number, max: number): number =>
     Math.floor(Math.random() * (max - min + 1)) + min;
 
-// ============================================================
 // Datos base
-// ============================================================
 
 const NOMBRES_ARCHIVOS_TXT = [
     'notas-reunion',
@@ -101,10 +97,13 @@ const CONTENIDOS_MD = [
     '# Roadmap\n\n## Q4 2026\n\n- [x] MVP de gestión documental\n- [ ] Integración con almacenamiento externo\n- [ ] Notificaciones en tiempo real\n\n## Q1 2027\n\n- Análisis de documentos con IA\n- Firma electrónica',
 ];
 
-// ============================================================
 // Seed principal
-// ============================================================
 
+/**
+ * Recrea las colecciones con datos de demostración. Es destructivo: borra
+ * usuarios, carpetas, archivos y actividades antes de insertar, y termina el
+ * proceso al finalizar.
+ */
 const seed = async (): Promise<void> => {
     await connectDB(env.MONGO_URI);
 

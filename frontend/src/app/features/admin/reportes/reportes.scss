@@ -135,6 +135,52 @@
   font-size: 0.82rem;
 }
 
+.nota-tarjeta {
+  margin: 0 0 14px;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+/* Paginación */
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.paginacion-controles {
+  display: flex;
+  align-items: center;
+}
+
+/* Estados del histórico */
+
+.estado {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.estado-activo {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.estado-en_papelera {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.estado-eliminado_definitivamente {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
 /* Filtros */
 
 .filtros-rango {

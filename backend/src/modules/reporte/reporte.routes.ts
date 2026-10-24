@@ -8,7 +8,8 @@ import {
     validateParams,
 } from '../../shared/middlewares/validate.middleware';
 import {
-    RangoFechasSchema,
+    PaginacionSchema,
+    RangoPaginadoSchema,
     TopLimiteSchema,
     UsuarioReporteSchema,
 } from './reporte.dto';
@@ -25,7 +26,7 @@ const PeriodoQuerySchema = z.object({
 
 router.use(authenticate);
 
-// ============ Archivos y almacenamiento ============
+// Archivos y almacenamiento
 router.get(
     '/archivos/por-tipo',
     authorize(Rol.Administrador),
@@ -34,8 +35,14 @@ router.get(
 router.get(
     '/archivos/por-rango',
     authorize(Rol.Administrador),
-    validateQuery(RangoFechasSchema),
+    validateQuery(RangoPaginadoSchema),
     reporteController.archivosPorRango,
+);
+router.get(
+    '/archivos/nunca-compartidos',
+    authorize(Rol.Administrador),
+    validateQuery(PaginacionSchema),
+    reporteController.archivosNuncaCompartidos,
 );
 router.get(
     '/archivos/mas-operaciones',
@@ -43,8 +50,14 @@ router.get(
     validateQuery(TopLimiteSchema),
     reporteController.archivosConMasOperaciones,
 );
+router.get(
+    '/carpetas/mas-archivos',
+    authorize(Rol.Administrador),
+    validateQuery(TopLimiteSchema),
+    reporteController.carpetasMasArchivos,
+);
 
-// ============ Usuarios ============
+// Usuarios
 router.get(
     '/usuarios/top-archivos',
     authorize(Rol.Administrador),
@@ -58,7 +71,7 @@ router.get(
     reporteController.usuariosMasCompartidos,
 );
 
-// ============ Compartición ============
+// Compartición
 router.get(
     '/compartidos/mas-compartidos',
     authorize(Rol.Administrador),
@@ -76,7 +89,7 @@ router.get(
     reporteController.recursosRecibidosPorUsuario,
 );
 
-// ============ Actividad (del usuario autenticado) ============
+// Actividad (del usuario autenticado)
 router.get(
     '/actividad/mi-rango',
     validateQuery(PeriodoQuerySchema),
@@ -93,7 +106,7 @@ router.get(
     reporteController.operacionesPorPeriodo,
 );
 
-// ============ Endpoints globales (solo admin) ============
+// Endpoints globales (solo admin)
 router.get(
     '/admin/resumen',
     authorize(Rol.Administrador),

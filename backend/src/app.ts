@@ -10,7 +10,7 @@ import usuarioRoutes from './modules/usuario/usuario.routes';
 import carpetaRoutes from './modules/carpeta/carpeta.routes';
 import archivoRoutes from './modules/archivo/archivo.routes';
 import actividadRoutes from './modules/actividad/actividad.routes';
-import reporteRoutes from './modules/reporte/repotte.routes';
+import reporteRoutes from './modules/reporte/reporte.routes';
 import busquedaRoutes from './modules/busqueda/busqueda.routes';
 import { env } from './shared/config/env';
 
@@ -30,6 +30,10 @@ const corsOptions: CorsOptions = {
     maxAge: 3600, // cachear preflight durante 1 hora
 };
 
+/**
+ * Construye la aplicación Express con middlewares globales, health check,
+ * rutas de la API y manejadores de 404/errores. No inicia el servidor.
+ */
 export const createApp = (): Application => {
     const app = express();
 

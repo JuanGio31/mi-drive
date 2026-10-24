@@ -279,6 +279,10 @@ export class MongoCarpetaRepository implements ICarpetaRepository {
         }).exec();
     }
 
+    /**
+     * Agrega o quita al usuario de `destacadoPor` sin tocar `updatedAt`, para
+     * que el destacado no altere el orden por actividad de la carpeta.
+     */
     async actualizarDestacado(
         id: string,
         usuarioId: string,

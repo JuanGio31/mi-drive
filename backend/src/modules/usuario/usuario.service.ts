@@ -13,6 +13,10 @@ import {
 } from './usuario.dto';
 import { AccionActividad, Rol, TipoRecurso } from '../../shared/types/enums';
 
+/**
+ * Servicio de usuarios. Aplica las reglas de rol y autoservicio, protege
+ * contraseñas con bcrypt y audita altas, cambios y cambios de estado.
+ */
 export class UsuarioService {
     constructor(
         private readonly usuarioRepository: IUsuarioRepository,
@@ -20,6 +24,10 @@ export class UsuarioService {
         private readonly actividadService: ActividadService,
     ) {}
 
+    /**
+     * Crea un usuario desde el panel de administración. Exige rol admin,
+     * rechaza correos duplicados y guarda el hash de la contraseña.
+     */
     async crear(
         dto: CrearUsuarioDTO,
         usuarioEjecutorId: string,
@@ -83,6 +91,7 @@ export class UsuarioService {
         return this.usuarioRepository.directorio();
     }
 
+    /** Devuelve un usuario propio o cualquiera si el solicitante es admin. */
     async buscarPorId(
         id: string,
         usuarioId: string,

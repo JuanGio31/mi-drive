@@ -6,10 +6,14 @@ import {
   Actividad,
   ArchivoMasCompartidoItem,
   ArchivoMasOperacionesItem,
+  ArchivoNuncaCompartidoItem,
   ArchivoPorRangoItem,
   ArchivosPorTipoItem,
+  CarpetaMasArchivosItem,
   ConteoPorAccion,
   ConteoPorPeriodo,
+  PaginaArchivos,
+  PaginacionQuery,
   PeriodoQuery,
   RangoFechasQuery,
   RecursosCompartidosResponse,
@@ -35,8 +39,23 @@ export class ReporteService {
   }
 
   /** GET /reportes/archivos/por-rango. */
-  archivosPorRango(query: RangoFechasQuery = {}): Observable<ArchivoPorRangoItem[]> {
-    return this.api.get<ArchivoPorRangoItem[]>('reportes/archivos/por-rango', buildParams(query));
+  archivosPorRango(
+    query: RangoFechasQuery & PaginacionQuery = {},
+  ): Observable<PaginaArchivos<ArchivoPorRangoItem>> {
+    return this.api.get<PaginaArchivos<ArchivoPorRangoItem>>(
+      'reportes/archivos/por-rango',
+      buildParams(query),
+    );
+  }
+
+  /** GET /reportes/archivos/nunca-compartidos. */
+  archivosNuncaCompartidos(
+    query: PaginacionQuery = {},
+  ): Observable<PaginaArchivos<ArchivoNuncaCompartidoItem>> {
+    return this.api.get<PaginaArchivos<ArchivoNuncaCompartidoItem>>(
+      'reportes/archivos/nunca-compartidos',
+      buildParams(query),
+    );
   }
 
   /** GET /reportes/archivos/mas-operaciones. */
@@ -72,9 +91,19 @@ export class ReporteService {
     );
   }
 
+  /** GET /reportes/carpetas/mas-archivos. */
+  carpetasMasArchivos(query: TopLimiteQuery = {}): Observable<CarpetaMasArchivosItem[]> {
+    return this.api.get<CarpetaMasArchivosItem[]>(
+      'reportes/carpetas/mas-archivos',
+      buildParams(query),
+    );
+  }
+
   /** GET /reportes/compartidos/por-usuario/:usuarioId. */
   recursosCompartidosPorUsuario(usuarioId: string): Observable<RecursosCompartidosResponse> {
-    return this.api.get<RecursosCompartidosResponse>(`reportes/compartidos/por-usuario/${usuarioId}`);
+    return this.api.get<RecursosCompartidosResponse>(
+      `reportes/compartidos/por-usuario/${usuarioId}`,
+    );
   }
 
   /** GET /reportes/compartidos/recibidos/:usuarioId. */
@@ -113,10 +142,7 @@ export class ReporteService {
 
   /** GET /reportes/admin/actividad/por-tipo → conteo global por acción. */
   operacionesPorTipoGlobal(query: PeriodoQuery = {}): Observable<ConteoPorAccion[]> {
-    return this.api.get<ConteoPorAccion[]>(
-      'reportes/admin/actividad/por-tipo',
-      buildParams(query),
-    );
+    return this.api.get<ConteoPorAccion[]>('reportes/admin/actividad/por-tipo', buildParams(query));
   }
 
   /** GET /reportes/admin/actividad/por-periodo → conteo global por período. */

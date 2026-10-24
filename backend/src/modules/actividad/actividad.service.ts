@@ -20,6 +20,10 @@ export interface RegistrarActividadParams {
     metadata?: Record<string, unknown>;
 }
 
+/**
+ * Servicio de auditoría de negocio. Registra operaciones de forma best-effort
+ * y expone consultas con control de acceso sobre el historial.
+ */
 export class ActividadService {
     constructor(
         private readonly actividadRepository: IActividadRepository,
@@ -83,6 +87,7 @@ export class ActividadService {
         }
     }
 
+    /** Lista actividades filtradas sin paginación explícita (usa la del filtro). */
     async listar(filtros: FiltrosActividad): Promise<IActividad[]> {
         return this.actividadRepository.listar(filtros);
     }
@@ -165,18 +170,16 @@ export class ActividadService {
         }
     }
 
+    /** Cuenta actividades por acción según los filtros recibidos. */
     async contarPorAccion(filtros: FiltrosActividad) {
         return this.actividadRepository.contarPorAccion(filtros);
     }
 
+    /** Cuenta actividades por día, mes o año según los filtros recibidos. */
     async contarPorPeriodo(
         filtros: FiltrosActividad,
         unidad: 'dia' | 'mes' | 'año',
     ) {
         return this.actividadRepository.contarPorPeriodo(filtros, unidad);
-    }
-
-    async archivosConMasOperaciones(limite = 10) {
-        return this.actividadRepository.archivosConMasOperaciones(limite);
     }
 }

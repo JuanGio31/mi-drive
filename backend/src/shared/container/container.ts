@@ -129,11 +129,7 @@ const busquedaService = new BusquedaService(
 const busquedaController = new BusquedaController(busquedaService);
 
 // Reportes
-const reporteService = new ReporteService(
-    reporteRepository,
-    usuarioRepository,
-    actividadService,
-);
+const reporteService = new ReporteService(reporteRepository, actividadService);
 const reporteController = new ReporteController(reporteService);
 
 // Exportacion
